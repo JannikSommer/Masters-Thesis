@@ -28,6 +28,6 @@ contract Vendor {
 
   function announce(string memory productId, string memory location, string memory key) public {
     AnnouncementService service = AnnouncementService(serviceAddress);
-    service.announce("IBM", productId, location, key);
+    service.announce(productId, location, key);
   }
 }
