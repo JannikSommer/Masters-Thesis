@@ -6,6 +6,8 @@ contract AnnouncementService {
     string productId,
     string documentLocation
   );
+
+  
   
   function announce(
     string memory productId,
