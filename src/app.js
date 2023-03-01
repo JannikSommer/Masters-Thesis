@@ -40,6 +40,20 @@ async function getAllEvents(contract, eventName) {
     return data;
 }
 
+async function getEvents(contract, eventName, from, to) {
+    var data = [];
+    await contract.getPastEvents(eventName, {
+        fromBlock: from, // e.g. 0
+        toBlock: to      // e.g. 'latest'
+        }, 
+        function(error, events){ 
+            if (error) throw error;
+            data = events;
+        }
+    )
+    return data;
+}
+
 async function getTransactionDataFromEvents(events) {
     var txs = [];
     for (const event of events) {
