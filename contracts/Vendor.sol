@@ -26,8 +26,14 @@ contract Vendor {
     serviceAddress = addr;
   }
 
-  function announce(string memory productId, string memory location) public {
+  function announceNewAdvisory(string memory vulnerabilityId, string memory productId, string memory location) public {
     AnnouncementService service = AnnouncementService(serviceAddress);
-    service.announce(productId, location);
+    service.announceNewAdvisory(vulnerabilityId, productId, location);
   }
+
+  function announceAdvisoryUpdate(string memory vulnerabilityId, string memory productId, string memory location) public {
+    AnnouncementService service = AnnouncementService(serviceAddress);
+    service.announceAdvisoryUpdate(vulnerabilityId, productId, location);
+  }
+
 }
