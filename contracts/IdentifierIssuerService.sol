@@ -24,7 +24,7 @@ contract IdentifierIssuerService {
     return vendorCount;
   }
 
-  function generateVulnerabilityIdentifier(uint64 vendorId, uint64 vulnerabilityNumber) pure private returns (string memory) {
+  function generateVulnerabilityIdentifier(uint64 vendorId, uint64 vulnerabilityNumber) private pure returns (string memory) {
     return string.concat("SNTL-", Strings.toString(vendorId), "-", Strings.toString(vulnerabilityNumber));
   }
 
@@ -36,5 +36,20 @@ contract IdentifierIssuerService {
     uint64 vulnerabilityNumber = uint64(vulnerabilites[vendorId].length);
 
     return generateVulnerabilityIdentifier(vendorId, vulnerabilityNumber);
+  }
+
+  function getVendorId(address vendorAddress) public view returns (uint64) {
+    return vendors[vendorAddress];
+  }
+
+  function getVulnerabilities(uint64 vendorId) public view returns (string[] memory) {
+    uint64[] memory vulnIds = vulnerabilites[vendorId];
+    string[] memory result = new string[](vulnIds.length);
+
+    for (uint64 index = 0; index < vulnIds.length; index++) {
+      result[index] = generateVulnerabilityIdentifier(vendorId, vulnIds[index]);
+    }
+
+    return result;
   }
 }
