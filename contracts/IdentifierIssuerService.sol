@@ -18,7 +18,7 @@ contract IdentifierIssuerService {
   mapping(uint64 => uint64[]) public vulnerabilites;
 
   function registerVendor() external onlyContract returns (uint64) {
-    require(vendors[msg.sender] == 0, "Vendors can register once"); // Vendor is not registered already
+    require(vendors[msg.sender] == 0, "Vendors can only register once"); // Vendor is not registered already
     vendorCount++;
     vendors[msg.sender] = vendorCount;
     return vendorCount;
@@ -29,7 +29,7 @@ contract IdentifierIssuerService {
   }
 
   function requestVulnerabilityIdentifier() external onlyContract returns (string memory) {
-    require(vendors[msg.sender] != 0, "Vendors must be registered");
+    require(vendors[msg.sender] != 0, "Vendor must be registered");
     uint64 vendorId = vendors[msg.sender];
 
     vulnerabilites[vendorId].push(uint64(vulnerabilites[vendorId].length + 1));

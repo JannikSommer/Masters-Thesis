@@ -45,12 +45,12 @@ contract Vendor {
   }
   
   function announceNewAdvisory(string memory vulnerabilityId, string memory productId, string memory location) public {
-    AnnouncementService service = AnnouncementService(serviceAddress);
+    AnnouncementService service = AnnouncementService(announcementServiceAddress);
     service.announceNewAdvisory(vulnerabilityId, productId, location);
   }
 
   function announceAdvisoryUpdate(string memory vulnerabilityId, string memory productId, string memory location) public {
-    AnnouncementService service = AnnouncementService(serviceAddress);
+    AnnouncementService service = AnnouncementService(announcementServiceAddress);
     service.announceAdvisoryUpdate(vulnerabilityId, productId, location);
   }
 
