@@ -2,14 +2,10 @@
 pragma solidity >=0.4.22 <0.9.0;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./MessageControlable.sol";
 
-contract IdentifierIssuerService {
+contract IdentifierIssuerService is MessageControlable {
   uint64 private vendorCount = 0;
-
-  modifier onlyContract() {
-    require(msg.sender != tx.origin, "Call only accesible from smart contract");
-    _;
-  }
 
   // VendorContractAddress => VendorId
   mapping(address => uint64) public vendors;
