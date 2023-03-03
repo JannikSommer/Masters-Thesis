@@ -2,14 +2,29 @@
 pragma solidity >=0.4.16 <0.9.0;
 
 contract AnnouncementService {
-  event Announcement(
+  event NewSecuriytAdvisory(
+    string vulnerabilityId,
     string productId,
     string documentLocation
   );
+
+  event UpdatedSecurityAdvisory(
+    string indexed vulnerabilityId,
+    string productId,
+    string documentLocation 
+  );
   
-  function announce(
+  function announceNewAdvisory(
+    string memory vulnerabilityId,
     string memory productId,
     string memory documentLocation) public {
-    emit Announcement(productId, documentLocation);
+      emit NewSecuriytAdvisory(vulnerabilityId, productId, documentLocation);
   }
+
+  function announceAdvisoryUpdate(
+    string memory vulnerabilityId, 
+    string memory productId, 
+    string memory documentLocation) public {
+      emit UpdatedSecurityAdvisory(vulnerabilityId, productId, documentLocation);
+    }
 }

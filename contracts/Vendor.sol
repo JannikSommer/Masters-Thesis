@@ -33,11 +33,6 @@ contract Vendor {
     identifierIssuerServiceAddress = addr;
   }
 
-  function announce(string memory productId, string memory location) public {
-    AnnouncementService service = AnnouncementService(announcementServiceAddress);
-    service.announce(productId, location);
-  }
-
   function getVendorId() onlyOwner public {
     IdentifierIssuerService service = IdentifierIssuerService(identifierIssuerServiceAddress);
     vendorId = service.registerVendor();
@@ -48,4 +43,15 @@ contract Vendor {
     IdentifierIssuerService service = IdentifierIssuerService(identifierIssuerServiceAddress);
     return service.requestVulnerabilityIdentifier();
   }
+  
+  function announceNewAdvisory(string memory vulnerabilityId, string memory productId, string memory location) public {
+    AnnouncementService service = AnnouncementService(serviceAddress);
+    service.announceNewAdvisory(vulnerabilityId, productId, location);
+  }
+
+  function announceAdvisoryUpdate(string memory vulnerabilityId, string memory productId, string memory location) public {
+    AnnouncementService service = AnnouncementService(serviceAddress);
+    service.announceAdvisoryUpdate(vulnerabilityId, productId, location);
+  }
+
 }
