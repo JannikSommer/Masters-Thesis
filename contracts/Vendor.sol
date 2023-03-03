@@ -5,14 +5,17 @@ import "./IdentifierIssuerService.sol";
 
 contract Vendor {
   address private _owner;
-  address private announcementServiceAddress;
-  address private identifierIssuerServiceAddress;
-  uint64 public vendorId;
+  string public vendorName;
+  IdentifierIssuerService IIS; 
+  AnnouncementService AS;
+  uint64 public vendorId; // Could be removed and replaced with a getter function on the IIS.
 
-
-  constructor()
+  constructor(string memory name, address announcementServiceAddress, address identifierIssuerServiceAddress)
   {
     _owner = msg.sender;
+    vendorName = name;
+    AS = AnnouncementService(announcementServiceAddress);
+    IIS = IdentifierIssuerService(identifierIssuerServiceAddress);
   }
 
   modifier onlyOwner() 
@@ -26,32 +29,21 @@ contract Vendor {
     return msg.sender == _owner;
   }
 
-  function setAnnouncementServiceAddress(address addr) onlyOwner public {
-    announcementServiceAddress = addr;
-  }
-  function setIdentifierIssuerServiceAddress(address addr) onlyOwner public {
-    identifierIssuerServiceAddress = addr;
-  }
-
   function getVendorId() onlyOwner public {
-    IdentifierIssuerService service = IdentifierIssuerService(identifierIssuerServiceAddress);
-    vendorId = service.registerVendor();
+    vendorId = IIS.registerVendor();
   }
 
   function getVulnerabilityId() onlyOwner public returns (string memory) {
     require(vendorId != 0, "Function only available with a vendor id");
-    IdentifierIssuerService service = IdentifierIssuerService(identifierIssuerServiceAddress);
-    return service.requestVulnerabilityIdentifier();
+    return IIS.requestVulnerabilityIdentifier();
   }
   
   function announceNewAdvisory(string memory vulnerabilityId, string memory productId, string memory location) public {
-    AnnouncementService service = AnnouncementService(announcementServiceAddress);
-    service.announceNewAdvisory(vulnerabilityId, productId, location);
+    AS.announceNewAdvisory(vulnerabilityId, productId, location);
   }
 
   function announceAdvisoryUpdate(string memory vulnerabilityId, string memory productId, string memory location) public {
-    AnnouncementService service = AnnouncementService(announcementServiceAddress);
-    service.announceAdvisoryUpdate(vulnerabilityId, productId, location);
+    AS.announceAdvisoryUpdate(vulnerabilityId, productId, location);
   }
 
 }

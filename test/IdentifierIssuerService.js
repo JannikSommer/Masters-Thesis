@@ -1,5 +1,6 @@
 const IdentifierIssuerService = artifacts.require("./IdentifierIssuerService.sol");
 const Vendor = artifacts.require("./Vendor.sol");
+const AnnouncementService = artifacts.require("./AnnouncementService.sol");
 const truffleAssert = require('truffle-assertions');
 const BN = require("bn.js");
 
@@ -25,8 +26,8 @@ contract("Identifier Issuer Service", async (accounts) => {
     });
 
     it("should return a vendorId of 0 for unregistered addresses", async () => {
-        const vendor = await Vendor.new({from: accounts[0]});
-        vendor.setIdentifierIssuerServiceAddress(iis.address, {from: accounts[0]});
+        const as = await AnnouncementService.new({from: accounts[0]});
+        const vendor = await Vendor.new("Test Vendor", as.address, iis.address, {from: accounts[0]});
 
         const expected = new BN("0", 10);
         const actual = await iis.getVendorId.call(vendor.address, {from: accounts[0]});
@@ -34,8 +35,8 @@ contract("Identifier Issuer Service", async (accounts) => {
     });
 
     it("should return the vendorId of registered addresses", async () => {
-        const vendor = await Vendor.new({from: accounts[0]});
-        await vendor.setIdentifierIssuerServiceAddress(iis.address, {from: accounts[0]});
+        const as = await AnnouncementService.new({from: accounts[0]});
+        const vendor = await Vendor.new("Test Vendor", as.address, iis.address, {from: accounts[0]});
         await vendor.getVendorId({from: accounts[0]});
 
         const expected = new BN("1", 10);
@@ -49,8 +50,8 @@ contract("Identifier Issuer Service", async (accounts) => {
     });
 
     it("should return an empty array of vulnerability ids for a new vendor", async () => {
-        const vendor = await Vendor.new({from: accounts[0]});
-        await vendor.setIdentifierIssuerServiceAddress(iis.address, {from: accounts[0]});
+        const as = await AnnouncementService.new({from: accounts[0]});
+        const vendor = await Vendor.new("Test Vendor", as.address, iis.address, {from: accounts[0]});
         await vendor.getVendorId({from: accounts[0]});
 
         const expected = [];
@@ -59,8 +60,8 @@ contract("Identifier Issuer Service", async (accounts) => {
     });
 
     it("should return an array of vulnerability ids for a vendor", async () => {
-        const vendor = await Vendor.new({from: accounts[0]});
-        await vendor.setIdentifierIssuerServiceAddress(iis.address, {from: accounts[0]});
+        const as = await AnnouncementService.new({from: accounts[0]});
+        const vendor = await Vendor.new("Test Vendor", as.address, iis.address, {from: accounts[0]});
         await vendor.getVendorId({from: accounts[0]});
         
         await vendor.getVulnerabilityId(); 
