@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.4.16 <0.9.0;
+
 import "./AnnouncementService.sol";
 import "./IdentifierIssuerService.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Vendor {
+
+contract Vendor is Ownable{
   address private _owner;
   string public vendorName;
   IdentifierIssuerService IIS; 
@@ -12,21 +15,9 @@ contract Vendor {
 
   constructor(string memory name, address announcementServiceAddress, address identifierIssuerServiceAddress)
   {
-    _owner = msg.sender;
     vendorName = name;
     AS = AnnouncementService(announcementServiceAddress);
     IIS = IdentifierIssuerService(identifierIssuerServiceAddress);
-  }
-
-  modifier onlyOwner() 
-  {
-    require(isOwner(), "Function accessible only by the owner !!");
-    _;
-  }
-
-  function isOwner() public view returns(bool) 
-  {
-    return msg.sender == _owner;
   }
 
   function getVendorId() onlyOwner public {
