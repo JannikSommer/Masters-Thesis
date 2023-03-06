@@ -4,7 +4,6 @@ const Vendor = artifacts.require("./Vendor.sol");
 
 const assert = require("chai").assert;
 const truffleAssert = require('truffle-assertions');
-const BN = require("bn.js");
 
 contract("Announcement Service", async (accounts) => {
     let as; 
@@ -98,7 +97,7 @@ contract("Announcement Service", async (accounts) => {
 
         // Hash the data becuase the event data is indexed
         const VulnIdHash = web3.utils.soliditySha3({type: 'string', value: "SNTL-123-456789"});
-        
+
         assert.equal(events[0].returnValues.vulnerabilityId, VulnIdHash, "vulnerability ID does not match input");
         assert.equal(events[0].returnValues.productId, "product ID", "Product ID does not match input");
         assert.equal(events[0].returnValues.documentLocation, "document location", "Document location does not match input");
