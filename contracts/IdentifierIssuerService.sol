@@ -20,10 +20,6 @@ contract IdentifierIssuerService is MessageControlable {
     return vendorCount;
   }
 
-  function generateVulnerabilityIdentifier(uint64 vendorId, uint64 vulnerabilityNumber) private pure returns (string memory) {
-    return string.concat("SNTL-", Strings.toString(vendorId), "-", Strings.toString(vulnerabilityNumber));
-  }
-
   function requestVulnerabilityIdentifier() external onlyContract returns (string memory) {
     require(vendors[msg.sender] != 0, "Vendor must be registered");
     uint64 vendorId = vendors[msg.sender];
@@ -31,7 +27,7 @@ contract IdentifierIssuerService is MessageControlable {
     vulnerabilites[vendorId].push(uint64(vulnerabilites[vendorId].length + 1));
     uint64 vulnerabilityNumber = uint64(vulnerabilites[vendorId].length);
 
-    return generateVulnerabilityIdentifier(vendorId, vulnerabilityNumber);
+    return string.concat("SNTL-", Strings.toString(vendorId), "-", Strings.toString(vulnerabilityNumber));
   }
 
   function getVendorId(address vendorAddress) public view returns (uint64) {
@@ -43,7 +39,7 @@ contract IdentifierIssuerService is MessageControlable {
     string[] memory result = new string[](vulnIds.length);
 
     for (uint64 index = 0; index < vulnIds.length; index++) {
-      result[index] = generateVulnerabilityIdentifier(vendorId, vulnIds[index]);
+      result[index] = string.concat("SNTL-", Strings.toString(vendorId), "-", Strings.toString(vulnIds[index]));
     }
 
     return result;
