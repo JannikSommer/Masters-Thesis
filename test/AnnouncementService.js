@@ -95,7 +95,7 @@ contract("Announcement Service", async (accounts) => {
         let result = await vendor.announceUpdatedAdvisory("SNTL-123-456789", "product ID", "document location");
         let events = await as.getPastEvents("UpdatedSecurityAdvisory", { fromBlock: 0, toBlock: 'latest' });
 
-        // Hash the data becuase the event data is indexed
+        // Hash the data because the event data is indexed
         const VulnIdHash = web3.utils.soliditySha3({type: 'string', value: "SNTL-123-456789"});
 
         assert.equal(events[0].returnValues.vulnerabilityId, VulnIdHash, "vulnerability ID does not match input");
