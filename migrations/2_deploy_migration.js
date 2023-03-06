@@ -5,7 +5,7 @@ var iis = artifacts.require("./IdentifierIssuerService.sol");
 module.exports = function(deployer) {
     deployer.deploy(as);
     deployer.deploy(iis).then( () => {
-        deployer.deploy(vendor, "Sommer Software Inc", as.address, iis.address);
+        deployer.deploy(vendor, "SommerSoftware Inc.", as.address, iis.address);
     })
     
 };
