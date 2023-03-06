@@ -6,7 +6,7 @@ import "./IdentifierIssuerService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./MessageControlable.sol";
 
-contract Vendor is Ownable, MessageControlable{
+contract Vendor is Ownable{
   address private _owner;
   string public vendorName;
   IdentifierIssuerService IIS; 
@@ -32,4 +32,5 @@ contract Vendor is Ownable, MessageControlable{
   function announceAdvisoryUpdate(string memory vulnerabilityId, string memory productId, string memory location) public {
     AS.announceAdvisoryUpdate(vulnerabilityId, productId, location);
   }
+
 }
