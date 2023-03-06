@@ -4,7 +4,6 @@ pragma solidity >=0.4.16 <0.9.0;
 import "./AnnouncementService.sol";
 import "./IdentifierIssuerService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./MessageControlable.sol";
 
 contract Vendor is Ownable{
   address private _owner;
@@ -25,11 +24,11 @@ contract Vendor is Ownable{
     return IIS.requestVulnerabilityIdentifier();
   }
   
-  function announceNewAdvisory(string memory productId, string memory location) public {
+  function announceNewAdvisory(string memory productId, string memory location) onlyOwner public {
     AS.announceNewAdvisory(getVulnerabilityId(), productId, location);
   }
 
-  function announceAdvisoryUpdate(string memory vulnerabilityId, string memory productId, string memory location) public {
+  function announceAdvisoryUpdate(string memory vulnerabilityId, string memory productId, string memory location) onlyOwner public {
     AS.announceAdvisoryUpdate(vulnerabilityId, productId, location);
   }
 
