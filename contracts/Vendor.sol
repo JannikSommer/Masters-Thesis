@@ -28,8 +28,8 @@ contract Vendor is Ownable{
     AS.announceNewAdvisory(getVulnerabilityId(), productId, location);
   }
 
-  function announceAdvisoryUpdate(string memory vulnerabilityId, string memory productId, string memory location) onlyOwner public {
-    AS.announceAdvisoryUpdate(vulnerabilityId, productId, location);
+  function announceUpdatedAdvisory(string memory vulnerabilityId, string memory productId, string memory location) onlyOwner public {
+    AS.announceUpdatedAdvisory(vulnerabilityId, productId, location);
   }
 
 }

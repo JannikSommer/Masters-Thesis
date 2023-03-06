@@ -24,7 +24,7 @@ contract AnnouncementService is MessageControlable {
       emit NewSecuriytAdvisory(vulnerabilityId, productId, documentLocation);
   }
 
-  function announceAdvisoryUpdate(
+  function announceUpdatedAdvisory(
     string memory vulnerabilityId, 
     string memory productId, 
     string memory documentLocation) external onlyContract {
