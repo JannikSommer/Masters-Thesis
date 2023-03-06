@@ -17,24 +17,14 @@ contract("Vendor", async (accounts) => {
         assert.equal(await vendor.vendorName.call({from: accounts[0]}), "Test Vendor");
     });
 
-    it("should retrieve a vendorId", async () => {
-        await vendor.getVendorId({from: accounts[0]});
-
+    it("should retrieve a vendorId automatically", async () => {
         const expected = new BN("1", 10);
         const actual = await vendor.vendorId.call({from: accounts[0]});
 
         assert.equal(actual.eq(expected), true, "value of requested vendorId is unexpected");
     });
 
-    it("should not be able to register more than once", async () => {
-        await vendor.getVendorId({from: accounts[0]});
-
-        truffleAssert.reverts(vendor.getVendorId({from: accounts[0]}), "Vendors can only register once")
-    });
-
     it("should retrieve a vulnerabilityId", async () => {
-        await vendor.getVendorId({from: accounts[0]});
-
         const expected = "SNTL-1-1";
         const actual = await vendor.getVulnerabilityId.call({from: accounts[0]});
 
