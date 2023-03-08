@@ -5,8 +5,7 @@ import "./AnnouncementService.sol";
 import "./IdentifierIssuerService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Vendor is Ownable{
-  address private _owner;
+contract Vendor is Ownable {
   string public vendorName;
   IdentifierIssuerService IIS; 
   AnnouncementService AS;
