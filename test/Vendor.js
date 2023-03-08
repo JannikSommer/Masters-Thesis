@@ -1,7 +1,6 @@
 const IdentifierIssuerService = artifacts.require("./IdentifierIssuerService.sol");
 const Vendor = artifacts.require("./Vendor.sol");
 const AnnouncementService = artifacts.require("./AnnouncementService.sol");
-const truffleAssert = require('truffle-assertions');
 const BN = require("bn.js");
 
 contract("Vendor", async (accounts) => {
