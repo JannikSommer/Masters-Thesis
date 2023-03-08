@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.4.16 <0.9.0;
+pragma solidity 0.8.17;
 
 import "./MessageControlable.sol";
+
+/**
+ * @title Announcement Service smart contract for the SENTINEL system.
+ * @author Jannik Lucas Sommer & Magnus Mølgaard Lund.
+ * @notice The smart contract is only responsible for emitting events.
+ */
 
 contract AnnouncementService is MessageControlable {
 

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.4.16 <0.9.0;
+pragma solidity 0.8.17;
 
 /**
- * @title Controlling access from other address
- * @author Jannik Lucas Sommer & Magnus Mølgaard Lund
- * @notice Derived from OpenZeppelin Address.sol
+ * @title Controlling access from other addresses.
+ * @author Jannik Lucas Sommer & Magnus Mølgaard Lund.
+ * @notice Derived from OpenZeppelin Address.sol.
  */
 
 contract MessageControlable {

@@ -1,8 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.4.22 <0.9.0;
+pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./MessageControlable.sol";
+
+/**
+ * @title Identifier Issuer Service smart contract for the SENTINEL system.
+ * @author Jannik Lucas Sommer & Magnus Mølgaard Lund.
+ * @notice The smart contract is only responsible for issuing vulnerability identifiers
+ *         for vulnerabilities disclosed with the SENTINEL system. 
+ */
 
 contract IdentifierIssuerService is MessageControlable {
   uint64 private vendorCount = 0;
