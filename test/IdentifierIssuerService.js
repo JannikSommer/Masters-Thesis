@@ -12,16 +12,18 @@ contract("Identifier Issuer Service", async (accounts) => {
     });
 
     it("should not allow non-smart contract wallets to register as a vendor", async () => {
-        truffleAssert.fails(
+        await truffleAssert.fails(
             iis.registerVendor({from: accounts[0]}),
-            truffleAssert.ErrorType.REVERT
+            truffleAssert.ErrorType.REVERT,
+            "Call only accessible from smart contract"
         );
     });
 
     it("should not allow non-smart contract wallets to request identifiers", async () => {
-        truffleAssert.fails(
+        await truffleAssert.fails(
             iis.requestVulnerabilityIdentifier({from: accounts[0]}), 
-            truffleAssert.ErrorType.REVERT
+            truffleAssert.ErrorType.REVERT,
+            "Call only accessible from smart contract"
         );
     });
 
@@ -46,9 +48,6 @@ contract("Identifier Issuer Service", async (accounts) => {
     });
 
     it("should return an empty array of vulnerability ids for a new vendor", async () => {
-        const as = await AnnouncementService.new({from: accounts[0]});
-        const vendor = await Vendor.new("Test Vendor", as.address, iis.address, {from: accounts[0]});
-
         const expected = [];
         const actual = await iis.getVulnerabilities.call(1, {from: accounts[0]});
         assert.equal(JSON.stringify(expected), JSON.stringify(actual));

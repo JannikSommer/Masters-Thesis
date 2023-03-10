@@ -9,7 +9,7 @@ contract MessageControlable {
   /// @dev 'msg.sender.code.length > 0' was not usable in the require statement
   ///      when the message.sender was in a constructor call. 
   modifier onlyContract() {
-    require(msg.sender != tx.origin, "Call only accesible from smart contract");
+    require(msg.sender != tx.origin, "Call only accessible from smart contract");
     _;
   }
 }
