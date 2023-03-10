@@ -5,7 +5,7 @@ import "./AnnouncementService.sol";
 import "./IdentifierIssuerService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @title Smart contract template for vendors. 
+/// @title Smart contract template for vendors. cl
 /// @author Jannik Lucas Sommer & Magnus Mølgaard Lund.
 /// @notice The smart contract has the necessary functionallity to interact 
 ///         with the SENTINEL system and it's services. 
@@ -17,7 +17,7 @@ contract Vendor is Ownable {
 
   constructor(string memory name, address announcementServiceAddress, address identifierIssuerServiceAddress) {
     vendorName = name;
-    __AS = AnnouncementService(announcementServiceAddress);
+    _AS = AnnouncementService(announcementServiceAddress);
     _IIS = IdentifierIssuerService(identifierIssuerServiceAddress);
     vendorId = _IIS.registerVendor();
   }
