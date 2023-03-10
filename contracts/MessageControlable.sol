@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 /// @title Controlling access from other addresses.
 /// @author Jannik Lucas Sommer & Magnus Mølgaard Lund.

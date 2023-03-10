@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 import "./AnnouncementService.sol";
 import "./IdentifierIssuerService.sol";
@@ -33,7 +33,7 @@ contract Vendor is Ownable {
   /// Calls function on the Announcement Service which emits an event. 
   /// @dev This function will automatically get a new vulnerability identifier. 
   /// @param productId One or more product identifiers separated by comma.
-  /// @param documentLocation Location for the security advisory (i.e. IPFS CID). 
+  /// @param location Location for the security advisory (i.e. IPFS CID). 
   function announceNewAdvisory(string memory productId, string memory location) onlyOwner public {
     _AS.announceNewAdvisory(getVulnerabilityId(), productId, location);
   }
@@ -41,7 +41,7 @@ contract Vendor is Ownable {
   /// @notice Calls function on the Announcement Service which emits an event. 
   /// @param vulnerabilityId A vulnerability identifier for the vulnerability.
   /// @param productId One or more product identifiers separated by comma.
-  /// @param documentLocation Location for the security advisory (i.e. IPFS CID). 
+  /// @param location Location for the security advisory (i.e. IPFS CID). 
   function announceUpdatedAdvisory(string memory vulnerabilityId, string memory productId, string memory location) onlyOwner public {
     _AS.announceUpdatedAdvisory(vulnerabilityId, productId, location);
   }
