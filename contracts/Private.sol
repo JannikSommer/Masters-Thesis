@@ -13,7 +13,7 @@ contract Private is Ownable {
   mapping(address => bool) private vendors;
   
   modifier whitelisted() {
-    require(vendors[msg.sender], "Vendor must be whitelisted to announce");
+    require(vendors[msg.sender], "Caller is not whitelisted");
     _;
   }
 
@@ -33,5 +33,4 @@ contract Private is Ownable {
   function announce(string memory location, bytes32 hash) external whitelisted {
     emit Announcement(location, hash);
   }
-
 }
