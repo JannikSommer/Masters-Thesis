@@ -15,6 +15,14 @@ contract("Private", async (accounts) => {
             "Ownable: caller is not the owner"
         );
     });
+    
+    it("should not allow whitelisting of address 0", async () => {
+        await truffleAssert.fails(
+            priv.addVendor("0x0000000000000000000000000000000000000000", {from: accounts[0]}),
+            truffleAssert.ErrorType.REVERT,
+            "Address 0 is not whitelistable"
+        );
+    });
 
     it("should not allow whitelisted vendors to be added the whitelist again", async () => {
         await priv.addVendor(accounts[1], {from: accounts[0]});
@@ -38,6 +46,14 @@ contract("Private", async (accounts) => {
             priv.removeVendor(accounts[1], {from: accounts[2]}),
             truffleAssert.ErrorType.REVERT,
             "Ownable: caller is not the owner"
+        );
+    });
+
+    it("should not allow removal of address 0 from whitelist", async () => {
+        await truffleAssert.fails(
+            priv.removeVendor("0x0000000000000000000000000000000000000000", {from: accounts[0]}),
+            truffleAssert.ErrorType.REVERT,
+            "Address 0 is not whitelistable"
         );
     });
     
