@@ -1,13 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+import Container from 'react-bootstrap/Container';
+
+//import App from './App';
 import reportWebVitals from './reportWebVitals';
+import NavigationBar from './NavigationBar';
+import VulnerabilityTable from './VulnerabilityTable';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <NavigationBar />
+    <br />
+    <Container>
+      <VulnerabilityTable />
+    </Container>
   </React.StrictMode>
 );
 
