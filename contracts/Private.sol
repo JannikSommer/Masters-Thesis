@@ -20,12 +20,21 @@ contract Private is Ownable {
   /// @dev Whitelisted vendors return 'true'
   mapping(address => bool) private vendors;
   
+  /// @notice Stores the public RSA key in SubjectPublicKey format
+  bytes public publicKey;
+
   modifier whitelisted() {
     require(vendors[msg.sender], "Caller is not whitelisted");
     _;
   }
 
   constructor() { }
+
+  /// @notice Sets the 'publicKey' state variable
+  /// @param pKey an array of bytes in representing a public RSA key in SubjectPublicKey format
+  function setPublicKey(bytes memory pKey) public onlyOwner {
+    publicKey = pKey;
+  }
 
   /// @notice Adds an ethereum address to the whitelist
   /// @param vendor A valid ethereum address

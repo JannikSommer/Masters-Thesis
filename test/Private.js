@@ -89,4 +89,22 @@ contract("Private", async (accounts) => {
         assert.equal(events[0].returnValues.location, "download location", "location does not match expected value");
         assert.equal(events[0].returnValues.hash, "0xe2201f05ee574ee7a07a673c8b55ff50ffb7ee778d9d9abe1e9864b0fb3ae779", "hash does not match expected value");
     });
+
+    it("should not allow non-owner addresses to set 'publicKey' state variable", async () => {
+        const key = "0x68656c6c6f20776f726c64";
+        await truffleAssert.fails(
+            priv.setPublicKey(key, {from: accounts[1]}),
+            truffleAssert.ErrorType.REVERT,
+            "Ownable: caller is not the owner"
+        ) 
+    });
+
+    it("should allow owner to set 'publicKey' state variable", async () => {
+        const key = "0x68656c6c6f20776f726c64";
+        await truffleAssert.passes(priv.setPublicKey(key, {from: accounts[0]}));
+
+        const actual = await priv.publicKey();
+        assert.equal(actual, key, "'publicKey' does not match expected value")
+    });
+
 });
