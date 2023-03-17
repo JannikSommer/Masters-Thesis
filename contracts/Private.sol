@@ -11,9 +11,11 @@ contract Private is Ownable {
   /// @notice Represents an announcement of a security advisory
   /// @param location The location of the security advisory
   /// @param hash The hash of the security advisory
+  /// @param decryptionKey The RSA-encrypted decryption key for deciphering the security advisory
   event Announcement(
     string location, 
-    bytes32 hash
+    bytes32 hash,
+    bytes decryptionKey
   );
   
   /// @notice Contains addresses of whitelisted vendors
@@ -56,7 +58,8 @@ contract Private is Ownable {
   /// @dev Caller must be whitelisted
   /// @param location The location of the security advisory
   /// @param hash The hash of the security advisory
-  function announce(string memory location, bytes32 hash) external whitelisted {
-    emit Announcement(location, hash);
+  /// @param dKey The RSA-encrypted decryption key for deciphering the security advisory
+  function announce(string memory location, bytes32 hash, bytes memory dKey) external whitelisted {
+    emit Announcement(location, hash, dKey);
   }
 }
