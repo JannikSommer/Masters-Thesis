@@ -1,9 +1,8 @@
 
 function Announcement() {
-
     return (
         <>
-            <h1>Hellow mother fucker!</h1>
+            <h1>Announcement</h1>
         </>
     );
 }
