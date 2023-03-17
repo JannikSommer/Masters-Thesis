@@ -1,19 +1,33 @@
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
+import { Link } from "react-router-dom"
+import { LinkContainer } from 'react-router-bootstrap'
+
 
 function NavigationBar() {
+  const navLinkStyle = {
+      
+  }
   return (
     <Navbar bg="light" expand="lg">
       <Container>
-        <Navbar.Brand href="#home">SENTINEL</Navbar.Brand>
+        <Navbar.Brand>SENTINEL</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link href="#home">Home</Nav.Link>
-            <Nav.Link href="#home">Announcement</Nav.Link>
-            <Nav.Link href="#home">Settings</Nav.Link>
-            <Nav.Link href="#home">Accounts</Nav.Link>
+            <LinkContainer to="/">
+              <Nav.Link>Vulnerabilities</Nav.Link>
+            </LinkContainer>
+            <LinkContainer to="/announcement">
+              <Nav.Link>Announcement</Nav.Link>
+            </LinkContainer>
+            <LinkContainer to="/settings">
+              <Nav.Link>Settings</Nav.Link>
+            </LinkContainer>
+            <LinkContainer to="/accounts">
+              <Nav.Link>Accounts</Nav.Link>
+            </LinkContainer>
           </Nav>
         </Navbar.Collapse>
       </Container>
