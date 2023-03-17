@@ -6,9 +6,6 @@ import { LinkContainer } from 'react-router-bootstrap'
 
 
 function NavigationBar() {
-  const navLinkStyle = {
-      
-  }
   return (
     <Navbar bg="light" expand="lg">
       <Container>
