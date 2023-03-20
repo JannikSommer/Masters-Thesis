@@ -8,8 +8,10 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "bootstrap": "^5.2.3",
+    "chai": "^4.3.7",
     "fs": "^0.0.1-security",
     "ipfs-core": "^0.18.0",
+    "mocha": "^10.2.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.2",
     "react-dom": "^18.2.0",
@@ -22,7 +24,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "mocha ./src/tests/",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
