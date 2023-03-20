@@ -5,6 +5,7 @@ var Status = require("../models/Status");
 var Version = require("../models/Version");
 var Product = require("../models/Product");
 var Vendor = require("../models/Vendor");
+const SecurityAdvisory = require("../models/SecurityAdvisory");
 
 
 
@@ -56,6 +57,21 @@ describe("CSAF Parser", function () {
                 assert.equal(actual.name, "Cisco");
                 assert.equal(actual.products.length, 2);
             });
+        });
+    });
+
+    describe("SecurityAdvisory", function () {
+        describe("parseProductTree()", function () {
+            it("should retrieve the correct information when parsing", function () {
+                const productTreeObject = JSON.parse("{\"product_tree\":{\"branches\":[{\"name\":\"Cisco\",\"category\":\"vendor\",\"branches\":[{\"name\":\"IOS\",\"category\":\"product_name\",\"branches\":[{\"name\":\"12.2SE\",\"category\":\"product_version\",\"branches\":[{\"name\":\"12.2(55)SE\",\"category\":\"service_pack\",\"product\":{\"product_id\":\"CVRFPID-103763\",\"name\":\"Cisco IOS 12.2SE 12.2(55)SE\"}}]}]},{\"name\":\"Cisco IOS XE Software\",\"category\":\"product_name\",\"branches\":[{\"name\":\"3.2SE\",\"category\":\"product_version\",\"branches\":[{\"name\":\"3.2.0SE\",\"category\":\"service_pack\",\"product\":{\"product_id\":\"CVRFPID-196216\",\"name\":\"Cisco IOS XE Software 3.2SE 3.2.0SE\"}}]}]}]}]}}");
+                const lookup = {"CVRFPID-103763": Status.Fixed, "CVRFPID-196216": Status.KnonwNotAffected};
+
+                var actual = new SecurityAdvisory();
+                actual.parseProductTree(productTreeObject["product_tree"], lookup);
+
+                assert.equal(actual.vendors.length, 1);
+                assert.equal(actual.vendors[0].name, "Cisco");
+            })
         });
     });
 });
