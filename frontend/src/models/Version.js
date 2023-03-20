@@ -27,8 +27,8 @@ class Version {
     identifier;
 
     /**
-     * Parses a 'product' object from a CSAF.
-     * @param {object} productObject An instance of a 'product'.
+     * Parses a product version object from a CSAF.
+     * @param {object} productObject An instance of a CSAF product.
      * @param {string} productVersion The product version.
      * @param {object} statusLookup The dictionary used to look up product status.
      */

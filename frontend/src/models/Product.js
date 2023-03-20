@@ -18,6 +18,11 @@ class Product {
 
     constructor() {}
 
+    /**
+     * Parses a product line from a CSAF.
+     * @param {object} productObject An instance of an instance of a CSAF product line.
+     * @param {object} statusLookup The dictionary used to look up product status.
+     */
     parseProduct(productObject, statusLookup) {
         this.name = productObject["name"];
         productObject["branches"].forEach(productVersionJSON => {
