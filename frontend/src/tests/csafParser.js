@@ -3,7 +3,7 @@ var { describe } = require("mocha");
 
 var Status = require("../models/Status");
 var Version = require("../models/Version");
-
+var Product = require("../models/Product")
 
 
 
@@ -11,7 +11,7 @@ var Version = require("../models/Version");
 
 describe("CSAF Parser", function () {
     describe("Version", function () {
-        describe("parseProductVersion", function () {
+        describe("parseProductVersion()", function () {
             it("should retrieve the correct information when parsing", function () {
                 const productObject = JSON.parse("{\"name\":\"CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha\",\"product_id\":\"CSAFPID-0001\"}");
                 const productVersion = "1.0.0-alpha";
@@ -27,4 +27,21 @@ describe("CSAF Parser", function () {
             })
         })
     });
+
+    describe("Product", function () {
+        describe("parseProduct()", function () {
+            it("should retrieve the correct information when parsing", function () {
+                const productObject = JSON.parse("{\"name\":\"IOS\",\"category\":\"product_name\",\"branches\":[{\"name\":\"12.2SE\",\"category\":\"product_version\",\"branches\":[{\"name\":\"12.2(55)SE\",\"category\":\"service_pack\",\"product\":{\"product_id\":\"CVRFPID-103763\",\"name\":\"Cisco IOS 12.2SE 12.2(55)SE\"}},{\"name\":\"12.2(55)SE3\",\"category\":\"service_pack\",\"product\":{\"product_id\":\"CVRFPID-105394\",\"name\":\"Cisco IOS 12.2SE 12.2(55)SE3\"}}]}]}");
+                const lookup = {"CVRFPID-103763": Status.Fixed, "CVRFPID-105394": Status.KnonwNotAffected};
+
+                var actual = new Product();
+                actual.parseProduct(productObject, lookup);
+
+                assert.equal(actual.name, "IOS", "'Product.name' was not equal to expected value");
+                assert.equal(actual.versions.length, 2);
+            });
+        });
+    });
+
+
 });

@@ -1,4 +1,3 @@
-import Product from "./Status"; 
 
 class SecurityAdvisory {
     title;
@@ -9,7 +8,23 @@ class SecurityAdvisory {
     products = [];
     path; // path to file
 
-    constructor(json) {
-        // parse the json here
+    /**
+     * 
+     * @param {string} jsonString A CSAF document as a string
+     */
+    constructor(jsonString) {
+        parseCsafObject(
+            JSON.parse(jsonString)
+        );
     }
+
+    /**
+     * Parses a CSAF object
+     * 
+     * @param {object} csaf The CSAF document as a JavaScript Object
+     */
+    function parseCsafObject(csaf) {
+        
+    }
+
 }
