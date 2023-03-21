@@ -7,7 +7,7 @@ import Container from 'react-bootstrap/Container';
 // libraries
 import Web3 from 'web3';
 import { Buffer } from 'buffer';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CONTACT_ABI, CONTACT_ADDRESS } from '../config.js';
 
 // components
@@ -16,12 +16,17 @@ import VulnerabilityAcordion from './VulnerabilityAcordion.js';
 
 function Vulnerabilities({ipfs}) {
   /** @type {number} */
-  let lastBlockRead;
+  let lastBlockRead = useRef(0);
 
   // Used to control the modal for refresh confirmation
-  const [show, setShow] = useState(false);
-  const modalClose = () => setShow(false);
-  const modalShow = () => setShow(true);
+  const [showModal, setShowModal] = useState(false);
+  const modalClose = () => setShowModal(false);
+  const modalShow = () => setShowModal(true);
+
+  // Used to control update button
+  const [showUpdateButton, setShowUpdateButton] = useState(true);
+  const activateUpdateButton = () => setShowUpdateButton(true); 
+  const deactivateUpdateButton = () => setShowUpdateButton(false);
 
   // Vulnerability data hooks
   const [events, setEvents] = useState([]);
@@ -29,11 +34,10 @@ function Vulnerabilities({ipfs}) {
   const [blocks, setBlocks] = useState([]);
   const [advisories, setAdvisories] = useState([]);
   
-  /**
-   * Collects information about events, transactions, blocks, and advisories from 
+  
+  /** Collects information about events, transactions, blocks, and advisories from 
    * connected Ethereum network and IPFS with the ipfs param. 
-   * @param {*} ipfs Running ipfs node to collect files with. 
-   */
+   * @param {*} ipfs Running ipfs node to collect files with. */
   async function initialize(ipfs) {
     let web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
     let events = await loadEvents(web3); 
@@ -46,13 +50,12 @@ function Vulnerabilities({ipfs}) {
     setBlocks(blocks);
     setAdvisories(advisories);
   }
-  /**
-   * Load events of type NewSecurityAdvisory from a Ethereum network. 
+
+  /** Load events of type NewSecurityAdvisory from a Ethereum network. 
    * @param {*} web3 Web3 instance used to connect to blockchain network. 
    * @param {*} from The blocknumber to begin search from. Default 0. 
    * @param {*} to The blocknumer to end search at. Default 'latest'. 
-   * @returns List of events. 
-   */
+   * @returns List of events. */
   async function loadEvents(web3, from = 0, to = 'latest') {
     // Load events
     let contract = await new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
@@ -66,13 +69,11 @@ function Vulnerabilities({ipfs}) {
     return events;
   }
 
-  /**
-   * Loads data about transactions, blocks, and advisories related to events. 
+  /** Loads data about transactions, blocks, and advisories related to events. 
    * @param {*} web3 Web3 instance used to connect to blockchain network. 
    * @param {*} events List of events to get data from.
    * @param {*} ipfs Running ipfs node to collect files with.
-   * @returns 
-   */
+   * @returns  List of [transactions], [blocks] and [advisories]*/
   async function loadEventRelatedData(web3, events, ipfs) {
     // Load event transactions
     // blocks that events were mined in
@@ -89,17 +90,16 @@ function Vulnerabilities({ipfs}) {
     return [txs, blocks, advisories];
   }
 
-  /**
-   * Retrieves new events of type NewSecurityAdvisory from connected Ethereum network. 
+  /** Retrieves new events of type NewSecurityAdvisory from connected Ethereum network. 
    * @param {*} ipfs Running ipfs node to collect files with. 
-   * @param {*} to Blocknumber to end event search at. Default "latest"
-   */
+   * @param {*} to Blocknumber to end event search at. Default "latest" */
   async function getNewEvents(ipfs, to = 'latest') {
+    deactivateUpdateButton(); // deactivate
     // load new events since last scan
     let web3 = await new Web3(Web3.givenProvider || 'http://localhost:7545');
     let contract = await new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
     let newEvents = await contract.getPastEvents(
-        "NewSecuriytAdvisory", { fromBlock: lastBlockRead + 1, toBlock: to }, 
+        "NewSecuriytAdvisory", { fromBlock: lastBlockRead.current + 1, toBlock: to }, 
         function(error, events) { 
             if (error) throw error;
             return events;
@@ -111,45 +111,47 @@ function Vulnerabilities({ipfs}) {
     setEventTxs(newTxs.concat(txs));
     setBlocks(newBlocks.concat(blocks));
     setAdvisories(newAdvisories.concat(advisories));
+    activateUpdateButton(); //re-activate
   }
 
-  /**
-   * Deletes and retrives all data. 
-   * @param {*} ipfs Running ipfs node to collect files with. 
-   */
+  /** Deletes and retrives all data. 
+   * @param {*} ipfs Running ipfs node to collect files with. */
   async function refreshVulnerabilities(ipfs) {
     // Reset all values
     setEvents([]);
     setEventTxs([]);
     setBlocks([]);
     setAdvisories([]);
-    lastBlockRead = 0;
-    // Remove modal
-    setShow(false);
+    lastBlockRead.current = 0;
     // Retrieve data
     initialize(ipfs);
+    // Remove modal
+    modalClose();
   }
   
   useEffect(() => {
     initialize(ipfs);
-    lastBlockRead = 0;
+    lastBlockRead.current = 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ipfs])
 
   useEffect(() => {
     if (events.length > 0)
       // Since the list is reversed, we should get the first block which is the last
-      lastBlockRead = events[0].blockNumber;
+      lastBlockRead.current = events[0].blockNumber;
   }, [events]);
 
   return (
     <>
       <br/>
-      <RefreshConfirmation ipfs={ipfs} state={show} close={modalClose} loadEvents={() => refreshVulnerabilities(ipfs)} />
+      <RefreshConfirmation ipfs={ipfs} state={showModal} close={modalClose} loadEvents={() => refreshVulnerabilities(ipfs)} />
       <Container>
         <Row>
           <Col xs lg="10"><h1>Your vulnerabilities</h1></Col> 
           <Col sm md="2">
-            <Button variant="primary" size='md' onClick={() => getNewEvents(ipfs)}>Update</Button>
+            {showUpdateButton 
+            ? <Button variant="primary" size='md' onClick={() => getNewEvents(ipfs)}>Update</Button>
+            : <Button active="false" variant="secondary" size='md'>Update</Button>}
             <Button variant="danger" className="float-end" size='md' onClick={modalShow}>Refresh</Button>
           </Col>
         </Row>
