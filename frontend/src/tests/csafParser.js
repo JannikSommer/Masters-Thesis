@@ -1,46 +1,56 @@
-var assert = require("assert");
-var { describe } = require("mocha");
+const assert = require("assert");
+const { describe, beforeEach } = require("mocha");
+const fs = require('fs');
 
-var Status = require("../models/Status");
-var Version = require("../models/Version");
-var Product = require("../models/Product");
-var Vendor = require("../models/Vendor");
+const Status = require("../models/Status");
+const Version = require("../models/Version");
+const Product = require("../models/Product");
+const Vendor = require("../models/Vendor");
 const SecurityAdvisory = require("../models/SecurityAdvisory");
 
 
 
-//                 const productVersionObject = JSON.parse("{\"category\":\"product_version\",\"name\":\"1.0.0-alpha\",\"product\":{\"name\":\"CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha\",\"product_id\":\"CSAFPID-0001\"}}");
+
 
 describe("CSAF Parser", function () {
+    var csafJSON = null;
+
+    before("Load CSAF File", function (done) {
+        fs.readFile("../csaf/bsi.json", "utf8", function (err, data) {
+            if (err) throw err;
+            csafJSON = JSON.parse(data);
+            done();
+        }); 
+    });
+
     describe("Version", function () {
         describe("parseProductVersion()", function () {
-            it("should retrieve the correct information when parsing", function () {
-                const productObject = JSON.parse("{\"name\":\"CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha\",\"product_id\":\"CSAFPID-0001\"}");
+            it("should parse correctly", function () {
+                const productObject = csafJSON["product_tree"]["branches"][0]["branches"][0]["branches"][0]["product"];                
+                const lookup = {"CSAFPID-0001": Status.KnownAffected, "CSAFPID-0002": Status.KnownAffected};
                 const productVersion = "1.0.0-alpha";
-                const lookup = {"CSAFPID-0001": Status.Fixed, "CSAFPID-0002": Status.KnownAffected, "CSAFPID-0002": Status.KnonwNotAffected }
-                
+
                 var actual = new Version();
                 actual.parseProductVersion(productObject, productVersion, lookup);
 
                 assert.equal(actual.fullName, "CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha", "'Version.fullName' was not equal to expected value");
                 assert.equal(actual.identifier, "CSAFPID-0001", "'Version.identifier' was not equal to expected value");
                 assert.equal(actual.version, productVersion, "'Version.version' was not equal to expected value");
-                assert.equal(actual.status, Status.Fixed, "'Version.status' was not equal to expected value");
+                assert.equal(actual.status, Status.KnownAffected, "'Version.status' was not equal to expected value");
             })
         })
     });
 
     describe("Product", function () {
         describe("parseProduct()", function () {
-            it("should retrieve the correct information when parsing", function () {
-                const productObject = JSON.parse("{\"name\":\"IOS\",\"category\":\"product_name\",\"branches\":[{\"name\":\"12.2SE\",\"category\":\"product_version\",\"branches\":[{\"name\":\"12.2(55)SE\",\"category\":\"service_pack\",\"product\":{\"product_id\":\"CVRFPID-103763\",\"name\":\"Cisco IOS 12.2SE 12.2(55)SE\"}},{\"name\":\"12.2(55)SE3\",\"category\":\"service_pack\",\"product\":{\"product_id\":\"CVRFPID-105394\",\"name\":\"Cisco IOS 12.2SE 12.2(55)SE3\"}}]}]}");
-                const lookup = {"CVRFPID-103763": Status.Fixed, "CVRFPID-105394": Status.KnonwNotAffected};
+            it("should parse correctly when versions have a single product", function () {
+                const productObject = csafJSON["product_tree"]["branches"][0]["branches"][0];                
 
                 var actual = new Product();
-                actual.parseProduct(productObject, lookup);
+                actual.parseProduct(productObject, {});
 
-                assert.equal(actual.name, "IOS", "'Product.name' was not equal to expected value");
-                assert.equal(actual.versions.length, 2);
+                assert.equal(actual.name, "CVRF-CSAF-Converter", "'Product.name' was not equal to expected value");
+                assert.equal(actual.versions.length, 6);
             });
         });
     });
@@ -48,14 +58,13 @@ describe("CSAF Parser", function () {
     describe("Vendor", function () {
         describe("parseVendor()", function () {
             it("should retrieve the correct information when parsing", function () {
-                const vendorObject = JSON.parse("{\"name\":\"Cisco\",\"category\":\"vendor\",\"branches\":[{\"name\":\"IOS\",\"category\":\"product_name\",\"branches\":[{\"name\":\"12.2SE\",\"category\":\"product_version\",\"branches\":[{\"name\":\"12.2(55)SE\",\"category\":\"service_pack\",\"product\":{\"product_id\":\"CVRFPID-103763\",\"name\":\"Cisco IOS 12.2SE 12.2(55)SE\"}}]}]},{\"name\":\"Cisco IOS XE Software\",\"category\":\"product_name\",\"branches\":[{\"name\":\"3.2SE\",\"category\":\"product_version\",\"branches\":[{\"name\":\"3.2.0SE\",\"category\":\"service_pack\",\"product\":{\"product_id\":\"CVRFPID-196216\",\"name\":\"Cisco IOS XE Software 3.2SE 3.2.0SE\"}}]}]}]}");
-                const lookup = {"CVRFPID-103763": Status.Fixed, "CVRFPID-196216": Status.KnonwNotAffected};
-
+                const vendorObject = csafJSON["product_tree"]["branches"][0];
+                
                 var actual = new Vendor();
-                actual.parseVendor(vendorObject, lookup);
+                actual.parseVendor(vendorObject, {});
 
-                assert.equal(actual.name, "Cisco");
-                assert.equal(actual.products.length, 2);
+                assert.equal(actual.name, "CSAF Tools");
+                assert.equal(actual.products.length, 1);
             });
         });
     });
@@ -63,14 +72,13 @@ describe("CSAF Parser", function () {
     describe("SecurityAdvisory", function () {
         describe("parseProductTree()", function () {
             it("should retrieve the correct information when parsing", function () {
-                const productTreeObject = JSON.parse("{\"product_tree\":{\"branches\":[{\"name\":\"Cisco\",\"category\":\"vendor\",\"branches\":[{\"name\":\"IOS\",\"category\":\"product_name\",\"branches\":[{\"name\":\"12.2SE\",\"category\":\"product_version\",\"branches\":[{\"name\":\"12.2(55)SE\",\"category\":\"service_pack\",\"product\":{\"product_id\":\"CVRFPID-103763\",\"name\":\"Cisco IOS 12.2SE 12.2(55)SE\"}}]}]},{\"name\":\"Cisco IOS XE Software\",\"category\":\"product_name\",\"branches\":[{\"name\":\"3.2SE\",\"category\":\"product_version\",\"branches\":[{\"name\":\"3.2.0SE\",\"category\":\"service_pack\",\"product\":{\"product_id\":\"CVRFPID-196216\",\"name\":\"Cisco IOS XE Software 3.2SE 3.2.0SE\"}}]}]}]}]}}");
-                const lookup = {"CVRFPID-103763": Status.Fixed, "CVRFPID-196216": Status.KnonwNotAffected};
+                const productTreeObject = csafJSON["product_tree"];
 
                 var actual = new SecurityAdvisory();
-                actual.parseProductTree(productTreeObject["product_tree"], lookup);
+                actual.parseProductTree(productTreeObject, {});
 
                 assert.equal(actual.vendors.length, 1);
-                assert.equal(actual.vendors[0].name, "Cisco");
+                assert.equal(actual.vendors[0].name, "CSAF Tools");
             })
         });
     });
