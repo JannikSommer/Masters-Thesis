@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom"
 import Container from 'react-bootstrap/Container';
-import VulnerabilityTable from './VulnerabilityTable';
+import Vulnerabilities from './Vulnerabilities';
 import Announcement from './Announcement';
 import Settings from './Settings';
 import Accounts from './Accounts';
@@ -30,7 +30,7 @@ function App() {
         </Spinner>
         : 
           <Routes>
-            <Route exact path='/' Component={() => <VulnerabilityTable ipfs={ipfs}/>}/>
+            <Route exact path='/' Component={() => <Vulnerabilities ipfs={ipfs}/>}/>
             <Route path='announcement' Component={Announcement} />
             <Route path='settings' Component={Settings} />
             <Route path='accounts' Component={Accounts} />
