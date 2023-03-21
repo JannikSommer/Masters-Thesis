@@ -26,11 +26,17 @@ class Product {
     parseProduct(productObject, statusLookup) {
         this.name = productObject["name"];
         productObject["branches"].forEach(productVersionJSON => {
-            productVersionJSON["branches"].forEach(productJSON => {
+            if (productVersionJSON["branches"] != undefined) { // Multiple product of this version
+                productVersionJSON["branches"].forEach(productJSON => {
+                    var product = new Version();
+                    product.parseProductVersion(productJSON, this.name, statusLookup);
+                    this.versions.push(product);
+                });
+            } else {                                           // Single product of this version
                 var product = new Version();
-                product.parseProductVersion(productJSON, productVersionJSON["name"], statusLookup);
+                product.parseProductVersion(productVersionJSON["product"], this.name, statusLookup);
                 this.versions.push(product);
-            });
+            }
         });
     }
 }

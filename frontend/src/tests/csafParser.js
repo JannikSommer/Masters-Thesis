@@ -52,6 +52,18 @@ describe("CSAF Parser", function () {
                 assert.equal(actual.name, "CVRF-CSAF-Converter", "'Product.name' was not equal to expected value");
                 assert.equal(actual.versions.length, 6);
             });
+
+            it("should parse correctly when versions have multiple products", function () {
+                var productObject;
+                var json = JSON.parse(fs.readFileSync("../csaf/cisco-sa-20180328-smi2.json", "utf8"));
+                productObject = json["product_tree"]["branches"][0]["branches"][1];
+
+                var actual = new Product();
+                actual.parseProduct(productObject, {});
+
+                assert.equal(actual.name, "Cisco IOS XE Software", "'Product.name' was not equal to expected value");
+                assert.equal(actual.versions.length, 79);
+            });
         });
     });
 
