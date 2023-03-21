@@ -4,39 +4,42 @@
 class Version {
     /**
      * The full name of the product. Often includes vendor, architecture, version.
-     * @type {string}
+     * @type {String}
      */
     fullName; 
 
     /**
      * The product version.
-     * @type {string}
+     * @type {String}
      */
     version; 
 
     /**
-     * The status of the vulnerability impact on the product.
-     * @type {string}
-     */
-    status; 
-
-    /**
      * The product identifier. 
-     * @type {string}
+     * @type {String}
      */
     identifier;
 
+
+    /**
+     * Instantiates a Version object.
+     * @param {Object} productObject A parsed CSAF product.
+     * @param {String} productVersion The product version.
+     */
+    constructor (productObject, productVersion) {
+        this.extractProductVersion(productObject, productVersion);
+    }
+
     /**
      * Parses a product version object from a CSAF.
-     * @param {object} productObject An instance of a CSAF product.
-     * @param {string} productVersion The product version.
-     * @param {object} statusLookup The dictionary used to look up product status.
+     * @private
+     * @param {Object} product A parsed CSAF product.
+     * @param {String} version The product version.
      */
-    parseProductVersion(productObject, productVersion, statusLookup) {
-        this.fullName = productObject["name"];
-        this.identifier = productObject["product_id"];
-        this.version = productVersion;
-        this.status = statusLookup[this.identifier];
+    extractProductVersion(product, version) {
+        this.fullName = product["name"];
+        this.identifier = product["product_id"];
+        this.version = version;
     }
 
 }

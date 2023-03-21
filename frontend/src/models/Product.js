@@ -3,39 +3,41 @@ var Version = require("../models/Version");
 /**
  * Represents a specific product line.
  */
-class Product {
+class Product { //? Should this be called "ProductLine"?
     /**
-     * The name of the product line
-     * @type {string}
+     * The name of the product line.
+     * @type {String}
      */
     name; 
 
     /**
      * The affected versions of the this product line.
-     * @type {Array<Version>}
+     * @type {Version[]}
      */
     versions = [];
 
-    constructor() {}
 
     /**
-     * Parses a product line from a CSAF.
-     * @param {object} productObject An instance of an instance of a CSAF product line.
-     * @param {object} statusLookup The dictionary used to look up product status.
+     * Instantiates a Product object.
+     * @param {Object} productObject A parsed CSAF product line.
      */
-    parseProduct(productObject, statusLookup) {
-        this.name = productObject["name"];
-        productObject["branches"].forEach(productVersionJSON => {
-            if (productVersionJSON["branches"] != undefined) { // Multiple product of this version
-                productVersionJSON["branches"].forEach(productJSON => {
-                    var product = new Version();
-                    product.parseProductVersion(productJSON, this.name, statusLookup);
-                    this.versions.push(product);
+    constructor(productObject) {
+        this.extractProduct(productObject);
+    }
+
+    /**
+     * Extracts a product line from a CSAF.
+     * @param {Object} product A parsed CSAF product line.
+     */
+    extractProduct(product) {
+        this.name = product["name"];
+        product["branches"].forEach(productVersion => {
+            if (productVersion["branches"]) { // Multiple products of this version
+                productVersion["branches"].forEach(product => {
+                    this.versions.push(new Version(product, this.name));
                 });
-            } else {                                           // Single product of this version
-                var product = new Version();
-                product.parseProductVersion(productVersionJSON["product"], this.name, statusLookup);
-                this.versions.push(product);
+            } else { // Single product of this version
+                this.versions.push(new Version(productVersion["product"], this.name));
             }
         });
     }

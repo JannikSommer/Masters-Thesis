@@ -6,29 +6,33 @@ var Product = require("../models/Product");
 class Vendor {
     /**
      * The name of the vendor
-     * @type {string}
+     * @type {String}
      */
     name;
 
     /**
      * The affected product lines from this vendor.
-     * @type {Array<Product>}
+     * @type {Product[]}
      */
     products = [];
 
-    constructor() {}
+
+    /**
+     * Instantiates a Vendor object.
+     * @param {Object} vendorObject A parsed CSAF vendor.
+     */
+    constructor(vendorObject) {
+        this.extractVendor(vendorObject);
+    }
 
     /**
      * Parses a vendor from a CSAF.
-     * @param {object} vendorObject 
-     * @param {object} statusLookup The dictionary used to look up product status.
+     * @param {Object} vendor A parsed CSAF vendor.
      */
-    parseVendor(vendorObject, statusLookup) {
-        this.name = vendorObject["name"];
-        vendorObject["branches"].forEach(productJSON => {
-            var product = new Product();
-            product.parseProduct(productJSON, statusLookup);
-            this.products.push(product);
+    extractVendor(vendor, productStatus) {
+        this.name = vendor["name"];
+        vendor["branches"].forEach(product => {
+            this.products.push(new Product(product));
         });
     }
 }
