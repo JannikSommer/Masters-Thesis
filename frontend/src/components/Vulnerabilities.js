@@ -15,7 +15,6 @@ import RefreshConfirmation from './RefreshConfirmation.js';
 import VulnerabilityAcordion from './VulnerabilityAcordion.js';
 
 function Vulnerabilities({ipfs}) {
-  /** @type {number} */
   let lastBlockRead = useRef(0);
 
   // Used to control the modal for refresh confirmation
@@ -36,7 +35,7 @@ function Vulnerabilities({ipfs}) {
   
   /** Collects information about events, transactions, blocks, and advisories from 
    * connected Ethereum network and IPFS with the ipfs param. 
-   * @param {*} ipfs Running ipfs node to collect files with. */
+   * @param {IPFS} ipfs Running ipfs node to collect files with. */
   async function initialize(ipfs) {
     let web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
     let events = await loadEvents(web3); 
@@ -51,9 +50,9 @@ function Vulnerabilities({ipfs}) {
   }
 
   /** Load events of type NewSecurityAdvisory from a Ethereum network. 
-   * @param {*} web3 Web3 instance used to connect to blockchain network. 
-   * @param {*} from The blocknumber to begin search from. Default 0. 
-   * @param {*} to The blocknumer to end search at. Default 'latest'. 
+   * @param {Web3} web3 Web3 instance used to connect to blockchain network. 
+   * @param {Number} from The blocknumber to begin search from. Default 0. 
+   * @param {Number} to The blocknumer to end search at. Default 'latest'. 
    * @returns List of events. */
   async function loadEvents(web3, from = 0, to = 'latest') {
     // Load events
@@ -69,9 +68,9 @@ function Vulnerabilities({ipfs}) {
   }
 
   /** Loads data about transactions, blocks, and advisories related to events. 
-   * @param {*} web3 Web3 instance used to connect to blockchain network. 
-   * @param {*} events List of events to get data from.
-   * @param {*} ipfs Running ipfs node to collect files with.
+   * @param {Web3} web3 Web3 instance used to connect to blockchain network. 
+   * @param {[]} events List of events to get data from.
+   * @param {IPFS} ipfs Running ipfs node to collect files with.
    * @returns  List of [transactions], [blocks] and [advisories]*/
   async function loadEventRelatedData(web3, events, ipfs) {
     // Load event transactions
@@ -90,8 +89,8 @@ function Vulnerabilities({ipfs}) {
   }
 
   /** Retrieves new events of type NewSecurityAdvisory from connected Ethereum network. 
-   * @param {*} ipfs Running ipfs node to collect files with. 
-   * @param {*} to Blocknumber to end event search at. Default "latest" */
+   * @param {IPFS} ipfs Running ipfs node to collect files with. 
+   * @param {Number} to Blocknumber to end event search at. Default "latest" */
   async function getNewEvents(ipfs, to = 'latest') {
     deactivateUpdateButton(); // deactivate
     // load new events since last scan
@@ -114,7 +113,7 @@ function Vulnerabilities({ipfs}) {
   }
 
   /** Deletes and retrives all data. 
-   * @param {*} ipfs Running ipfs node to collect files with. */
+   * @param {IPFS} ipfs Running ipfs node to collect files with. */
   async function refreshVulnerabilities(ipfs) {
     // Reset all values
     setEvents([]);
