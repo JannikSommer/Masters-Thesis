@@ -30,8 +30,9 @@ class Vendor {
      * @param {Object} vendor A parsed CSAF vendor.
      */
     extractVendor(vendor) {
-        if(vendor["category"] !== "vendor") throw Error("Parameter 'vendor' is not a CSAF vendor type");
+        if(vendor["category"] !== "vendor") throw Error("'vendor' is not a CSAF 'vendor' type.");
         if(!vendor["name"]) throw Error("'name' property is not included in 'vendor'.");
+        if(!vendor["branches"]) throw Error("'vendor' does not contain branches.");
 
         this.name = vendor["name"];
         vendor["branches"].forEach(product => {

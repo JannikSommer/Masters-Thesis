@@ -106,6 +106,24 @@ describe("CSAF Parser", function () {
                 assert.equal(actual.name, "CSAF Tools");
                 assert.equal(actual.products.length, 1);
             });
+
+            it("should only accept CSAF 'vendor' types", function () {
+                const wrongProduct = csafObject["product_tree"]["branches"][0]["branches"][0]; // category = "vendor"
+                const actual = function () {new Vendor(wrongProduct)};
+                assert.throws(actual, Error("'vendor' is not a CSAF 'vendor' type."));
+            });
+
+            it("should not accept objects without 'name' property", function () {
+                const wrongProduct = JSON.parse('{ "category": "vendor", "branches":[ {}, {} ] }');
+                const actual = function () {new Vendor(wrongProduct)};
+                assert.throws(actual, Error("'name' property is not included in 'vendor'."));
+            });
+
+            it("should not accept objects without branches", function () {
+                const wrongProduct = JSON.parse('{ "category": "vendor", "name": "vendor name", "product": {} }');
+                const actual = function () {new Vendor(wrongProduct)};
+                assert.throws(actual, Error("'vendor' does not contain branches."));
+            });
         });
     });
 
