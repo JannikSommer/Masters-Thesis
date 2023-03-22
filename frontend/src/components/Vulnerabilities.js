@@ -3,24 +3,33 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
+import Form from 'react-bootstrap/Form';
 
 // libraries
 import Web3 from 'web3';
 import { Buffer } from 'buffer';
 import { useEffect, useRef, useState } from 'react';
-import { CONTACT_ABI, CONTACT_ADDRESS } from '../config.js';
+import { CONTACT_ABI, CONTACT_ADDRESS, LS_KEY_DEP, LS_KEY_WL } from '../config.js';
 
 // components
 import RefreshConfirmation from './RefreshConfirmation.js';
 import VulnerabilityAcordion from './VulnerabilityAcordion.js';
+import FilterSwtich from './FilterSwitch.js';
 
 function Vulnerabilities({ ipfs }) {
+    let [vulnerabilities, setVulnerabilities] = useState([]);
+
     let lastBlockRead = useRef(0);
+    let dependecies = useRef([]);
+    let whitelist = useRef([]);
 
     // Used to control the modal for refresh confirmation
     const [showModal, setShowModal] = useState(false);
     const modalClose = () => setShowModal(false);
     const modalShow = () => setShowModal(true);
+
+    // Used to enable/disable filtering 
+    const [filtering, setFiltering] = useState(true);
 
     // Used to control update button
     const [showUpdateButton, setShowUpdateButton] = useState(true);
@@ -41,7 +50,17 @@ function Vulnerabilities({ ipfs }) {
         let events = await loadEvents(web3);
         let data = await loadEventRelatedData(web3, events, ipfs);
         let txs = data[0], blocks = data[1], advisories = data[2];
-
+        if (filtering) {
+            let userVulns = await filterVulnerabilities(events, txs, blocks, advisories); // run another place for optimization
+            setVulnerabilities(userVulns);
+        }
+        else {
+            let vulns = [];
+            for (const [index, event] of events.entries()) {
+                vulns.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]});
+            }
+            setVulnerabilities(vulns);
+        }
         // Set values only after everything has been loaded
         setEvents(events);
         setEventTxs(txs);
@@ -73,9 +92,7 @@ function Vulnerabilities({ ipfs }) {
      * @param {IPFS} ipfs Running ipfs node to collect files with.
      * @returns  List of [transactions], [blocks] and [advisories]*/
     async function loadEventRelatedData(web3, events, ipfs) {
-        // Load event transactions
-        // blocks that events were mined in
-        // and IPFS content
+        // Load event transactions, blocks that events were mined in, and IPFS content
         let txs = [], blocks = [], advisories = [], content = [];
         for (const event of events) {
             txs.push(await web3.eth.getTransaction(event.transactionHash));
@@ -86,6 +103,27 @@ function Vulnerabilities({ ipfs }) {
             advisories.push(Buffer.from(content).toString('utf8'));
         }
         return [txs, blocks, advisories];
+    }
+
+    /** Filters vulnerabilities to only show relevant vulnerabilities. 
+     * @param {[]} events List of events to filter. 
+     * @param {[]} txs List of transactions to filter. 
+     * @param {[]} blocks List of blocks to filter.
+     * @param {[]} advisories List of advisories to filter. 
+     * @returns List of object with matching events, transactions, blocks, and advisories. */
+    async function filterVulnerabilities(events, txs, blocks, advisories) {
+        let matches = []
+        for (const [index, event] of events.entries()) {
+            let pids = event.returnValues.productId.split(",");
+            if (pids.some(element => {return dependecies.current.includes(element)})) {
+                if (whitelist.current.some(obj => {return txs[index].to === Object.keys(obj)[0]})){
+                    matches.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]});
+                    //setVulnerabilities(vulnerabilities.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]}))
+                    //vulnerabilities.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]})
+                }
+            }
+        }
+        return matches;
     }
 
     /** Retrieves new events of type NewSecurityAdvisory from connected Ethereum network. 
@@ -128,10 +166,12 @@ function Vulnerabilities({ ipfs }) {
     }
 
     useEffect(() => {
+        dependecies.current = JSON.parse(localStorage.getItem(LS_KEY_DEP)).dependencies;
+        whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL)).whitelist;
         initialize(ipfs);
         lastBlockRead.current = 0;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ipfs])
+    }, [ipfs, filtering])
 
     useEffect(() => {
         if (events.length > 0)
@@ -145,7 +185,12 @@ function Vulnerabilities({ ipfs }) {
             <RefreshConfirmation ipfs={ipfs} state={showModal} close={modalClose} loadEvents={() => refreshVulnerabilities(ipfs)} />
             <Container>
                 <Row>
-                    <Col xs lg="10"><h1>Your vulnerabilities</h1></Col>
+                    <Col xs lg="8"><h1>Your vulnerabilities</h1></Col>
+                    <Col xs lg="2">
+                        <Form>
+                            <Form.Check type='switch' id="filterswitch" label="Enable filtering" defaultChecked="true" onChange={(e) => setFiltering(e.target.checked)}></Form.Check>
+                        </Form>
+                    </Col>
                     <Col sm md="2">
                         {showUpdateButton
                             ? <Button variant="primary" size='md' onClick={() => getNewEvents(ipfs)}>Update</Button>
@@ -154,7 +199,10 @@ function Vulnerabilities({ ipfs }) {
                     </Col>
                 </Row>
             </Container>
-            <VulnerabilityAcordion announcements={events} blocks={blocks} txs={txs} advisories={advisories} />
+            {vulnerabilities.length > 0
+            ?<VulnerabilityAcordion vulnerabilities={vulnerabilities} />
+            :<h4>No vulnerabilities... For now!</h4>}
+            
         </>
     );
 }

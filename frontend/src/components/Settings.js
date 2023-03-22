@@ -6,9 +6,7 @@ import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/esm/Button';
 
 import React, { useEffect, useRef, useState } from 'react';
-
-const LS_KEY_DEP = "SENTILEN-seetings-dependencies"
-const LS_KEY_WL = "SENTILEN-seetings-whitelist"
+import { LS_KEY_DEP, LS_KEY_WL } from '../config';
 
 function Settings() {
     const [dependencies, setDependecies] = useState("");
