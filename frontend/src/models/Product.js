@@ -30,15 +30,12 @@ class Product { //? Should this be called "ProductLine"?
      * @param {Object} product A parsed CSAF product line.
      */
     extractProduct(product) {
+        if(product["category"] !== "product_name") throw Error("'product is not a CSAF 'product_name' type.");
+        if(!product["name"]) throw Error("'name' property is not included in 'product'.");
+
         this.name = product["name"];
         product["branches"].forEach(productVersion => {
-            if (productVersion["branches"]) { // Multiple products of this version
-                productVersion["branches"].forEach(product => {
-                    this.versions.push(new Version(product, this.name));
-                });
-            } else { // Single product of this version
-                this.versions.push(new Version(productVersion["product"], this.name));
-            }
+            this.versions.push(new Version(productVersion));
         });
     }
 }

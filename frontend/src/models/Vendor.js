@@ -5,10 +5,10 @@ var Product = require("../models/Product");
  */
 class Vendor {
     /**
-     * The name of the vendor
+     * The name of the vendor.
      * @type {String}
      */
-    name;
+    name = "";
 
     /**
      * The affected product lines from this vendor.
@@ -29,7 +29,10 @@ class Vendor {
      * Parses a vendor from a CSAF.
      * @param {Object} vendor A parsed CSAF vendor.
      */
-    extractVendor(vendor, productStatus) {
+    extractVendor(vendor) {
+        if(vendor["category"] !== "vendor") throw Error("Parameter 'vendor' is not a CSAF vendor type");
+        if(!vendor["name"]) throw Error("'name' property is not included in 'vendor'.");
+
         this.name = vendor["name"];
         vendor["branches"].forEach(product => {
             this.products.push(new Product(product));

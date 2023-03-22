@@ -31,21 +31,20 @@ describe("CSAF Parser", function () {
     describe("Version", function () {
         describe("constructor()", function () {
             it("should initialize correctly", function () {
-                const productObject = csafObject["product_tree"]["branches"][0]["branches"][0]["branches"][0]["product"];                
-                const productVersion = "1.0.0-alpha";
+                const productObject = csafObject["product_tree"]["branches"][0]["branches"][0]["branches"][0];                
 
-                const actual = new Version(productObject, productVersion);
+                const actual = new Version(productObject);
 
-                assert.equal(actual.fullName, "CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha", "'Version.fullName' was not equal to expected value");
+                assert.equal(actual.fullName, "CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha");
                 assert.equal(actual.identifier, "CSAFPID-0001", "'Version.identifier' was not equal to expected value");
-                assert.equal(actual.version, productVersion, "'Version.version' was not equal to expected value");
+                assert.equal(actual.version, "1.0.0-alpha", "'Version.version' was not equal to expected value");
             })
         })
     });
 
     describe("Product", function () {
         describe("constructor()", function () {
-            it("should initialize correctly when versions have a single product", function () {
+            it("should initialize correctly", function () {
                 const productObject = csafObject["product_tree"]["branches"][0]["branches"][0];                
 
                 const actual = new Product(productObject);
@@ -53,23 +52,12 @@ describe("CSAF Parser", function () {
                 assert.equal(actual.name, "CVRF-CSAF-Converter", "'Product.name' was not equal to expected value");
                 assert.equal(actual.versions.length, 6);
             });
-
-            it("should initialize correctly when versions have multiple products", function () {
-                var productObject;
-                var json = JSON.parse(fs.readFileSync("../csaf/cisco-sa-20180328-smi2.json", "utf8"));
-                productObject = json["product_tree"]["branches"][0]["branches"][1];
-
-                const actual = new Product(productObject);
-
-                assert.equal(actual.name, "Cisco IOS XE Software", "'Product.name' was not equal to expected value");
-                assert.equal(actual.versions.length, 79);
-            });
         });
     });
 
     describe("Vendor", function () {
         describe("constructor()", function () {
-            it("should retrieve the correct information when parsing", function () {
+            it("should initialize correctly", function () {
                 const vendorObject = csafObject["product_tree"]["branches"][0];
                 
                 const actual = new Vendor(vendorObject);

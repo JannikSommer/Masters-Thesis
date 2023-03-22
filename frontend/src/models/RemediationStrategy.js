@@ -6,7 +6,7 @@ class RemediationStrategy {
      * Details the remediation strategy.
      * @type {String}
      */
-    details;
+    details = "";
 
     /**
      * The product ids affected by the remediation strategy.
@@ -18,7 +18,7 @@ class RemediationStrategy {
      * A url where the remediation can be obtained.
      * @type {String}
      */
-    url;
+    url = "";
 
     /**
      * Instantiates a RemediationStrategy object.
@@ -33,12 +33,15 @@ class RemediationStrategy {
      * @param {Object} remediation A remediation object from a CSAF document.
      */
     extractRemediationStrategy(remediation) {
-        this.details = remediation["details"];
-        this.url = remediation["url"];
+        if(remediation["details"]) this.details = remediation["details"];
+        if(remediation["url"]) this.url = remediation["url"];
+        
         this.productIds = new Map();
-        remediation["product_ids"].forEach(id => {
-            this.productIds.set(id, true);
-        });
+        if(remediation["product_ids"]) {
+            remediation["product_ids"].forEach(id => {
+                this.productIds.set(id, true);
+            });
+        }
     }
 }
 

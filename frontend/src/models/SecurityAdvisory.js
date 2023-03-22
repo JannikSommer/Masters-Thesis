@@ -9,19 +9,19 @@ class SecurityAdvisory {
      * Title of the security advisory.
      * @type {String}
      */
-    title;
+    title = "";
 
     /**
      * A description of the vulnerability.
      * @type {String}
      */
-    description;
+    description = "";
 
     /**
      * The severity of the vulnerability.
      * @type {String}
      */
-    severity;
+    severity = "";
 
     /**
      * List of vendors whose products are affected by the vulnerability.
@@ -52,6 +52,7 @@ class SecurityAdvisory {
 
     /**
      * Extracts the product three of a CSAF document
+     * @private
      * @param {Object} productTree The product_tree object in a CSAF document.
      * @returns {Vendor[]} An array of vendors extracted from the product tree.
      */
@@ -70,6 +71,7 @@ class SecurityAdvisory {
     
     /**
      * Extracts a summary of the security advisory from a CSAF document.
+     * @private
      * @param {Object[]} notesArray An array of notes from a CSAF document.
      * @returns {String} A summary of the security advisory.
      */
@@ -91,6 +93,7 @@ class SecurityAdvisory {
 
     /**
      * Extract relevant information about vulnerabilities from an array of CSAF vulnerabilities.
+     * @private
      * @param {Object[]} vulnerabilitiesArray An array of CSAF vulnerabilities.
      * @returns {Vulnerability[]} An array of Vulnerabilities.
      */
@@ -108,6 +111,7 @@ class SecurityAdvisory {
 
     /**
      * Extracts a CSAF document in JavaScript object format.
+     * @private
      * @param {Object} csaf A CSAF document parsed to a JavaScript object.
      */
     extractCSAF(csaf) {
