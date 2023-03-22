@@ -31,7 +31,7 @@ function UpdateAdvisoryForm() {
             </Form.Group>
 
             <Form.Group className='mb-3' controlId='upVulid'>
-                <FloatingLabel className='mb-3' controlId='upVulnSNTLLabel' label="Enter SENTINEL vulnerability ID">
+                <FloatingLabel className='mb-3' controlId='upVulnSNTLLabel' label="SENTINEL vulnerability ID">
                     <Form.Control></Form.Control>
                     <Form.Text className='text-muted'>The ID is issued by the Identifier Issuer Service</Form.Text>
                 </FloatingLabel>
