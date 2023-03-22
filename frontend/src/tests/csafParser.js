@@ -41,7 +41,7 @@ describe("CSAF Parser", function () {
             });
 
             it("should only accept CSAF 'product_version' types", function () {
-                const wrongProductVersion = csafObject["product_tree"]["branches"][0]; // category = "product_name"
+                const wrongProductVersion = csafObject["product_tree"]["branches"][0]; // category = "vendor"
                 const actual = function () {new Version(wrongProductVersion)};
                 assert.throws(actual, Error("'productVersion' is not a CSAF 'product_version' type."));
             });
@@ -74,6 +74,24 @@ describe("CSAF Parser", function () {
 
                 assert.equal(actual.name, "CVRF-CSAF-Converter", "'Product.name' was not equal to expected value");
                 assert.equal(actual.versions.length, 6);
+            });
+
+            it("should only accept CSAF 'product_name' types", function () {
+                const wrongProduct = csafObject["product_tree"]["branches"][0]; // category = "vendor"
+                const actual = function () {new Product(wrongProduct)};
+                assert.throws(actual, Error("'product' is not a CSAF 'product_name' type."));
+            });
+
+            it("should not accept objects without 'name' property", function () {
+                const wrongProduct = JSON.parse('{ "category": "product_name", "branches":[ {}, {} ] }');
+                const actual = function () {new Product(wrongProduct)};
+                assert.throws(actual, Error("'name' property is not included in 'product'."));
+            });
+
+            it("should not accept objects without branches", function () {
+                const wrongProduct = JSON.parse('{ "category": "product_name", "name": "product name", "product": {} }');
+                const actual = function () {new Product(wrongProduct)};
+                assert.throws(actual, Error("'product' does not contain branches."));
             });
         });
     });
