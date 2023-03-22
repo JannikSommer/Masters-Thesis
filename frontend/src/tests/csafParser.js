@@ -195,16 +195,36 @@ describe("CSAF Parser", function () {
             it("should initialize correctly", function () {
                 const actual = new SecurityAdvisory(csafString);
 
-                assert.equal(actual.description, "");
+                assert.deepStrictEqual(actual.description, "");
+                assert.deepStrictEqual(actual.severity, "Moderate");
+                assert.deepStrictEqual(actual.title, "CVRF-CSAF-Converter: XML External Entities Vulnerability");
+                assert.deepStrictEqual(actual.vendors.length, 1);
+                assert.deepStrictEqual(actual.vendors[0].name, "CSAF Tools");     
+                assert.deepStrictEqual(actual.vulnerabilities.length, 1);
+            });
 
-                assert.equal(actual.severity, "Moderate");
+            it("should initialize correctly if security advisory only contains a 'document' property", function () {
+                const smallCSAF = '{"document": {"title": "Small advisory"}}';
 
-                assert.equal(actual.title, "CVRF-CSAF-Converter: XML External Entities Vulnerability");
+                const actual = new SecurityAdvisory(smallCSAF);
 
-                assert.equal(actual.vendors.length, 1);
-                assert.equal(actual.vendors[0].name, "CSAF Tools");     
-                
-                assert.equal(actual.vulnerabilities.length, 1);
+                assert.deepStrictEqual(actual.description, "");
+                assert.deepStrictEqual(actual.severity, "");
+                assert.deepStrictEqual(actual.title, "Small advisory");
+                assert.deepStrictEqual(actual.vendors, []);
+                assert.deepStrictEqual(actual.vulnerabilities, []);
+            });
+
+            it("should not accept CSAF documents without a 'document' property", function () {
+                const wrongCSAF = "{}";
+                const actual = function () { new SecurityAdvisory(wrongCSAF); };
+                assert.throws(actual, Error("CSAF documents MUST include a 'document' property."));
+            });
+
+            it("should not accept CSAF documents without a document title", function () {
+                const wrongCSAF = '{"document": {}}';
+                const actual = function () { new SecurityAdvisory(wrongCSAF); };
+                assert.throws(actual, Error("CSAF documents MUST include a document title."));
             });
         });
     });

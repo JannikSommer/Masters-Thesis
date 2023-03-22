@@ -115,8 +115,11 @@ class SecurityAdvisory {
      * @param {Object} csaf A CSAF document parsed to a JavaScript object.
      */
     extractCSAF(csaf) {
-        this.title = csaf["document"]["title"]
-        this.severity = csaf["document"]["aggregate_severity"]["text"];
+        if(!csaf["document"]) throw Error("CSAF documents MUST include a 'document' property.");
+        if(!csaf["document"]["title"]) throw Error("CSAF documents MUST include a document title.");
+        if(csaf["document"]["aggregate_severity"] && csaf["document"]["aggregate_severity"]["text"]) this.severity = csaf["document"]["aggregate_severity"]["text"];
+
+        this.title = csaf["document"]["title"];
         this.description = this.extractDescription(csaf["document"]["notes"]);
         this.vendors = this.extractProductTree(csaf["product_tree"]);
         this.vulnerabilities = this.extractVulnerabilities(csaf["vulnerabilities"]);
