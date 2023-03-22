@@ -141,6 +141,16 @@ describe("CSAF Parser", function () {
                 assert,equal(actual.productIds.get("CSAFPID-0006"), undefined);
                 assert.equal(actual.url, "https://github.com/csaf-tools/CVRF-CSAF-Converter/releases/tag/1.0.0-rc2");
             });
+
+            it("should initialize correctly if no remediation information is included", function () {
+                const remediationObject = {};
+
+                const actual = new RemediationStrategy(remediationObject);
+
+                assert.equal(actual.details, "");
+                assert.equal(actual.productIds.size, new Map().size);
+                assert.equal(actual.url, "");
+            })
         });
     });
 
