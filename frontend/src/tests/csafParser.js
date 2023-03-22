@@ -126,7 +126,7 @@ describe("CSAF Parser", function () {
 
     describe("SecurityAdvisory", function () {
         describe("constructor()", function () {
-            it("should parse a CSAF document correctly", function () {
+            it("should initialize correctly", function () {
                 const actual = new SecurityAdvisory(csafString);
 
                 assert.equal(actual.description, "");
@@ -136,7 +136,9 @@ describe("CSAF Parser", function () {
                 assert.equal(actual.title, "CVRF-CSAF-Converter: XML External Entities Vulnerability");
 
                 assert.equal(actual.vendors.length, 1);
-                assert.equal(actual.vendors[0].name, "CSAF Tools");                
+                assert.equal(actual.vendors[0].name, "CSAF Tools");     
+                
+                assert.equal(actual.vulnerabilities.length, 1);
             });
         });
     });
