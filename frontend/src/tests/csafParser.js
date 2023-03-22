@@ -38,7 +38,30 @@ describe("CSAF Parser", function () {
                 assert.equal(actual.fullName, "CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha");
                 assert.equal(actual.identifier, "CSAFPID-0001", "'Version.identifier' was not equal to expected value");
                 assert.equal(actual.version, "1.0.0-alpha", "'Version.version' was not equal to expected value");
-            })
+            });
+
+            it("should only accept CSAF 'product_version' types", function () {
+                const wrongProductVersion = csafObject["product_tree"]["branches"][0]; // category = "product_name"
+                const actual = function () {new Version(wrongProductVersion)};
+                assert.throws(actual, Error("'productVersion' is not a CSAF 'product_version' type."));
+            });
+
+            it("should not accept objects with branches", function () {
+                const wrongProductVersion = JSON.parse('{"category": "product_version", "name": "1.0.0-alpha", "branches":[{},{}]}');
+                const actual = function () {new Version(wrongProductVersion)};
+                assert.throws(actual, Error("Branching in 'product_version' objects is not currently supported."));
+            });
+
+            it("should not accept objects without a product name", function () {
+                const wrongProductVersion = JSON.parse('{"category": "product_version", "name": "1.0.0-alpha", "product": {"product_id": "product id"}}');
+                const actual = function () {new Version(wrongProductVersion)};
+                assert.throws(actual, Error("'name' property is not included in 'product' object."));
+            });
+            it("should not accept objects without a product id", function () {
+                const wrongProductVersion = JSON.parse('{"category": "product_version", "name": "1.0.0-alpha", "product": {"name": "product name"}}');
+                const actual = function () {new Version(wrongProductVersion)};
+                assert.throws(actual, Error("'product_id' property is not included in 'product' object"));
+            });
         })
     });
 
