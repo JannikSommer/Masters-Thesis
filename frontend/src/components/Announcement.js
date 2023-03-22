@@ -30,9 +30,9 @@ function Announcement() {
                         <NewAdvisoryForm />
                     </Col>
                     <Col>
-                        <div style={{height: '55%', 
+                        <div style={{height: '40%', 
                                     width: 1, 
-                                    backgroundColor: '#cccccc', 
+                                    backgroundColor: '#FFFFFF', 
                                     position: 'absolute', 
                                     left: "50%"}}>
                         </div>
