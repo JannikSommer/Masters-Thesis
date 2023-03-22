@@ -17,7 +17,7 @@ function NewAdvisoryForm() {
             </Form.Group>
 
             <Form.Group className='mb-3' controlId='newVulnProds'>
-            <FloatingLabel className='mb-3' controlId='newVulnProdsLabel' label="Vulnerable product(s)">
+                <FloatingLabel className='mb-3' controlId='newVulnProdsLabel' label="Vulnerable product(s)">
                     <Form.Control as="textarea" rows={2} ></Form.Control>
                     <Form.Text className='text-muted'>Use comma to separate identifiers</Form.Text>
                 </FloatingLabel>
