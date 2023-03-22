@@ -34,7 +34,6 @@ function Vulnerabilities({ipfs}) {
   const [blocks, setBlocks] = useState([]);
   const [advisories, setAdvisories] = useState([]);
   
-  
   /** Collects information about events, transactions, blocks, and advisories from 
    * connected Ethereum network and IPFS with the ipfs param. 
    * @param {*} ipfs Running ipfs node to collect files with. */
