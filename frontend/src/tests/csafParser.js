@@ -12,9 +12,6 @@ const RemediationStrategy = require("../models/RemediationStrategy");
 const Vulnerability = require("../models/Vulnerability");
 
 
-
-
-
 describe("CSAF Parser", function () {
     var csafObject = null;
     var csafString = null;
@@ -35,9 +32,9 @@ describe("CSAF Parser", function () {
 
                 const actual = new Version(productObject);
 
-                assert.equal(actual.fullName, "CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha");
-                assert.equal(actual.identifier, "CSAFPID-0001", "'Version.identifier' was not equal to expected value");
-                assert.equal(actual.version, "1.0.0-alpha", "'Version.version' was not equal to expected value");
+                assert.deepStrictEqual(actual.fullName, "CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha");
+                assert.deepStrictEqual(actual.identifier, "CSAFPID-0001", "'Version.identifier' was not equal to expected value");
+                assert.deepStrictEqual(actual.version, "1.0.0-alpha", "'Version.version' was not equal to expected value");
             });
 
             it("should only accept CSAF 'product_version' types", function () {
@@ -72,8 +69,8 @@ describe("CSAF Parser", function () {
 
                 const actual = new Product(productObject);
 
-                assert.equal(actual.name, "CVRF-CSAF-Converter", "'Product.name' was not equal to expected value");
-                assert.equal(actual.versions.length, 6);
+                assert.deepStrictEqual(actual.name, "CVRF-CSAF-Converter", "'Product.name' was not equal to expected value");
+                assert.deepStrictEqual(actual.versions.length, 6);
             });
 
             it("should only accept CSAF 'product_name' types", function () {
@@ -103,8 +100,8 @@ describe("CSAF Parser", function () {
                 
                 const actual = new Vendor(vendorObject);
 
-                assert.equal(actual.name, "CSAF Tools");
-                assert.equal(actual.products.length, 1);
+                assert.deepStrictEqual(actual.name, "CSAF Tools");
+                assert.deepStrictEqual(actual.products.length, 1);
             });
 
             it("should only accept CSAF 'vendor' types", function () {
@@ -134,12 +131,12 @@ describe("CSAF Parser", function () {
 
                 const actual = new RemediationStrategy(remediationObject);
 
-                assert.equal(actual.details, "Update to the latest version of the product. At least version 1.0.0-rc2");
-                assert.equal(actual.productIds.size, 5);
-                assert,equal(actual.productIds.get("CSAFPID-0001"), true);
-                assert,equal(actual.productIds.get("CSAFPID-0005"), true);
-                assert,equal(actual.productIds.get("CSAFPID-0006"), undefined);
-                assert.equal(actual.url, "https://github.com/csaf-tools/CVRF-CSAF-Converter/releases/tag/1.0.0-rc2");
+                assert.deepStrictEqual(actual.details, "Update to the latest version of the product. At least version 1.0.0-rc2");
+                assert.deepStrictEqual(actual.productIds.size, 5);
+                assert.deepStrictEqual(actual.productIds.get("CSAFPID-0001"), true);
+                assert.deepStrictEqual(actual.productIds.get("CSAFPID-0005"), true);
+                assert.deepStrictEqual(actual.productIds.get("CSAFPID-0006"), undefined);
+                assert.deepStrictEqual(actual.url, "https://github.com/csaf-tools/CVRF-CSAF-Converter/releases/tag/1.0.0-rc2");
             });
 
             it("should initialize correctly if no remediation information is included", function () {
@@ -147,9 +144,9 @@ describe("CSAF Parser", function () {
 
                 const actual = new RemediationStrategy(remediationObject);
 
-                assert.equal(actual.details, "");
-                assert.equal(actual.productIds.size, 0);
-                assert.equal(actual.url, "");
+                assert.deepStrictEqual(actual.details, "");
+                assert.deepStrictEqual(actual.productIds.size, 0);
+                assert.deepStrictEqual(actual.url, "");
             })
         });
     });
@@ -161,21 +158,21 @@ describe("CSAF Parser", function () {
 
                 const actual = new Vulnerability(vulnerabilityObject);
 
-                assert.equal(actual.cvss.size, 5);
-                assert.equal(actual.cvss.get("CSAFPID-0001"), 6.1);
-                assert,equal(actual.cvss.get("CSAFPID-0006"), undefined);
+                assert.deepStrictEqual(actual.cvss.size, 5);
+                assert.deepStrictEqual(actual.cvss.get("CSAFPID-0001"), 6.1);
+                assert.deepStrictEqual(actual.cvss.get("CSAFPID-0006"), undefined);
 
-                assert.equal(actual.cwe, "CWE-611");
+                assert.deepStrictEqual(actual.cwe, "CWE-611");
 
-                assert.equal(actual.description.length, 1);
-                assert.equal(actual.description[0], "CSAF Tools CVRF-CSAF-Converter 1.0.0-rc1 resolves XML External Entities (XXE). This leads to the inclusion of arbitrary (local) file content into the generated output document. An attacker can exploit this to disclose information from the system running the converter.");
+                assert.deepStrictEqual(actual.description.length, 1);
+                assert.deepStrictEqual(actual.description[0], "CSAF Tools CVRF-CSAF-Converter 1.0.0-rc1 resolves XML External Entities (XXE). This leads to the inclusion of arbitrary (local) file content into the generated output document. An attacker can exploit this to disclose information from the system running the converter.");
                 
-                assert.equal(actual.productStatus.size, 6);
-                assert.equal(actual.productStatus.get("CSAFPID-0006"), Status.Fixed);
-                assert.equal(actual.productStatus.get("CSAFPID-0001"), Status.KnownAffected);
+                assert.deepStrictEqual(actual.productStatus.size, 6);
+                assert.deepStrictEqual(actual.productStatus.get("CSAFPID-0006"), Status.Fixed);
+                assert.deepStrictEqual(actual.productStatus.get("CSAFPID-0001"), Status.KnownAffected);
 
-                assert.equal(actual.remediations.length, 1);
-                assert.equal(actual.remediations[0].details, "Update to the latest version of the product. At least version 1.0.0-rc2");
+                assert.deepStrictEqual(actual.remediations.length, 1);
+                assert.deepStrictEqual(actual.remediations[0].details, "Update to the latest version of the product. At least version 1.0.0-rc2");
             });
 
             it("should initialize correctly if no vulnerability information is included", function () {
