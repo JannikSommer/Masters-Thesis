@@ -148,7 +148,7 @@ describe("CSAF Parser", function () {
                 const actual = new RemediationStrategy(remediationObject);
 
                 assert.equal(actual.details, "");
-                assert.equal(actual.productIds.size, new Map().size);
+                assert.equal(actual.productIds.size, 0);
                 assert.equal(actual.url, "");
             })
         });
@@ -176,6 +176,18 @@ describe("CSAF Parser", function () {
 
                 assert.equal(actual.remediations.length, 1);
                 assert.equal(actual.remediations[0].details, "Update to the latest version of the product. At least version 1.0.0-rc2");
+            });
+
+            it("should initialize correctly if no vulnerability information is included", function () {
+                const vulnerabilityObject = {};
+
+                const actual = new Vulnerability(vulnerabilityObject);
+
+                assert.deepStrictEqual(actual.cvss, undefined);
+                assert.deepStrictEqual(actual.cwe, "");
+                assert.deepStrictEqual(actual.description, []);
+                assert.deepStrictEqual(actual.productStatus.size, 0);
+                assert.deepStrictEqual(actual.remediations, []);
             });
         });
     });
