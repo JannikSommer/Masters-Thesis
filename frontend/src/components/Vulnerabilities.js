@@ -3,7 +3,6 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
 
 // libraries
 import Web3 from 'web3';
@@ -17,8 +16,6 @@ import VulnerabilityAcordion from './VulnerabilityAcordion.js';
 import FilterSwtich from './FilterSwitch.js';
 
 function Vulnerabilities({ ipfs }) {
-    let [vulnerabilities, setVulnerabilities] = useState([]);
-
     let lastBlockRead = useRef(0);
     let dependecies = useRef([]);
     let whitelist = useRef([]);
@@ -36,11 +33,10 @@ function Vulnerabilities({ ipfs }) {
     const activateUpdateButton = () => setShowUpdateButton(true);
     const deactivateUpdateButton = () => setShowUpdateButton(false);
 
-    // Vulnerability data hooks
-    const [events, setEvents] = useState([]);
-    const [txs, setEventTxs] = useState([]);
-    const [blocks, setBlocks] = useState([]);
-    const [advisories, setAdvisories] = useState([]);
+    // Vulnerability data hook
+    const [allVulnerabilities, setAllVulnerabilities] = useState([]);
+    const [userVulnerabilities, setUserVulnerabilities] = useState([]);
+
 
     /** Collects information about events, transactions, blocks, and advisories from 
      * connected Ethereum network and IPFS with the ipfs param. 
@@ -50,22 +46,12 @@ function Vulnerabilities({ ipfs }) {
         let events = await loadEvents(web3);
         let data = await loadEventRelatedData(web3, events, ipfs);
         let txs = data[0], blocks = data[1], advisories = data[2];
-        if (filtering) {
-            let userVulns = await filterVulnerabilities(events, txs, blocks, advisories); // run another place for optimization
-            setVulnerabilities(userVulns);
+        let allVulnerabilities = [];
+        for (const [index, event] of events.entries()) {
+            allVulnerabilities.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]});
         }
-        else {
-            let vulns = [];
-            for (const [index, event] of events.entries()) {
-                vulns.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]});
-            }
-            setVulnerabilities(vulns);
-        }
-        // Set values only after everything has been loaded
-        setEvents(events);
-        setEventTxs(txs);
-        setBlocks(blocks);
-        setAdvisories(advisories);
+        setAllVulnerabilities(allVulnerabilities);
+        setUserVulnerabilities(await filterVulnerabilities(events, txs, blocks, advisories));
     }
 
     /** Load events of type NewSecurityAdvisory from a Ethereum network. 
@@ -118,8 +104,6 @@ function Vulnerabilities({ ipfs }) {
             if (pids.some(element => {return dependecies.current.includes(element)})) {
                 if (whitelist.current.some(obj => {return txs[index].to === Object.keys(obj)[0]})){
                     matches.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]});
-                    //setVulnerabilities(vulnerabilities.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]}))
-                    //vulnerabilities.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]})
                 }
             }
         }
@@ -141,43 +125,39 @@ function Vulnerabilities({ ipfs }) {
                 return events;
             });
         newEvents.reverse();
-        let data = await loadEventRelatedData(web3, events, ipfs);
+        let data = await loadEventRelatedData(web3, newEvents, ipfs);
         let newTxs = data[0], newBlocks = data[1], newAdvisories = data[2];
-        setEvents(newEvents.concat(events));
-        setEventTxs(newTxs.concat(txs));
-        setBlocks(newBlocks.concat(blocks));
-        setAdvisories(newAdvisories.concat(advisories));
+        let newVulnerabilities = [];
+        for (const [index, event] of newEvents.entries()) {
+            newVulnerabilities.push({event: event, tx: newTxs[index], block: newBlocks[index], advisory: newAdvisories[index]});
+        }
+        setAllVulnerabilities(newVulnerabilities.concat(allVulnerabilities));
+        let newUserVulnerabilities = await filterVulnerabilities(newEvents, newTxs, newBlocks, newAdvisories)
+        setUserVulnerabilities(newUserVulnerabilities.concat(userVulnerabilities));
         activateUpdateButton(); //re-activate
     }
 
     /** Deletes and retrives all data. 
      * @param {IPFS} ipfs Running ipfs node to collect files with. */
     async function refreshVulnerabilities(ipfs) {
-        // Reset all values
-        setEvents([]);
-        setEventTxs([]);
-        setBlocks([]);
-        setAdvisories([]);
         lastBlockRead.current = 0;
-        // Retrieve data
         initialize(ipfs);
-        // Remove modal
         modalClose();
     }
 
     useEffect(() => {
-        dependecies.current = JSON.parse(localStorage.getItem(LS_KEY_DEP)).dependencies;
-        whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL)).whitelist;
+        dependecies.current = JSON.parse(localStorage.getItem(LS_KEY_DEP));
+        whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
         initialize(ipfs);
         lastBlockRead.current = 0;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ipfs, filtering])
+    }, [ipfs])
 
     useEffect(() => {
-        if (events.length > 0)
+        if (allVulnerabilities.length > 0)
             // Since the list is reversed, we should get the first block which is the last
-            lastBlockRead.current = events[0].blockNumber;
-    }, [events]);
+            lastBlockRead.current = allVulnerabilities[0].event.blockNumber;
+    }, [allVulnerabilities]);
 
     return (
         <>
@@ -185,13 +165,11 @@ function Vulnerabilities({ ipfs }) {
             <RefreshConfirmation ipfs={ipfs} state={showModal} close={modalClose} loadEvents={() => refreshVulnerabilities(ipfs)} />
             <Container>
                 <Row>
-                    <Col xs lg="8"><h1>Your vulnerabilities</h1></Col>
-                    <Col xs lg="2">
-                        <Form>
-                            <Form.Check type='switch' id="filterswitch" label="Enable filtering" defaultChecked="true" onChange={(e) => setFiltering(e.target.checked)}></Form.Check>
-                        </Form>
+                    <Col lg="8"><h2>Vulnerabilities</h2></Col>
+                    <Col lg="2">
+                        <FilterSwtich setFiltering={setFiltering}></FilterSwtich>
                     </Col>
-                    <Col sm md="2">
+                    <Col lg="2">
                         {showUpdateButton
                             ? <Button variant="primary" size='md' onClick={() => getNewEvents(ipfs)}>Update</Button>
                             : <Button active="false" variant="secondary" size='md'>Update</Button>}
@@ -199,10 +177,9 @@ function Vulnerabilities({ ipfs }) {
                     </Col>
                 </Row>
             </Container>
-            {vulnerabilities.length > 0
-            ?<VulnerabilityAcordion vulnerabilities={vulnerabilities} />
-            :<h4>No vulnerabilities... For now!</h4>}
-            
+            {filtering
+                ? userVulnerabilities.length > 0 ? <VulnerabilityAcordion vulnerabilities={userVulnerabilities} /> : <h4>No matching vulnerabilities found.</h4>
+                : allVulnerabilities.length > 0  ? <VulnerabilityAcordion vulnerabilities={allVulnerabilities} />  : <h4>No vulnerabilities found.</h4>}
         </>
     );
 }
