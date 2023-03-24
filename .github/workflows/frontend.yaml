@@ -1,0 +1,29 @@
+# Reference: https://github.com/marketplace/actions/setup-node-js-environment 
+# workflow from: https://github.com/limcheekin/eth-dapps-nextjs-boiletplate/blob/master/.github/workflows/truffle.yml
+
+name: Frontend Tests
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup NodeJS 16
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+    - name: Show NodeJS version    
+      run: npm --version
+
+    - name: Install Dependencies
+      run: npm install --prefix ./frontend 
+    
+    - name: Run Tests
+      run: npm test --prefix ./frontend 
