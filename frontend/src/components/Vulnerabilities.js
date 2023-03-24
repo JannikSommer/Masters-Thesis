@@ -15,6 +15,9 @@ import RefreshConfirmation from './RefreshConfirmation.js';
 import VulnerabilityAcordion from './VulnerabilityAcordion.js';
 import FilterSwtich from './FilterSwitch.js';
 
+/** Component of the /vulnerabilities page.
+ * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
+ * @returns The content of the vulnerabilities page.  */
 function Vulnerabilities({ ipfs }) {
     let lastBlockRead = useRef(0);
     let dependecies = useRef([]);
@@ -40,7 +43,7 @@ function Vulnerabilities({ ipfs }) {
 
     /** Collects information about events, transactions, blocks, and advisories from 
      * connected Ethereum network and IPFS with the ipfs param. 
-     * @param {IPFS} ipfs Running ipfs node to collect files with. */
+     * @param {IPFS} ipfs Running ipfs node passed as prop to component. Is used to collect file data with. */
     async function initialize(ipfs) {
         let web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
         let events = await loadEvents(web3);
