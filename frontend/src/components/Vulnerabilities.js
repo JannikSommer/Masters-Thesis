@@ -9,6 +9,7 @@ import Web3 from 'web3';
 import { Buffer } from 'buffer';
 import { useEffect, useRef, useState } from 'react';
 import { CONTACT_ABI, CONTACT_ADDRESS, LS_KEY_DEP, LS_KEY_WL } from '../config.js';
+import SecurityAdvisory from "../models/SecurityAdvisory";
 
 // components
 import RefreshConfirmation from './RefreshConfirmation.js';
@@ -55,6 +56,7 @@ function Vulnerabilities({ ipfs }) {
         }
         setAllVulnerabilities(allVulnerabilities);
         setUserVulnerabilities(await filterVulnerabilities(events, txs, blocks, advisories));
+        //console.log(allVulnerabilities[0].advisory.getProductInformation(dependencies.current[0]));
     }
 
     /** Load events of type NewSecurityAdvisory from a Ethereum network. 
@@ -89,7 +91,8 @@ function Vulnerabilities({ ipfs }) {
             for await (const chunk of await ipfs.cat(event.returnValues.documentLocation)) {
                 content = [...content, ...chunk];
             }
-            advisories.push(new SecurityAdvisory(Buffer.from(content).toString('utf8')));
+            let advisory = new SecurityAdvisory(Buffer.from(content).toString('utf8'));
+            advisories.push(advisory);
         }
         return [txs, blocks, advisories];
     }
@@ -168,7 +171,7 @@ function Vulnerabilities({ ipfs }) {
             <RefreshConfirmation ipfs={ipfs} state={showModal} close={modalClose} loadEvents={() => refreshVulnerabilities(ipfs)} />
             <Container>
                 <Row>
-                    <Col lg="8"><h2>Vulnerabilities</h2></Col>
+                    <Col lg="8"><h1>Vulnerabilities</h1></Col>
                     <Col lg="2">
                         <FilterSwitch setFiltering={setFiltering} />
                     </Col>
@@ -181,8 +184,8 @@ function Vulnerabilities({ ipfs }) {
                 </Row>
             </Container>
             {filtering
-                ? userVulnerabilities.length > 0 ? <VulnerabilityAccordion vulnerabilities={userVulnerabilities} /> : <h4>No matching vulnerabilities found.</h4>
-                : allVulnerabilities.length > 0  ? <VulnerabilityAccordion vulnerabilities={allVulnerabilities} />  : <h4>No vulnerabilities found.</h4>}
+                ? userVulnerabilities.length > 0 ? <VulnerabilityAccordion vulnerabilities={userVulnerabilities} dependencies={dependencies.current} /> : <h4>No matching vulnerabilities found.</h4>
+                : allVulnerabilities.length > 0  ? <VulnerabilityAccordion vulnerabilities={allVulnerabilities} dependencies={dependencies.current} />  : <h4>No vulnerabilities found.</h4>}
         </>
     );
 }

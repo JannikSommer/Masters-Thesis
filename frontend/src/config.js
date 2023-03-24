@@ -2,7 +2,7 @@
 export const LS_KEY_DEP = "SENTINEL-seetings-dependencies";
 export const LS_KEY_WL = "SENTINEL-seetings-whitelist";
 
-export const CONTACT_ADDRESS = "0xa77414Ab625290f68256Bd04f037515A44a92F27";
+export const CONTACT_ADDRESS = "0xc5E576D2a662D773491D2825205De48561f09Ff4";
 export const CONTACT_ABI = [
   {
     "anonymous": false,
@@ -26,7 +26,7 @@ export const CONTACT_ABI = [
         "type": "string"
       }
     ],
-    "name": "NewSecuriytAdvisory",
+    "name": "NewSecurityAdvisory",
     "type": "event"
   },
   {

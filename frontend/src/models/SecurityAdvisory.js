@@ -15,13 +15,13 @@ class SecurityAdvisory {
      * A description of the vulnerability.
      * @type {String}
      */
-    description = "";
+    description;
 
     /**
      * The severity of the vulnerability.
      * @type {String}
      */
-    severity = "";
+    severity = "No aggregate severity.";
 
     /**
      * List of vendors whose products are affected by the vulnerability.
@@ -76,7 +76,7 @@ class SecurityAdvisory {
      * @returns {String} A summary of the security advisory.
      */
     extractDescription(notesArray) {
-        var desc = "";
+        var desc = "No description provided.";
 
         if(!notesArray) { // If no notes are found in the document.
             return desc;
@@ -124,6 +124,39 @@ class SecurityAdvisory {
         this.vendors = this.extractProductTree(csaf["product_tree"]);
         this.vulnerabilities = this.extractVulnerabilities(csaf["vulnerabilities"]);
     }
+
+    /**
+     * Retrieves all information related to a single product id.
+     * @param {string} productId A valid product id.A
+     * @returns {Object[] | undefined} Returns an array of objects containing all available information about a product.
+     */
+    getProductInformation(productId) {
+        let result = [];
+        
+        this.vendors.forEach(vendor => {
+            vendor.products.forEach(product => {
+                product.versions.forEach(version => {
+                    if(version.identifier !== productId) return;
+                    this.vulnerabilities.forEach(vulnerability => {
+                        let vulnInfo = vulnerability.getProductInformation(productId);
+                        if(!vulnInfo) return;
+                        
+                        result.push({
+                            fullName: version.fullName,
+                            version: version.version,
+                            identifier: version.identifier,
+                            status: vulnInfo.status,
+                            cvss: vulnInfo.cvss,
+                            remediations: vulnInfo.remediations
+                        });
+                    });
+                });
+            });
+        });
+
+        return result;
+    }
+
 }
 
 module.exports = SecurityAdvisory;
