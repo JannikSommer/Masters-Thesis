@@ -36,10 +36,10 @@ class SecurityAdvisory {
     vulnerabilities;
 
     /**
-     * The path to the Security Advisory
+     * An IPFS content-id (cid) specifying the location of this security advisory.
      * @type {String}
      */
-    path; //? Is this the IPFS cid or something else?
+    cid; 
 
 
     /**
