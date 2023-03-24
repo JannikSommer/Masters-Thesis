@@ -13,7 +13,7 @@ function Settings() {
     const [whitelist, setWhitelist] = useState("");
     let isLoaded = useRef(false);
 
-    /** Saves the dedencies textfield in localstorage. */
+    /** Saves the dependencies textfield in localstorage. */
     async function saveDependencies() {
         localStorage.setItem(LS_KEY_DEP, dependencies);
     }
@@ -23,7 +23,7 @@ function Settings() {
         localStorage.setItem(LS_KEY_WL, whitelist);
     }
 
-    /** Reads localstorage values to the dependecies and whitelist hooks. */
+    /** Reads localstorage values to the dependencies and whitelist hooks. */
     async function readLocalStorage() {
         let deps = localStorage.getItem(LS_KEY_DEP); 
         if (deps !== null) 

@@ -1,6 +1,6 @@
 // localstorage keys
-export const LS_KEY_DEP = "SENTILEN-seetings-dependencies";
-export const LS_KEY_WL = "SENTILEN-seetings-whitelist";
+export const LS_KEY_DEP = "SENTINEL-seetings-dependencies";
+export const LS_KEY_WL = "SENTINEL-seetings-whitelist";
 
 export const CONTACT_ADDRESS = "0xa77414Ab625290f68256Bd04f037515A44a92F27";
 export const CONTACT_ABI = [
