@@ -33,7 +33,7 @@ contract("Announcement Service", async (accounts) => {
         const vendor = await Vendor.new("Test Vendor", as.address, iis.address, {from: accounts[0]});
 
         await vendor.announceNewAdvisory("product ID", "document location");
-        let events = await as.getPastEvents("NewSecuriytAdvisory", { fromBlock: 0, toBlock: 'latest' });
+        let events = await as.getPastEvents("NewSecurityAdvisory", { fromBlock: 0, toBlock: 'latest' });
 
         assert.equal(events.length, 1, "Event was not emitted");
     });
@@ -58,7 +58,7 @@ contract("Announcement Service", async (accounts) => {
         await vendor.announceNewAdvisory("product ID", "document location");
         await vendor.announceNewAdvisory("product ID", "document location");
 
-        let events = await as.getPastEvents("NewSecuriytAdvisory", { fromBlock: 0, toBlock: 'latest' });
+        let events = await as.getPastEvents("NewSecurityAdvisory", { fromBlock: 0, toBlock: 'latest' });
 
         assert.equal(events.length, 5, "Actual amount of events not maching expected.");
     });
@@ -83,7 +83,7 @@ contract("Announcement Service", async (accounts) => {
         const vendor = await Vendor.new("Test Vendor", as.address, iis.address, {from: accounts[0]});
 
         await vendor.announceNewAdvisory("product ID", "document location");
-        let events = await as.getPastEvents("NewSecuriytAdvisory", { fromBlock: 0, toBlock: 'latest' });
+        let events = await as.getPastEvents("NewSecurityAdvisory", { fromBlock: 0, toBlock: 'latest' });
 
         assert.equal(events[0].returnValues.vulnerabilityId, "SNTL-1-1", "vulnerability ID does not match input");
         assert.equal(events[0].returnValues.productId, "product ID", "Product ID does not match input");
