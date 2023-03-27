@@ -16,6 +16,8 @@ import RefreshConfirmation from './RefreshConfirmation.js';
 import VulnerabilityAccordion from './VulnerabilityAccordion.js';
 import FilterSwitch from './FilterSwitch.js';
 
+// models
+import SecurityAdvisory from '../models/SecurityAdvisory.js';
 /** Component of the /vulnerabilities page.
  * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
  * @returns The content of the vulnerabilities page.  */
