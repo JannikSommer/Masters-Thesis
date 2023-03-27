@@ -9,18 +9,21 @@ import Web3 from 'web3';
 import { Buffer } from 'buffer';
 import { useEffect, useRef, useState } from 'react';
 import { CONTACT_ABI, CONTACT_ADDRESS, LS_KEY_DEP, LS_KEY_WL } from '../config.js';
+import SecurityAdvisory from "../models/SecurityAdvisory";
 
 // components
 import RefreshConfirmation from './RefreshConfirmation.js';
-import VulnerabilityAcordion from './VulnerabilityAcordion.js';
-import FilterSwtich from './FilterSwitch.js';
+import VulnerabilityAccordion from './VulnerabilityAccordion.js';
+import FilterSwitch from './FilterSwitch.js';
 
+// models
+import SecurityAdvisory from '../models/SecurityAdvisory.js';
 /** Component of the /vulnerabilities page.
  * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
  * @returns The content of the vulnerabilities page.  */
 function Vulnerabilities({ ipfs }) {
     let lastBlockRead = useRef(0);
-    let dependecies = useRef([]);
+    let dependencies = useRef([]);
     let whitelist = useRef([]);
 
     // Used to control the modal for refresh confirmation
@@ -55,18 +58,19 @@ function Vulnerabilities({ ipfs }) {
         }
         setAllVulnerabilities(allVulnerabilities);
         setUserVulnerabilities(await filterVulnerabilities(events, txs, blocks, advisories));
+        //console.log(allVulnerabilities[0].advisory.getProductInformation(dependencies.current[0]));
     }
 
     /** Load events of type NewSecurityAdvisory from a Ethereum network. 
      * @param {Web3} web3 Web3 instance used to connect to blockchain network. 
      * @param {Number} from The blocknumber to begin search from. Default 0. 
-     * @param {Number} to The blocknumer to end search at. Default 'latest'. 
+     * @param {Number} to The blocknumber to end search at. Default 'latest'. 
      * @returns List of events. */
     async function loadEvents(web3, from = 0, to = 'latest') {
         // Load events
         let contract = await new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         let events = await contract.getPastEvents(
-            "NewSecuriytAdvisory", { fromBlock: from, toBlock: to },
+            "NewSecurityAdvisory", { fromBlock: from, toBlock: to },
             function (error, events) {
                 if (error) throw error;
                 return events;
@@ -89,7 +93,8 @@ function Vulnerabilities({ ipfs }) {
             for await (const chunk of await ipfs.cat(event.returnValues.documentLocation)) {
                 content = [...content, ...chunk];
             }
-            advisories.push(Buffer.from(content).toString('utf8'));
+            let advisory = new SecurityAdvisory(Buffer.from(content).toString('utf8'));
+            advisories.push(advisory);
         }
         return [txs, blocks, advisories];
     }
@@ -104,7 +109,7 @@ function Vulnerabilities({ ipfs }) {
         let matches = []
         for (const [index, event] of events.entries()) {
             let pids = event.returnValues.productId.split(",");
-            if (pids.some(element => {return dependecies.current.includes(element)})) {
+            if (pids.some(element => {return dependencies.current.includes(element)})) {
                 if (whitelist.current.some(obj => {return txs[index].to === Object.keys(obj)[0]})){
                     matches.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]});
                 }
@@ -140,7 +145,7 @@ function Vulnerabilities({ ipfs }) {
         activateUpdateButton(); //re-activate
     }
 
-    /** Deletes and retrives all data. 
+    /** Deletes and retrieves all data. 
      * @param {IPFS} ipfs Running ipfs node to collect files with. */
     async function refreshVulnerabilities(ipfs) {
         lastBlockRead.current = 0;
@@ -149,7 +154,7 @@ function Vulnerabilities({ ipfs }) {
     }
 
     useEffect(() => {
-        dependecies.current = JSON.parse(localStorage.getItem(LS_KEY_DEP));
+        dependencies.current = JSON.parse(localStorage.getItem(LS_KEY_DEP));
         whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
         initialize(ipfs);
         lastBlockRead.current = 0;
@@ -168,9 +173,9 @@ function Vulnerabilities({ ipfs }) {
             <RefreshConfirmation ipfs={ipfs} state={showModal} close={modalClose} loadEvents={() => refreshVulnerabilities(ipfs)} />
             <Container>
                 <Row>
-                    <Col lg="8"><h2>Vulnerabilities</h2></Col>
+                    <Col lg="8"><h1>Vulnerabilities</h1></Col>
                     <Col lg="2">
-                        <FilterSwtich setFiltering={setFiltering}></FilterSwtich>
+                        <FilterSwitch setFiltering={setFiltering} />
                     </Col>
                     <Col lg="2">
                         {showUpdateButton
@@ -181,8 +186,8 @@ function Vulnerabilities({ ipfs }) {
                 </Row>
             </Container>
             {filtering
-                ? userVulnerabilities.length > 0 ? <VulnerabilityAcordion vulnerabilities={userVulnerabilities} /> : <h4>No matching vulnerabilities found.</h4>
-                : allVulnerabilities.length > 0  ? <VulnerabilityAcordion vulnerabilities={allVulnerabilities} />  : <h4>No vulnerabilities found.</h4>}
+                ? userVulnerabilities.length > 0 ? <VulnerabilityAccordion vulnerabilities={userVulnerabilities} dependencies={dependencies.current} /> : <h4>No matching vulnerabilities found.</h4>
+                : allVulnerabilities.length > 0  ? <VulnerabilityAccordion vulnerabilities={allVulnerabilities} dependencies={dependencies.current} />  : <h4>No vulnerabilities found.</h4>}
         </>
     );
 }

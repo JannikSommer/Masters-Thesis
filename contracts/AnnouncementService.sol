@@ -12,7 +12,7 @@ contract AnnouncementService is MessageControlable {
   /// @param vulnerabilityId A vulnerability identifier for the vulnerability.
   /// @param productId One or more product identifiers separated by comma.
   /// @param documentLocation Location for the security advisory (i.e. IPFS CID). 
-  event NewSecuriytAdvisory(
+  event NewSecurityAdvisory(
     string vulnerabilityId,
     string productId,
     string documentLocation
@@ -36,7 +36,7 @@ contract AnnouncementService is MessageControlable {
     string memory vulnerabilityId,
     string memory productId,
     string memory documentLocation) external onlyContract {
-      emit NewSecuriytAdvisory(vulnerabilityId, productId, documentLocation);
+      emit NewSecurityAdvisory(vulnerabilityId, productId, documentLocation);
   }
 
   /// @notice Emits an UpdatedSecurityAdvisory event

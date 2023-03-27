@@ -1,6 +1,6 @@
 import Form from 'react-bootstrap/Form';
 
-function FilterSwtich({setFiltering}) {
+function FilterSwitch({setFiltering}) {
     return (
         <div className="d-flex align-items-center justify-content-center">
             <Form>
@@ -14,4 +14,4 @@ function FilterSwtich({setFiltering}) {
         </div>
     )
 }
-export default FilterSwtich;
+export default FilterSwitch;

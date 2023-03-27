@@ -43,6 +43,10 @@ class RemediationStrategy {
             });
         }
     }
+
+    toString() {
+        return this.details + (this.url !== "" ? "\nURL: " + this.url : "");
+    }
 }
 
 module.exports = RemediationStrategy;
