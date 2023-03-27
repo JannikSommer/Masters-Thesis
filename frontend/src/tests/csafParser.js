@@ -195,7 +195,7 @@ describe("CSAF Parser", function () {
             it("should initialize correctly", function () {
                 const actual = new SecurityAdvisory(csafString);
 
-                assert.deepStrictEqual(actual.description, "");
+                assert.deepStrictEqual(actual.description, "No description provided.");
                 assert.deepStrictEqual(actual.severity, "Moderate");
                 assert.deepStrictEqual(actual.title, "CVRF-CSAF-Converter: XML External Entities Vulnerability");
                 assert.deepStrictEqual(actual.vendors.length, 1);
@@ -208,8 +208,8 @@ describe("CSAF Parser", function () {
 
                 const actual = new SecurityAdvisory(smallCSAF);
 
-                assert.deepStrictEqual(actual.description, "");
-                assert.deepStrictEqual(actual.severity, "");
+                assert.deepStrictEqual(actual.description, "No description provided.");
+                assert.deepStrictEqual(actual.severity, "No aggregate severity.");
                 assert.deepStrictEqual(actual.title, "Small advisory");
                 assert.deepStrictEqual(actual.vendors, []);
                 assert.deepStrictEqual(actual.vulnerabilities, []);
