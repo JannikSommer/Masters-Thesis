@@ -9,7 +9,7 @@ import UpdateAdvisoryForm from './UpdateAdvisoryForm';
 import React, { useState } from 'react';
 
 
-function Announcement() {
+function Announcement({web3}) {
     const [show, setShow] = useState(true);
     return (
         <div>
@@ -27,7 +27,7 @@ function Announcement() {
             <Container>
                 <Row>
                     <Col lg="5">
-                        <NewAdvisoryForm />
+                        <NewAdvisoryForm web3={web3} />
                     </Col>
                     <Col>
                         <div style={{height: '40%', 

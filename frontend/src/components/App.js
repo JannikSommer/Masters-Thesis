@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom"
 import Container from 'react-bootstrap/Container';
 import Vulnerabilities from './Vulnerabilities';
-import Announcement from './Announcement';
+import Announcement from './announcement/Announcement';
 import Settings from './Settings';
 import Accounts from './Accounts';
 import Spinner from 'react-bootstrap/Spinner';
