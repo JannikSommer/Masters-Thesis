@@ -3,7 +3,7 @@ import Container from 'react-bootstrap/Container';
 import Vulnerabilities from './vulnerabilities/Vulnerabilities';
 import Announcement from './announcement/Announcement';
 import Settings from './settings/Settings';
-import Accounts from './account/Accounts';
+import Accounts from './accounts/Accounts';
 import Spinner from 'react-bootstrap/Spinner';
 
 import { useEffect, useState } from "react";

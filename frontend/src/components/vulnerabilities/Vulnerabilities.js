@@ -125,7 +125,7 @@ function Vulnerabilities({ ipfs }) {
         let web3 = await new Web3(Web3.givenProvider || 'http://localhost:7545');
         let contract = await new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         let newEvents = await contract.getPastEvents(
-            "NewSecuriytAdvisory", { fromBlock: lastBlockRead.current + 1, toBlock: to },
+            "NewSecurityAdvisory", { fromBlock: lastBlockRead.current + 1, toBlock: to },
             function (error, events) {
                 if (error) throw error;
                 return events;

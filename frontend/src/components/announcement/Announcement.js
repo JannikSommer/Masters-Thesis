@@ -6,11 +6,28 @@ import Col from 'react-bootstrap/Col'
 import NewAdvisoryForm from './NewAdvisoryForm';
 import UpdateAdvisoryForm from './UpdateAdvisoryForm';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { LS_KEY_ACC } from '../../config';
 
 
 function Announcement({web3}) {
     const [show, setShow] = useState(true);
+    const [accounts, setAccounts] = useState([]);
+    const isLoaded = useRef(false); 
+
+    async function loadAccounts() {
+        let savedAccounts = localStorage.getItem(LS_KEY_ACC); 
+        if (savedAccounts !== null)
+            setAccounts(JSON.parse(savedAccounts));
+    }
+
+    useEffect(() => {
+        if (!isLoaded.current) {
+            loadAccounts(); 
+            isLoaded.current = true;
+        }
+    });
+
     return (
         <div>
             {show
@@ -27,7 +44,7 @@ function Announcement({web3}) {
             <Container>
                 <Row>
                     <Col lg="5">
-                        <NewAdvisoryForm web3={web3} />
+                        <NewAdvisoryForm accounts={accounts} />
                     </Col>
                     <Col>
                         <div style={{height: '40%', 

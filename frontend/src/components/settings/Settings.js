@@ -9,7 +9,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { LS_KEY_DEP, LS_KEY_WL } from '../../config';
 
 function Settings() {
-    const [dependencies, setDependecies] = useState("");
+    const [dependencies, setDependencies] = useState("");
     const [whitelist, setWhitelist] = useState("");
     let isLoaded = useRef(false);
 
@@ -27,12 +27,11 @@ function Settings() {
     async function readLocalStorage() {
         let deps = localStorage.getItem(LS_KEY_DEP); 
         if (deps !== null) 
-            setDependecies(deps);
+            setDependencies(deps);
         
         let wlist = localStorage.getItem(LS_KEY_WL);
-        if (wlist !== null) {
+        if (wlist !== null)
             setWhitelist(wlist);
-        }
     }
 
     useEffect(() => {
@@ -40,7 +39,6 @@ function Settings() {
             readLocalStorage();
             isLoaded.current = true;
         }
-
     }, [dependencies, whitelist])
 
     return (
@@ -48,7 +46,7 @@ function Settings() {
             <Alert variant="warning">
                 <Alert.Heading>Information is stored locally</Alert.Heading>
                 <p>Information provided here will be stored with browser localstorage which may be a security concern for your setup.</p>
-              </Alert>
+            </Alert>
             <h1>Settings</h1>
             The settings will be used to filter the vulnerabilities shown to your specific dependencies and to only allow trusted vendor's announcements to be shown.
             <hr />
@@ -61,9 +59,9 @@ function Settings() {
                                 <Form.Label className='h3'>Dependencies</Form.Label>
                                 <Form.Control style={{fontFamily:"monospace"}} 
                                             as="textarea" rows={10} 
-                                            placeholder="{ ['cpe:/a...']  }"
+                                            placeholder="[]"
                                             value={dependencies}
-                                            onChange={e => {setDependecies(e.target.value)}}
+                                            onChange={(e) => {setDependencies(e.target.value)}}
                                             >
                                 </Form.Control>
                                 <Form.Text className='text-muted'>Specify as JSON object</Form.Text>
@@ -77,9 +75,9 @@ function Settings() {
                                 <Form.Label className='h3'>Vendor whitelist</Form.Label>
                                 <Form.Control style={{fontFamily:"monospace"}}  
                                               as="textarea" rows={10} 
-                                              placeholder="{ [] }"
+                                              placeholder="[{}]"
                                               value={whitelist}
-                                              onChange={e => {setWhitelist(e.target.value)}}
+                                              onChange={(e) => {setWhitelist(e.target.value)}}
                                               >
                                 </Form.Control>
                                 <Form.Text className='text-muted'>Specify as JSON object</Form.Text>
