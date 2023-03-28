@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router-dom"
 import Container from 'react-bootstrap/Container';
-import Vulnerabilities from './Vulnerabilities';
+import Vulnerabilities from './vulnerabilities/Vulnerabilities';
 import Announcement from './announcement/Announcement';
-import Settings from './Settings';
-import Accounts from './Accounts';
+import Settings from './settings/Settings';
+import Accounts from './account/Accounts';
 import Spinner from 'react-bootstrap/Spinner';
 
 import { useEffect, useState } from "react";

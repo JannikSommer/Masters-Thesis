@@ -6,7 +6,7 @@ import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/esm/Button';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { LS_KEY_DEP, LS_KEY_WL } from '../config';
+import { LS_KEY_DEP, LS_KEY_WL } from '../../config';
 
 function Settings() {
     const [dependencies, setDependecies] = useState("");

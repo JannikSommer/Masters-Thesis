@@ -8,8 +8,8 @@ import Container from 'react-bootstrap/Container';
 import Web3 from 'web3';
 import { Buffer } from 'buffer';
 import { useEffect, useRef, useState } from 'react';
-import { CONTACT_ABI, CONTACT_ADDRESS, LS_KEY_DEP, LS_KEY_WL } from '../config.js';
-import SecurityAdvisory from "../models/SecurityAdvisory";
+import { CONTACT_ABI, CONTACT_ADDRESS, LS_KEY_DEP, LS_KEY_WL } from '../../config.js';
+import SecurityAdvisory from "../../models/SecurityAdvisory";
 
 // components
 import RefreshConfirmation from './RefreshConfirmation.js';
