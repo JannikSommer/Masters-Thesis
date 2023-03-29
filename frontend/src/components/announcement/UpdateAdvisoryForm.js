@@ -10,12 +10,12 @@ import { VENDOR_CONTRACT_ABI } from '../../config';
 import { useRef, useState } from 'react';
 import Web3 from 'web3';
 
-
 function UpdateAdvisoryForm({accounts}) {
     const selectedAccount = useRef();
     const [address, setAddress] = useState("");
     const [pids, setPids] = useState("");
     const [cid, setCid] = useState("");
+    const [advisoryId, setAdvisoryId] = useState("");
     const [vids, setVids] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
@@ -50,7 +50,7 @@ function UpdateAdvisoryForm({accounts}) {
                 from: selectedAccount.current.wallet,
                 to: address,
                 gas: 6721975,
-                data: contract.methods.announceUpdatedAdvisory(vids, pids, cid).encodeABI()
+                data: contract.methods.announceUpdatedAdvisory(advisoryId, vids, pids, cid).encodeABI()
             }, selectedAccount.current.key).then((signedTx) => {
                 const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
                 sentTx.on("receipt", receipt => {
@@ -110,10 +110,17 @@ function UpdateAdvisoryForm({accounts}) {
                 </FloatingLabel>
             </Form.Group>
 
-            <Form.Group className='mb-3' controlId='upVulid'>
-                <FloatingLabel className='mb-3' controlId='upVulnSNTLLabel' label="SENTINEL vulnerability ID">
-                    <Form.Control value={vids} onChange={(e) => setVids(e.target.value)}></Form.Control>
+            <Form.Group className='mb-3' controlId='upAdvisoryId'>
+                <FloatingLabel className='mb-3' controlId='upAdvisorySNTLLabel' label="SENTINEL advisory ID">
+                    <Form.Control value={advisoryId} onChange={(e) => setAdvisoryId(e.target.value)}></Form.Control>
                     <Form.Text className='text-muted'>The ID is issued by the Identifier Issuer Service</Form.Text>
+                </FloatingLabel>
+            </Form.Group>
+
+            <Form.Group className='mb-3' controlId='upVulid'>
+                <FloatingLabel className='mb-3' controlId='upVulnSNTLLabel' label="SENTINEL vulnerability IDs">
+                    <Form.Control value={vids} onChange={(e) => setVids(e.target.value)}></Form.Control>
+                    <Form.Text className='text-muted'>The IDs are issued by the Identifier Issuer Service</Form.Text>
                 </FloatingLabel>
             </Form.Group>
 

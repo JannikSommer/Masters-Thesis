@@ -17,7 +17,7 @@ module.exports = async function(deployer, network, accounts) {
     let v1w = accounts[0];
     await deployer.deploy(vendor, "SommerSoftware Inc.", as_instanse.address, iis_instance.address, {from: v1w}); // "from" must be places last
     const vendor_instance1 = await vendor.deployed();
-    await vendor_instance1.announceNewAdvisory("CSAFPID-0001,CSAFPID-0002,CSAFPID-0003,CSAFPID-0004,CSAFPID-0005,CSAFPID-0006", "QmPQuXq1JuipvhLKdDz84eSM3tLbESjDAKeAHNzScjZz7Y", {from: v1w});
+    await vendor_instance1.announceNewAdvisory(1, "CSAFPID-0001,CSAFPID-0002,CSAFPID-0003,CSAFPID-0004,CSAFPID-0005,CSAFPID-0006", "QmPQuXq1JuipvhLKdDz84eSM3tLbESjDAKeAHNzScjZz7Y", {from: v1w});
 
     //vendor 2
     // let v2w = accounts[1]; // vendor 2 wallet
@@ -29,8 +29,3 @@ module.exports = async function(deployer, network, accounts) {
     await deployer.deploy(private); 
     const private_instance = await private.deployed();
 };
-
-
-async function setupNetwork() {
-
-}

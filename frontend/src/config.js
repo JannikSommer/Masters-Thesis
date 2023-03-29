@@ -3,7 +3,7 @@ export const LS_KEY_DEP = "SENTINEL-settings-dependencies";
 export const LS_KEY_WL = "SENTINEL-settings-whitelist";
 export const LS_KEY_ACC = "SENTINEL-settings-accounts";
 
-export const CONTACT_ADDRESS = "0x3530bdd4E2b7b266466462aC3FECf08a8B7F9950";
+export const CONTACT_ADDRESS = "0x1d6EBCB2302a3a2a1d660C5f7D2Cb031f60fD12c";
 export const CONTACT_ABI = [
   {
     "anonymous": false,
@@ -11,13 +11,19 @@ export const CONTACT_ABI = [
       {
         "indexed": false,
         "internalType": "string",
-        "name": "vulnerabilityId",
+        "name": "advisoryIdentifier",
         "type": "string"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "productId",
+        "name": "vulnerabilityIdentifiers",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "productIdentifiers",
         "type": "string"
       },
       {
@@ -36,13 +42,19 @@ export const CONTACT_ABI = [
       {
         "indexed": true,
         "internalType": "string",
-        "name": "vulnerabilityId",
+        "name": "advisoryIdentifier",
         "type": "string"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "productId",
+        "name": "vulnerabilityIdentifiers",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "productIdentifiers",
         "type": "string"
       },
       {
@@ -59,12 +71,17 @@ export const CONTACT_ABI = [
     "inputs": [
       {
         "internalType": "string",
-        "name": "vulnerabilityId",
+        "name": "advisoryIdentifier",
         "type": "string"
       },
       {
         "internalType": "string",
-        "name": "productId",
+        "name": "vulnerabilityIdentifiers",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "productIdentifiers",
         "type": "string"
       },
       {
@@ -82,12 +99,17 @@ export const CONTACT_ABI = [
     "inputs": [
       {
         "internalType": "string",
-        "name": "vulnerabilityId",
+        "name": "advisoryIdentifier",
         "type": "string"
       },
       {
         "internalType": "string",
-        "name": "productId",
+        "name": "vulnerabilityIdentifiers",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "productIdentifiers",
         "type": "string"
       },
       {
@@ -206,8 +228,27 @@ export const VENDOR_CONTRACT_ABI = [
     "constant": true
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "count",
+        "type": "uint16"
+      }
+    ],
+    "name": "getVulnerabilityIds",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
-    "name": "getVulnerabilityId",
+    "name": "getAdvisoryId",
     "outputs": [
       {
         "internalType": "string",
@@ -221,8 +262,13 @@ export const VENDOR_CONTRACT_ABI = [
   {
     "inputs": [
       {
+        "internalType": "uint16",
+        "name": "count",
+        "type": "uint16"
+      },
+      {
         "internalType": "string",
-        "name": "productId",
+        "name": "productIds",
         "type": "string"
       },
       {
@@ -240,7 +286,12 @@ export const VENDOR_CONTRACT_ABI = [
     "inputs": [
       {
         "internalType": "string",
-        "name": "vulnerabilityId",
+        "name": "advisoryId",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "vulnerabilityIds",
         "type": "string"
       },
       {
@@ -259,4 +310,4 @@ export const VENDOR_CONTRACT_ABI = [
     "stateMutability": "nonpayable",
     "type": "function"
   }
-]
+];

@@ -15,6 +15,7 @@ function NewAdvisoryForm({accounts}) {
     const [address, setAddress] = useState("");
     const [pids, setPids] = useState("");
     const [cid, setCid] = useState("");
+    const [vulnCount, setVulnCount] = useState(0);
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
     const [error, setError] = useState("");
@@ -47,8 +48,8 @@ function NewAdvisoryForm({accounts}) {
             web3.eth.accounts.signTransaction({
                 from: selectedAccount.current.wallet,
                 to: address,
-                gas: 6721975,
-                data: contract.methods.announceNewAdvisory(pids, cid).encodeABI()
+                gas: 6721975,   
+                data: contract.methods.announceNewAdvisory(vulnCount, pids, cid).encodeABI()
             }, selectedAccount.current.key).then((signedTx) => {
                 const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
                 sentTx.on("receipt", receipt => {
@@ -105,6 +106,13 @@ function NewAdvisoryForm({accounts}) {
                     <FloatingLabel className='mb-3' controlId='new' label="IPFS Content ID">
                         <Form.Control value={cid} onChange={(e) => setCid(e.target.value)}></Form.Control>
                         <Form.Text className='text-muted'></Form.Text>
+                    </FloatingLabel>
+                </Form.Group>
+
+                <Form.Group className='mb-3' controlId='newVulnCount'>
+                    <FloatingLabel className='mb-3' controlId='new' label="Vulnerability count in CSAF">
+                        <Form.Control type="number" value={vulnCount} onChange={(e) => setVulnCount(e.target.value)}></Form.Control>
+                        <Form.Text className='text-muted'>Used to generate correct amount of vulnerability IDs</Form.Text>
                     </FloatingLabel>
                 </Form.Group>
 

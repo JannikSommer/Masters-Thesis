@@ -24,9 +24,14 @@ contract("Vendor", async (accounts) => {
     });
 
     it("should retrieve a vulnerabilityId", async () => {
-        const expected = "SNTL-1-1";
-        const actual = await vendor.getVulnerabilityId.call({from: accounts[0]});
-
+        const expected = "SNTL-V-1-1";
+        const actual = await vendor.getVulnerabilityIds.call(1, {from: accounts[0]});
         assert.equal(actual, expected, "value of requested vulnerabilityId is unexpected");
+    });
+
+    it("should retrieve an advisoryId", async () => {
+        const expected = "SNTL-A-1-1";
+        const actual = await vendor.getAdvisoryId.call({from: accounts[0]});
+        assert.equal(actual, expected, "value of requested advisoryId is unexpected");
     });
 });
