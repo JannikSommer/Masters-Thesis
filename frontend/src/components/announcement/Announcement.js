@@ -55,7 +55,7 @@ function Announcement() {
                         </div>
                     </Col>
                     <Col lg="5">
-                        <UpdateAdvisoryForm />
+                        <UpdateAdvisoryForm accounts={accounts}/>
                     </Col>
                 </Row>
             </Container>

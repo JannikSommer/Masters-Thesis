@@ -12,9 +12,9 @@ import SuccessModal from './SuccessModal';
 
 function NewAdvisoryForm({accounts}) {
     const selectedAccount = useRef();
-    const [address, setAddress] = useState("0x6aa196cb41C5CAA23ecDe4Be00B86015AE3A0F2D");
-    const [pids, setPids] = useState("CSAFPID-0001,CSAFPID-0002");
-    const [cid, setCid] = useState("QmPQuXq1JuipvhLKdDz84eSM3tLbESjDAKeAHNzScjZz7Y");
+    const [address, setAddress] = useState("");
+    const [pids, setPids] = useState("");
+    const [cid, setCid] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
     const [error, setError] = useState("");
@@ -41,7 +41,6 @@ function NewAdvisoryForm({accounts}) {
             return;
         };
         dismissWarning();
-        //let pkey = "4128f3cd838b12265a6b0f51ba3b8feb92049c413e2cdad7d63563b9a136ab55";
         try {
             var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
             const contract = new web3.eth.Contract(VENDOR_CONTRACT_ABI, address);
