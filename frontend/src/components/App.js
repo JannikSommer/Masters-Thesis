@@ -13,8 +13,8 @@ function App() {
   const [ipfs, setIpfs] = useState();
 
   async function loadIpfs() {
-    var result = await IPFS.create({ repo: '/var/ipfs/data' });
-    setIpfs(result);
+    var node = await IPFS.create({ repo: '/var/ipfs/data' });
+    setIpfs(node);
   }
 
   useEffect(() => {

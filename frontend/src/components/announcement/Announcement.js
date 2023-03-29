@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { LS_KEY_ACC } from '../../config';
 
 
-function Announcement({web3}) {
+function Announcement() {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
     const isLoaded = useRef(false); 

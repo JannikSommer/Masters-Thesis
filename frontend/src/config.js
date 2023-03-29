@@ -3,7 +3,7 @@ export const LS_KEY_DEP = "SENTINEL-settings-dependencies";
 export const LS_KEY_WL = "SENTINEL-settings-whitelist";
 export const LS_KEY_ACC = "SENTINEL-settings-accounts";
 
-export const CONTACT_ADDRESS = "0x0def8D3457378239E498501F0e40c3c0687058CD";
+export const CONTACT_ADDRESS = "0x3530bdd4E2b7b266466462aC3FECf08a8B7F9950";
 export const CONTACT_ABI = [
   {
     "anonymous": false,

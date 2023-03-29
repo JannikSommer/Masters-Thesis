@@ -56,7 +56,6 @@ function Vulnerabilities({ ipfs }) {
         }
         setAllVulnerabilities(allVulnerabilities);
         setUserVulnerabilities(await filterVulnerabilities(events, txs, blocks, advisories));
-        //console.log(allVulnerabilities[0].advisory.getProductInformation(dependencies.current[0]));
     }
 
     /** Load events of type NewSecurityAdvisory from a Ethereum network. 
@@ -85,7 +84,7 @@ function Vulnerabilities({ ipfs }) {
     async function loadEventRelatedData(web3, events, ipfs) {
         // Load event transactions, blocks that events were mined in, and IPFS content
         let txs = [], blocks = [], advisories = [], content = [];
-        for (const event of events) {
+        for await (const event of events) {
             txs.push(await web3.eth.getTransaction(event.transactionHash));
             blocks.push(await web3.eth.getBlock(event.blockNumber));
             for await (const chunk of await ipfs.cat(event.returnValues.documentLocation)) {
@@ -93,6 +92,7 @@ function Vulnerabilities({ ipfs }) {
             }
             let advisory = new SecurityAdvisory(Buffer.from(content).toString('utf8'));
             advisories.push(advisory);
+            content = [];
         }
         return [txs, blocks, advisories];
     }
