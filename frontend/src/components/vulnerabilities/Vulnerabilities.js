@@ -43,15 +43,37 @@ function Vulnerabilities({ ipfs }) {
      * @param {IPFS} ipfs Running ipfs node passed as prop to component. Is used to collect file data with. */
     async function initialize(ipfs) {
         let web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-        let events = await loadEvents(web3);
-        let data = await loadEventRelatedData(web3, events, ipfs);
-        let txs = data[0], blocks = data[1], advisories = data[2];
-        let allVulnerabilities = [];
-        for (const [index, event] of events.entries()) {
-            allVulnerabilities.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]});
+        let vulnerabilities = [];
+        let announcements = await loadEvents(web3);
+        for await (const announcement of announcements) {
+            let events = [{
+                event: announcement, 
+                tx: await web3.eth.getTransaction(announcement.transactionHash), 
+                block: await web3.eth.getBlock(announcement.blockNumber), 
+                advisory: await loadIpfsContent(ipfs, announcement.returnValues.documentLocation)
+            }];
+
+            let updates = await loadUpdatedEvents(web3, announcement.returnValues.advisoryIdentifier);
+            for await (const update of updates) {
+                events.push({
+                    event: update, 
+                    tx: await web3.eth.getTransaction(update.transactionHash), 
+                    block: await web3.eth.getBlock(update.blockNumber), 
+                    advisory: await loadIpfsContent(ipfs, update.returnValues.documentLocation)
+                });
+            }
+            vulnerabilities.push(events);
         }
-        setAllVulnerabilities(allVulnerabilities);
-        setUserVulnerabilities(await filterVulnerabilities(events, txs, blocks, advisories));
+        setAllVulnerabilities(vulnerabilities);
+        //setUserVulnerabilities(await filterVulnerabilities(events, txs, blocks, advisories));
+    }
+
+    async function loadIpfsContent(ipfs, cid) {
+        let content = [];
+        for await (const chunk of await ipfs.cat(cid)) {
+            content = [...content, ...chunk];
+        }
+        return new SecurityAdvisory(Buffer.from(content).toString('utf8'));
     }
 
     /** Load events of type NewSecurityAdvisory from a Ethereum network. 
@@ -63,13 +85,35 @@ function Vulnerabilities({ ipfs }) {
         // Load events
         let contract = new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         let events = await contract.getPastEvents(
-            "NewSecurityAdvisory", { fromBlock: from, toBlock: to },
+            "NewSecurityAdvisory", { 
+                fromBlock: from, 
+                toBlock: to 
+            },
             function (error, events) {
-                if (error) throw error;
+                if (error) 
+                    throw error;
                 return events;
-            });
+            }
+        );
         events.reverse(); // newest first
         return events;
+    }
+
+    async function loadUpdatedEvents(web3, advisoryIdentifier, from = 0, to = 'latest') {
+        let contract = new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+        return await contract.getPastEvents(
+            "UpdatedSecurityAdvisory", {
+                // eslint-disable-next-line 
+                topics: [,web3.utils.soliditySha3({type: 'string', value: advisoryIdentifier})],
+                fromBlock: from,
+                toBlock: to
+            },
+            function (error, events) {
+                if (error) 
+                    throw error;
+                return events;
+            }
+        );
     }
 
     /** Loads data about transactions, blocks, and advisories related to events. 
@@ -158,7 +202,7 @@ function Vulnerabilities({ ipfs }) {
     useEffect(() => {
         if (allVulnerabilities.length > 0)
             // Since the list is reversed, we should get the first block which is the last
-            lastBlockRead.current = allVulnerabilities[0].event.blockNumber;
+            lastBlockRead.current = allVulnerabilities[0][0].event.blockNumber;
     }, [allVulnerabilities]);
 
     return (
@@ -176,9 +220,9 @@ function Vulnerabilities({ ipfs }) {
                     </Col>
                 </Row>
             </Container>
-            {userVulnerabilities.length > 0 
+            {allVulnerabilities.length > 0 
             ? <VulnerabilityAccordion 
-                vulnerabilities={userVulnerabilities} 
+                vulnerabilities={allVulnerabilities} 
                 dependencies={dependencies.current} /> 
             : <h4>No matching vulnerabilities found.</h4>}
         </>
