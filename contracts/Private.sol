@@ -12,10 +12,12 @@ contract Private is Ownable {
   /// @param location The location of the security advisory
   /// @param hash The hash of the security advisory
   /// @param decryptionKey The RSA-encrypted decryption key for deciphering the security advisory
+  /// @param iv The initialization vector used for the AES encryption
   event Announcement(
     string location, 
     bytes32 hash,
-    bytes decryptionKey
+    bytes decryptionKey,
+    bytes12 iv
   );
   
   /// @notice Contains addresses of whitelisted vendors
@@ -59,7 +61,7 @@ contract Private is Ownable {
   /// @param location The location of the security advisory
   /// @param hash The hash of the security advisory
   /// @param dKey The RSA-encrypted decryption key for deciphering the security advisory
-  function announce(string memory location, bytes32 hash, bytes memory dKey) external whitelisted {
-    emit Announcement(location, hash, dKey);
+  function announce(string memory location, bytes32 hash, bytes memory dKey, bytes12 iv) external whitelisted {
+    emit Announcement(location, hash, dKey, iv);
   }
 }
