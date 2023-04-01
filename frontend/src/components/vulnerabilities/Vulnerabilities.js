@@ -35,8 +35,6 @@ function Vulnerabilities({ ipfs }) {
 
     // Vulnerability data hook
     const [allVulnerabilities, setAllVulnerabilities] = useState([]);
-    const [userVulnerabilities, setUserVulnerabilities] = useState([]);
-
 
     /** Collects information about events, transactions, blocks, and advisories from 
      * connected Ethereum network and IPFS with the ipfs param. 
@@ -47,6 +45,7 @@ function Vulnerabilities({ ipfs }) {
         let announcements = await loadEvents(web3);
         for await (const announcement of announcements) {
             let events = [{
+                type: "new",
                 event: announcement, 
                 tx: await web3.eth.getTransaction(announcement.transactionHash), 
                 block: await web3.eth.getBlock(announcement.blockNumber), 
@@ -56,7 +55,8 @@ function Vulnerabilities({ ipfs }) {
             let updates = await loadUpdatedEvents(web3, announcement.returnValues.advisoryIdentifier);
             for await (const update of updates) {
                 events.push({
-                    event: update, 
+                    type: "update",
+                    event: update,
                     tx: await web3.eth.getTransaction(update.transactionHash), 
                     block: await web3.eth.getBlock(update.blockNumber), 
                     advisory: await loadIpfsContent(ipfs, update.returnValues.documentLocation)
@@ -64,8 +64,7 @@ function Vulnerabilities({ ipfs }) {
             }
             vulnerabilities.push(events);
         }
-        setAllVulnerabilities(vulnerabilities);
-        //setUserVulnerabilities(await filterVulnerabilities(events, txs, blocks, advisories));
+        setAllVulnerabilities(await filterVulnerabilities(vulnerabilities));
     }
 
     async function loadIpfsContent(ipfs, cid) {
@@ -104,7 +103,9 @@ function Vulnerabilities({ ipfs }) {
         return await contract.getPastEvents(
             "UpdatedSecurityAdvisory", {
                 // eslint-disable-next-line 
-                topics: [,web3.utils.soliditySha3({type: 'string', value: advisoryIdentifier})],
+                topics: [ ,web3.utils.soliditySha3( // first element in list is the signature
+                    {type: 'string', value: advisoryIdentifier}
+                )],
                 fromBlock: from,
                 toBlock: to
             },
@@ -116,40 +117,16 @@ function Vulnerabilities({ ipfs }) {
         );
     }
 
-    /** Loads data about transactions, blocks, and advisories related to events. 
-     * @param {Web3} web3 Web3 instance used to connect to blockchain network. 
-     * @param {[]} events List of events to get data from.
-     * @param {IPFS} ipfs Running ipfs node to collect files with.
-     * @returns  List of [transactions], [blocks] and [advisories]*/
-    async function loadEventRelatedData(web3, events, ipfs) {
-        // Load event transactions, blocks that events were mined in, and IPFS content
-        let txs = [], blocks = [], advisories = [], content = [];
-        for await (const event of events) {
-            txs.push(await web3.eth.getTransaction(event.transactionHash));
-            blocks.push(await web3.eth.getBlock(event.blockNumber));
-            for await (const chunk of await ipfs.cat(event.returnValues.documentLocation)) {
-                content = [...content, ...chunk];
-            }
-            let advisory = new SecurityAdvisory(Buffer.from(content).toString('utf8'));
-            advisories.push(advisory);
-            content = [];
-        }
-        return [txs, blocks, advisories];
-    }
-
     /** Filters vulnerabilities to only show relevant vulnerabilities. 
-     * @param {[]} events List of events to filter. 
-     * @param {[]} txs List of transactions to filter. 
-     * @param {[]} blocks List of blocks to filter.
-     * @param {[]} advisories List of advisories to filter. 
-     * @returns List of object with matching events, transactions, blocks, and advisories. */
-    async function filterVulnerabilities(events, txs, blocks, advisories) {
-        let matches = []
-        for (const [index, event] of events.entries()) {
-            let pids = event.returnValues.productIdentifiers.split(",");
-            if (pids.some(element => {return dependencies.current.includes(element)})) {
-                if (whitelist.current.some(obj => {return txs[index].to === Object.keys(obj)[0]})){
-                    matches.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]});
+     * @param {[]} vulnerabilities List of vulnerability objects.
+     * @returns List of object with matching vulnerabilities that matches whitelist and dependencies. */
+    async function filterVulnerabilities(vulnerabilities) {
+        let matches = [];
+        for (const vulnerability of vulnerabilities) {
+            let productIdentifiers = vulnerability[0].event.returnValues.productIdentifiers.split(",");
+            if (productIdentifiers.some(element => {return dependencies.current.includes(element)})) {
+                if (whitelist.current.some(obj => {return vulnerability[0].tx.to === Object.keys(obj)[0]})){
+                    matches.push(vulnerability);
                 }
             }
         }
@@ -159,27 +136,40 @@ function Vulnerabilities({ ipfs }) {
     /** Retrieves new events of type NewSecurityAdvisory from connected Ethereum network. 
      * @param {IPFS} ipfs Running ipfs node to collect files with. 
      * @param {Number} to Blocknumber to end event search at. Default "latest" */
-    async function getNewEvents(ipfs, to = 'latest') {
+    async function getNewEvents(ipfs) {
         deactivateUpdateButton(); // deactivate
         // load new events since last scan
         let web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-        let contract = new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
-        let newEvents = await contract.getPastEvents(
-            "NewSecurityAdvisory", { fromBlock: lastBlockRead.current + 1, toBlock: to },
-            function (error, events) {
-                if (error) throw error;
-                return events;
-            });
+        let newEvents = await loadEvents(web3, lastBlockRead.current + 1);
         newEvents.reverse();
-        let data = await loadEventRelatedData(web3, newEvents, ipfs);
-        let newTxs = data[0], newBlocks = data[1], newAdvisories = data[2];
-        let newVulnerabilities = [];
-        for (const [index, event] of newEvents.entries()) {
-            newVulnerabilities.push({event: event, tx: newTxs[index], block: newBlocks[index], advisory: newAdvisories[index]});
+
+        let allAnnouncements = [];
+        for await (const vulnerability of allVulnerabilities) {
+            allAnnouncements.push(vulnerability[0].event);
         }
-        setAllVulnerabilities(newVulnerabilities.concat(allVulnerabilities));
-        let newUserVulnerabilities = await filterVulnerabilities(newEvents, newTxs, newBlocks, newAdvisories)
-        setUserVulnerabilities(newUserVulnerabilities.concat(userVulnerabilities));
+        let newVulnerabilities = [];
+        for await (const announcement of allAnnouncements) {
+            let events = [{
+                type: "new",
+                event: announcement, 
+                tx: await web3.eth.getTransaction(announcement.transactionHash), 
+                block: await web3.eth.getBlock(announcement.blockNumber), 
+                advisory: await loadIpfsContent(ipfs, announcement.returnValues.documentLocation)
+            }];
+            let updates = await loadUpdatedEvents(web3, announcement.returnValues.advisoryIdentifier, lastBlockRead.current + 1);
+            for await (const update of updates) {
+                events.push({
+                    type: "update",
+                    event: update, 
+                    tx: await web3.eth.getTransaction(update.transactionHash), 
+                    block: await web3.eth.getBlock(update.blockNumber), 
+                    advisory: await loadIpfsContent(ipfs, update.returnValues.documentLocation)
+                });
+            }
+            newVulnerabilities.push(events);
+        }
+        let filtered = await filterVulnerabilities(newVulnerabilities);
+        setAllVulnerabilities(filtered);
         activateUpdateButton(); //re-activate
     }
 
