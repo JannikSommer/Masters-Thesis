@@ -5,6 +5,7 @@ import Announcement from './announcement/Announcement';
 import Settings from './settings/Settings';
 import Accounts from './accounts/Accounts';
 import Spinner from 'react-bootstrap/Spinner';
+import ConfidentialAnnouncements from './confidential/ConfidentialAnnouncements';
 
 import { useEffect, useState } from "react";
 import * as IPFS from 'ipfs-core';
@@ -34,6 +35,7 @@ function App() {
             <Route path='announcement' Component={Announcement} />
             <Route path='settings' Component={Settings} />
             <Route path='accounts' Component={Accounts} />
+            <Route path='confidential' Component={() => <ConfidentialAnnouncements ipfs={ipfs} />} />
           </Routes>
         }
       </Container>
