@@ -23,48 +23,124 @@ function Vulnerabilities({ ipfs }) {
     let dependencies = useRef([]);
     let whitelist = useRef([]);
 
+    let web3 = useRef(null);
+    let subscriptions = useRef([]);
+
     // Used to control the modal for refresh confirmation
     const [showModal, setShowModal] = useState(false);
     const modalClose = () => setShowModal(false);
     const modalShow = () => setShowModal(true);
 
-    // Used to control update button
-    const [showUpdateButton, setShowUpdateButton] = useState(true);
-    const activateUpdateButton = () => setShowUpdateButton(true);
-    const deactivateUpdateButton = () => setShowUpdateButton(false);
-
     // Vulnerability data hook
+    const vulnerabilities = useRef([]);
     const [allVulnerabilities, setAllVulnerabilities] = useState([]);
+    const updateAllVulnerabilities = (vulnerabilities) => {
+        setAllVulnerabilities([...vulnerabilities].reverse());
+    }
+
+    async function subscribeToNewAdvisories() {
+        let contract = new web3.current.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+        return contract.events.NewSecurityAdvisory({
+            fromBlock: 0
+        }, async function (error, event) {
+            if (error) 
+                throw error; 
+            let newVulnerability = [{
+                type: "new",
+                event: event, 
+                tx: await web3.current.eth.getTransaction(event.transactionHash), 
+                block: await web3.current.eth.getBlock(event.blockNumber), 
+                advisory: await loadIpfsContent(ipfs, event.returnValues.documentLocation)
+            }]; 
+            //setAllVulnerabilities(filterVulnerabilities(newVulnerability.concat(allVulnerabilities)));
+            vulnerabilities.current.push(newVulnerability);
+            updateAllVulnerabilities(vulnerabilities.current);
+            await subscribeToUpdates(event.returnValues.advisoryIdentifier);
+        });
+    }
+
+    async function subscribeToUpdates(advisoryIdentifier) {
+        let contract = new web3.current.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+        return contract.events.UpdatedSecurityAdvisory({
+            // eslint-disable-next-line
+            topics: [, web3.current.utils.soliditySha3({type: 'string', value: advisoryIdentifier})],
+            fromBlock: 0
+        }, async function (error, event) {
+            if (error) 
+                throw error; 
+            for (const vulnerability of vulnerabilities.current) {
+                if (advisoryIdentifier === vulnerability[0].event.returnValues.advisoryIdentifier) {
+                    vulnerability.push({
+                        type: "update",
+                        event: event,
+                        tx: await web3.current.eth.getTransaction(event.transactionHash), 
+                        block: await web3.current.eth.getBlock(event.blockNumber), 
+                        advisory: await loadIpfsContent(ipfs, event.returnValues.documentLocation)
+                    });
+                }
+            }
+            updateAllVulnerabilities(vulnerabilities.current);
+        });
+    }
 
     /** Collects information about events, transactions, blocks, and advisories from 
-     * connected Ethereum network and IPFS with the ipfs param. 
-     * @param {IPFS} ipfs Running ipfs node passed as prop to component. Is used to collect file data with. */
-    async function initialize(ipfs) {
+     * connected Ethereum network and IPFS with the ipfs param. */
+    async function initialize() {
         let web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
         let vulnerabilities = [];
-        let announcements = await loadEvents(web3);
+        let announcements = (await loadEvents(web3, "NewSecurityAdvisory")).reverse();
         for await (const announcement of announcements) {
-            let events = [{
-                type: "new",
-                event: announcement, 
-                tx: await web3.eth.getTransaction(announcement.transactionHash), 
-                block: await web3.eth.getBlock(announcement.blockNumber), 
-                advisory: await loadIpfsContent(ipfs, announcement.returnValues.documentLocation)
-            }];
-
-            let updates = await loadUpdatedEvents(web3, announcement.returnValues.advisoryIdentifier);
-            for await (const update of updates) {
-                events.push({
-                    type: "update",
-                    event: update,
-                    tx: await web3.eth.getTransaction(update.transactionHash), 
-                    block: await web3.eth.getBlock(update.blockNumber), 
-                    advisory: await loadIpfsContent(ipfs, update.returnValues.documentLocation)
-                });
-            }
-            vulnerabilities.push(events);
+            vulnerabilities.push(await announcementUpdates(web3, announcement));
         }
         setAllVulnerabilities(await filterVulnerabilities(vulnerabilities));
+    }
+    /** Retrieves all advisory updates for a given advisory announcement.
+     * @param {Web3} web3 Web3 instance used to connect to blockchain network. 
+     * @param {Event} announcement Event object of the original announcement. 
+     * @returns List of announcement and updates objects. */
+    async function announcementUpdates(web3, announcement) {
+        let events = [{
+            type: "new",
+            event: announcement, 
+            tx: await web3.eth.getTransaction(announcement.transactionHash), 
+            block: await web3.eth.getBlock(announcement.blockNumber), 
+            advisory: await loadIpfsContent(ipfs, announcement.returnValues.documentLocation)
+        }];
+
+        let updates = await loadEvents(web3, "UpdatedSecurityAdvisory", 
+            web3.utils.soliditySha3({type: 'string', value: announcement.returnValues.advisoryIdentifier})
+        );
+        for await (const update of updates) {
+            events.push({
+                type: "update",
+                event: update,
+                tx: await web3.eth.getTransaction(update.transactionHash), 
+                block: await web3.eth.getBlock(update.blockNumber), 
+                advisory: await loadIpfsContent(ipfs, update.returnValues.documentLocation)
+            });
+        }
+        return events;
+    }
+
+        /** Load specified events from a Ethereum network. 
+     * @param {Web3} web3 Web3 instance used to connect to blockchain network. 
+     * @param {String} eventName Name of the event to get search for. 
+     * @returns List of events. */
+    async function loadEvents(web3, eventName, filter = null) {
+        let contract = new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+        return await contract.getPastEvents(
+            eventName, {
+                // eslint-disable-next-line 
+                topics: filter === null ? null : [ , filter],
+                fromBlock: lastBlockRead.current + 1, 
+                toBlock: 'latest' 
+            },
+            function (error, events) {
+                if (error) 
+                    throw error;
+                return events;
+            }
+        );
     }
 
     async function loadIpfsContent(ipfs, cid) {
@@ -73,48 +149,6 @@ function Vulnerabilities({ ipfs }) {
             content = [...content, ...chunk];
         }
         return new SecurityAdvisory(Buffer.from(content).toString('utf8'));
-    }
-
-    /** Load events of type NewSecurityAdvisory from a Ethereum network. 
-     * @param {Web3} web3 Web3 instance used to connect to blockchain network. 
-     * @param {Number} from The blocknumber to begin search from. Default 0. 
-     * @param {Number} to The blocknumber to end search at. Default 'latest'. 
-     * @returns List of events. */
-    async function loadEvents(web3, from = 0, to = 'latest') {
-        // Load events
-        let contract = new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
-        let events = await contract.getPastEvents(
-            "NewSecurityAdvisory", { 
-                fromBlock: from, 
-                toBlock: to 
-            },
-            function (error, events) {
-                if (error) 
-                    throw error;
-                return events;
-            }
-        );
-        events.reverse(); // newest first
-        return events;
-    }
-
-    async function loadUpdatedEvents(web3, advisoryIdentifier, from = 0, to = 'latest') {
-        let contract = new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
-        return await contract.getPastEvents(
-            "UpdatedSecurityAdvisory", {
-                // eslint-disable-next-line 
-                topics: [ ,web3.utils.soliditySha3( // first element in list is the signature
-                    {type: 'string', value: advisoryIdentifier}
-                )],
-                fromBlock: from,
-                toBlock: to
-            },
-            function (error, events) {
-                if (error) 
-                    throw error;
-                return events;
-            }
-        );
     }
 
     /** Filters vulnerabilities to only show relevant vulnerabilities. 
@@ -133,58 +167,20 @@ function Vulnerabilities({ ipfs }) {
         return matches;
     }
 
-    /** Retrieves new events of type NewSecurityAdvisory from connected Ethereum network. 
-     * @param {IPFS} ipfs Running ipfs node to collect files with. 
-     * @param {Number} to Blocknumber to end event search at. Default "latest" */
-    async function getNewEvents(ipfs) {
-        deactivateUpdateButton(); // deactivate
-        // load new events since last scan
-        let web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-        let newEvents = await loadEvents(web3, lastBlockRead.current + 1);
-        newEvents.reverse();
-
-        let allAnnouncements = [];
-        for await (const vulnerability of allVulnerabilities) {
-            allAnnouncements.push(vulnerability[0].event);
-        }
-        let newVulnerabilities = [];
-        for await (const announcement of allAnnouncements) {
-            let events = [{
-                type: "new",
-                event: announcement, 
-                tx: await web3.eth.getTransaction(announcement.transactionHash), 
-                block: await web3.eth.getBlock(announcement.blockNumber), 
-                advisory: await loadIpfsContent(ipfs, announcement.returnValues.documentLocation)
-            }];
-            let updates = await loadUpdatedEvents(web3, announcement.returnValues.advisoryIdentifier, lastBlockRead.current + 1);
-            for await (const update of updates) {
-                events.push({
-                    type: "update",
-                    event: update, 
-                    tx: await web3.eth.getTransaction(update.transactionHash), 
-                    block: await web3.eth.getBlock(update.blockNumber), 
-                    advisory: await loadIpfsContent(ipfs, update.returnValues.documentLocation)
-                });
-            }
-            newVulnerabilities.push(events);
-        }
-        let filtered = await filterVulnerabilities(newVulnerabilities);
-        setAllVulnerabilities(filtered);
-        activateUpdateButton(); //re-activate
-    }
-
-    /** Deletes and retrieves all data. 
-     * @param {IPFS} ipfs Running ipfs node to collect files with. */
-    async function refreshVulnerabilities(ipfs) {
+    /** Deletes and retrieves all data. */
+    async function refreshVulnerabilities() {
         lastBlockRead.current = 0;
-        initialize(ipfs);
+        subscriptions.current = subscriptions.current.push(await subscribeToNewAdvisories());
+        initialize();
         modalClose();
     }
 
     useEffect(() => {
         dependencies.current = JSON.parse(localStorage.getItem(LS_KEY_DEP));
         whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
-        initialize(ipfs);
+        web3.current = new Web3(Web3.givenProvider || 'ws://localhost:7545');
+        subscriptions.current.push(subscribeToNewAdvisories());
+        //initialize();
         lastBlockRead.current = 0;
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ipfs])
@@ -198,14 +194,11 @@ function Vulnerabilities({ ipfs }) {
     return (
         <>
             <br />
-            <RefreshConfirmation ipfs={ipfs} state={showModal} close={modalClose} loadEvents={() => refreshVulnerabilities(ipfs)} />
+            <RefreshConfirmation state={showModal} close={modalClose} loadEvents={() => refreshVulnerabilities()} />
             <Container>
                 <Row>
                     <Col lg="10"><h1>Vulnerabilities</h1></Col>
                     <Col lg="2">
-                        {showUpdateButton
-                            ? <Button variant="primary" size='md' onClick={() => getNewEvents(ipfs)}>Update</Button>
-                            : <Button active="false" variant="secondary" size='md'>Update</Button>}
                         <Button variant="danger" className="float-end" size='md' onClick={modalShow}>Refresh</Button>
                     </Col>
                 </Row>
@@ -213,6 +206,7 @@ function Vulnerabilities({ ipfs }) {
             {allVulnerabilities.length > 0 
             ? <VulnerabilityAccordion 
                 vulnerabilities={allVulnerabilities} 
+                whitelist={whitelist.current}
                 dependencies={dependencies.current} /> 
             : <h4>No matching vulnerabilities found.</h4>}
         </>

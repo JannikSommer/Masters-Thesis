@@ -2,7 +2,7 @@
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 
-function RefreshConfirmation({ipfs, state, close, loadEvents}) {
+function RefreshConfirmation({state, close, loadEvents}) {
 
     return (
         <Modal show={state} onHide={close}>
@@ -14,7 +14,7 @@ function RefreshConfirmation({ipfs, state, close, loadEvents}) {
           <Button variant="secondary" onClick={close}>
             No, go back
           </Button>
-          <Button variant="danger" onClick={() => loadEvents(ipfs)}>
+          <Button variant="danger" onClick={() => loadEvents()}>
             Yes, refresh vulnerabilities
           </Button>
         </Modal.Footer>
