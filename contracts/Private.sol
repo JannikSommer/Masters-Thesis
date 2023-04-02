@@ -8,11 +8,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @notice Allows whitelisted vendors to publish security advisories to the contract owner
 contract Private is Ownable {
 
-  /// @notice Represents an announcement of a security advisory
-  /// @param location The location of the security advisory
-  /// @param hash The hash of the security advisory
-  /// @param decryptionKey The RSA-encrypted decryption key for deciphering the security advisory
-  /// @param iv The initialization vector used for the AES encryption
+  /// @notice Represents an announcement of a security advisory.
+  /// @param location The location of the security advisory.
+  /// @param hash The hash of the security advisory.
+  /// @param decryptionKey The RSA-encrypted decryption key for deciphering the security advisory.
+  /// @param iv The initialization vector used for the AES encryption.
   event Announcement(
     string location, 
     bytes32 hash,
@@ -56,11 +56,12 @@ contract Private is Ownable {
     vendors[vendor] = false;
   }
 
-  /// @notice Emits an 'Announcement' event
-  /// @dev Caller must be whitelisted
-  /// @param location The location of the security advisory
-  /// @param hash The hash of the security advisory
-  /// @param dKey The RSA-encrypted decryption key for deciphering the security advisory
+  /// @notice Emits an 'Announcement' event.
+  /// @dev Caller must be whitelisted.
+  /// @param location The location of the security advisory.
+  /// @param hash The hash of the security advisory.
+  /// @param dKey The RSA-encrypted decryption key for deciphering the security advisory.
+  /// @param iv The initialization vector for the AES encryption.
   function announce(string memory location, bytes32 hash, bytes memory dKey, bytes12 iv) external whitelisted {
     emit Announcement(location, hash, dKey, iv);
   }

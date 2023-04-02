@@ -6,6 +6,10 @@ class RSA {
         hash: "SHA-256",
     };
     
+    ArrayBufferToString(buffer) {
+        return String.fromCharCode.apply(null, new Uint8Array(buffer));
+    }
+
     /**
      * Converts an ArrayBuffer to a Base64 string.
      * @param {ArrayBuffer} buffer An ArrayBuffer.
@@ -13,8 +17,22 @@ class RSA {
      */
     arrayBufferToBase64(buffer) {
         // From: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/exportKey#pkcs_8_export
-        const str = String.fromCharCode.apply(null, new Uint8Array(buffer));
+        const str = this.ArrayBufferToString(buffer);
         return window.btoa(str);
+    }
+
+    /**
+     * Converts a string to an ArrayBuffer
+     * @param {String} str 
+     * @returns {ArrayBuffer}
+     */
+    stringToArrayBuffer(str) {
+        const buf = new ArrayBuffer(str.length);
+        const bufView = new Uint8Array(buf);
+        for (let i = 0, strLen = str.length; i < strLen; i++) {
+          bufView[i] = str.charCodeAt(i);
+        }
+        return buf;
     }
 
     /**
@@ -25,12 +43,7 @@ class RSA {
     base64ToArrayBuffer(b64String) {
         // From: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#pkcs_8_import
         const str = window.atob(b64String);
-        const buf = new ArrayBuffer(str.length);
-        const bufView = new Uint8Array(buf);
-        for (let i = 0, strLen = str.length; i < strLen; i++) {
-          bufView[i] = str.charCodeAt(i);
-        }
-        return buf;
+        return this.stringToArrayBuffer(str);
     }
 
     /**
