@@ -48,9 +48,10 @@ function Vulnerabilities({ ipfs }) {
             let newVulnerability = [{
                 type: "new",
                 event: event, 
+                cid: event.returnValues.documentLocation,
                 tx: await web3.current.eth.getTransaction(event.transactionHash), 
-                block: await web3.current.eth.getBlock(event.blockNumber), 
-                advisory: await loadIpfsContent(ipfs, event.returnValues.documentLocation)
+                block: await web3.current.eth.getBlock(event.blockNumber),
+                advisory: {}
             }]; 
             //setAllVulnerabilities(filterVulnerabilities(newVulnerability.concat(allVulnerabilities)));
             vulnerabilities.current.push(newVulnerability);
@@ -73,9 +74,10 @@ function Vulnerabilities({ ipfs }) {
                     vulnerability.push({
                         type: "update",
                         event: event,
+                        cid: event.returnValues.documentLocation,
                         tx: await web3.current.eth.getTransaction(event.transactionHash), 
                         block: await web3.current.eth.getBlock(event.blockNumber), 
-                        advisory: await loadIpfsContent(ipfs, event.returnValues.documentLocation)
+                        advisory: {}
                     });
                 }
             }
@@ -207,7 +209,8 @@ function Vulnerabilities({ ipfs }) {
             ? <VulnerabilityAccordion 
                 vulnerabilities={allVulnerabilities} 
                 whitelist={whitelist.current}
-                dependencies={dependencies.current} /> 
+                dependencies={dependencies.current}
+                ipfs={ipfs} /> 
             : <h4>No matching vulnerabilities found.</h4>}
         </>
     );
