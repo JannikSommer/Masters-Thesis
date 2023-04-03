@@ -107,6 +107,8 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
             // Upload file to IPFS
             let fileLocation = await uploadFile(ciphertext);
 
+            const ls = await ipfs.ls(fileLocation);
+
             //Announce with IV and key         
             var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
             const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);

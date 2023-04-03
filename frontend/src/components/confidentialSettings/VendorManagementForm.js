@@ -8,18 +8,18 @@ import { useRef, useState } from 'react';
 
 import { PRIVATE_CONTRACT_ABI } from '../../config';
 import Web3 from 'web3';
-import RSA from '../../models/RSA';
 
 import AcceptModal from '../announcement/AcceptModal';
 import ErrorModal from '../announcement/ErrorModal';
 import SuccessModal from '../announcement/SuccessModal';
 
 
-function UpdateKeyForm({accounts}) {
+function VendorManagementForm({accounts}) {
     const selectedAccount = useRef();
     const [address, setAddress] = useState("");
     const [publicKey, setPublicKey] = useState("");
     const [privateKey, setPrivateKey] = useState("");
+    const [vendorAddress, setVendorAddress] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
     const [error, setError] = useState("");
@@ -41,25 +41,12 @@ function UpdateKeyForm({accounts}) {
         selectedAccount.current = JSON.parse(value);
     }
 
-    const generateKeyPair = () => {
-        const rsa = new RSA();
-        rsa.generateKeyPair().then((keyPair) => {
-            rsa.exportPublicKey(keyPair.publicKey).then((key) => {
-                setPublicKey(rsa.arrayBufferToBase64(key));
-            });
-            rsa.exportPrivateKey(keyPair.privateKey).then((key) => {
-                setPrivateKey(rsa.arrayBufferToBase64(key));
-            });
-        });
-    }
-
     const setKey = () => {
         if (!accept) {
             return;
         };
         dismissWarning();
         try {  
-            const rsa = new RSA();
             var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
             const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
             web3.eth.accounts.signTransaction({
@@ -91,13 +78,13 @@ function UpdateKeyForm({accounts}) {
 
     return (
         <div>
-            <h3>Update public key</h3>
+            <h3>Manage Vendor Whitelist</h3>
             <br />
             <AcceptModal state={showWarning} dismiss={dismissWarning} announce={setKey}></AcceptModal>
             <ErrorModal state={showError} dismiss={dismissError} error={error}></ErrorModal>
             <SuccessModal state={showTransaction} dismiss={dismissTransaction} tx={transaction}></SuccessModal>
             <Form>
-                <Form.Group className='mb-3' controlId='updateKeyAccount'>
+                <Form.Group className='mb-3' controlId='manageVendorAccount'>
                     <Form.Select onChange={(e) => selectAccount(e.currentTarget.value)}>
                         <option>Select an account</option>
                         {accounts.map((account, index) => 
@@ -107,24 +94,17 @@ function UpdateKeyForm({accounts}) {
                     <Form.Text className='text-muted'>Select account for the transaction</Form.Text>
                 </Form.Group>
 
-                <Form.Group className='mb-3' controlId='updateKeyPrivateContract'>
-                    <FloatingLabel className='mb-3' controlId='updateKeyPrivateContractLabel' label="Smart contract address">
+                <Form.Group className='mb-3' controlId='manageVendorPrivateContract'>
+                    <FloatingLabel className='mb-3' controlId='manageVendorPrivateContractLabel' label="Smart contract address">
                         <Form.Control value={address} onChange={(e) => setAddress(e.target.value)}></Form.Control>
-                        <Form.Text className='text-muted'>Address of smart contract on which to update the public key</Form.Text>
+                        <Form.Text className='text-muted'>Address of confidential smart contract</Form.Text>
                     </FloatingLabel>
                 </Form.Group>
 
-                <Form.Group className='mb-3' controlId='publicKeyPrivateContract'>
-                    <FloatingLabel className='mb-3' controlId='publicKeyPrivateContractLabel' label="RSA-OAEP public key">
-                        <Form.Control as="textarea" rows={5} value={publicKey} onChange={(e) => setPublicKey(e.target.value)}></Form.Control>
-                        <Form.Text className='text-muted'>The public key that will be available on the smart contract</Form.Text>
-                    </FloatingLabel>
-                </Form.Group>
-
-                <Form.Group className='mb-3' controlId='privateKeyPrivateContract'>
-                    <FloatingLabel className='mb-3' controlId='privateKeyPrivateContractLabel' label="RSA-OAEP private key">
-                        <Form.Control as="textarea" rows={5} value={privateKey} disabled></Form.Control>
-                        <Form.Text className='text-muted'>The private key for decrypting messages</Form.Text>
+                <Form.Group className='mb-3' controlId='manageVendorAddress'>
+                    <FloatingLabel className='mb-3' controlId='manageVendorAddressLabel' label="Vendor Address">
+                        <Form.Control value={publicKey} onChange={(e) => setVendorAddress(e.target.value)}></Form.Control>
+                        <Form.Text className='text-muted'>The address of the vendor to add/remove from the whitelist</Form.Text>
                     </FloatingLabel>
                 </Form.Group>
 
@@ -133,14 +113,14 @@ function UpdateKeyForm({accounts}) {
                         label="I accept the consequences of creating a transaction!" />
                 </Form.Group>
                     <Row>
-                        <Col>
-                            <Button variant="primary" type="button" onClick={() => setShowWarning(true)}>  {/* TODO: Disable if values form is not filled correctly*/}
-                                Update Public Key
+                        <Col lg="2">
+                            <Button variant="success" type="button" onClick={() => setShowWarning(true)}>  {/* TODO: Disable if values form is not filled correctly*/}
+                                Add
                             </Button>
                         </Col>
-                        <Col>
-                            <Button type="button" onClick={() => generateKeyPair()}>
-                                Generate Key Pair
+                        <Col lg="2">
+                            <Button variant="danger" type="button">
+                                Remove
                             </Button>
                         </Col>
                     </Row>
@@ -148,4 +128,4 @@ function UpdateKeyForm({accounts}) {
         </div>
     )
 }
-export default UpdateKeyForm;
+export default VendorManagementForm;

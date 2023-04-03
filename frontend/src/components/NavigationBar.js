@@ -18,8 +18,11 @@ function NavigationBar() {
             <LinkContainer to="/announcement">
               <Nav.Link>Announcement</Nav.Link>
             </LinkContainer>
-            <LinkContainer to="/confidential">
+            <LinkContainer to="/confidentialAnnouncement">
               <Nav.Link>Confidential Announcements</Nav.Link>
+            </LinkContainer>
+            <LinkContainer to="/confidentialSettings">
+              <Nav.Link>Confidential Settings</Nav.Link>
             </LinkContainer>
             <LinkContainer to="/settings">
               <Nav.Link>Settings</Nav.Link>

@@ -3,14 +3,14 @@ import Container from 'react-bootstrap/esm/Container';
 import Row from 'react-bootstrap/esm/Row';
 import Col from 'react-bootstrap/Col';
 
-import ConfidentialAdvisoryForm from './ConfidentialAdvisoryForm';
 import UpdateKeyForm from './UpdateKeyForm';
 
 import React, { useEffect, useRef, useState } from 'react';
 import { LS_KEY_ACC } from '../../config';
+import VendorManagementForm from './VendorManagementForm';
 
 
-function ConfidentialAnnouncements({ ipfs }) {
+function ConfidentialSettings({ ipfs }) {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
     const isLoaded = useRef(false); 
@@ -46,7 +46,7 @@ function ConfidentialAnnouncements({ ipfs }) {
             <Container>
                 <Row>
                     <Col lg="5">
-                        <ConfidentialAdvisoryForm accounts={accounts} ipfs={ipfs} />
+                        <VendorManagementForm accounts={accounts}/>
                     </Col>
                     <Col>
                         <div style={{height: '40%', 
@@ -64,4 +64,4 @@ function ConfidentialAnnouncements({ ipfs }) {
         </div>
     );
 }
-export default ConfidentialAnnouncements;
+export default ConfidentialSettings;
