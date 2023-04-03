@@ -10,7 +10,11 @@ function NewAccountForm({accounts, saveAccounts}) {
     const [privateKey, setPrivateKey] = useState("");
     
     async function saveAccount() {
-        let newAccount = {name: accountName, wallet: wallet, key: privateKey}
+        let newAccount = {
+            name: accountName, 
+            wallet: wallet, 
+            key: privateKey
+        };
         accounts.push(newAccount);
         saveAccounts(accounts); // this will save to localstorage
         setAccountName("");

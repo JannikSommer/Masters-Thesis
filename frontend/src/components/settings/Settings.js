@@ -1,16 +1,18 @@
-import Form from 'react-bootstrap/Form';
 import Container from 'react-bootstrap/esm/Container';
 import Row from 'react-bootstrap/esm/Row';
 import Col from 'react-bootstrap/Col'
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/esm/Button';
+import WhiteListList from './WhitelistList';
+import Form from 'react-bootstrap/Form';
 
 import React, { useEffect, useRef, useState } from 'react';
 import { LS_KEY_DEP, LS_KEY_WL } from '../../config';
+import NewVendorWhitelistForm from './NewVendorWhitelistForm';
 
 function Settings() {
     const [dependencies, setDependencies] = useState("");
-    const [whitelist, setWhitelist] = useState("");
+    const [whitelist, setWhitelist] = useState([]);
     let isLoaded = useRef(false);
 
     /** Saves the dependencies textfield in localstorage. */
@@ -19,8 +21,14 @@ function Settings() {
     }
 
     /** Saves the whitelist textfield in localstorage. */
-    async function saveWhitelist() {
-        localStorage.setItem(LS_KEY_WL, whitelist);
+    async function saveWhitelist(newWhiteList) {
+        setWhitelist([...newWhiteList]);
+        localStorage.setItem(LS_KEY_WL, JSON.stringify(whitelist));
+    }
+
+    async function removeWhitelistVendor(index) {
+        whitelist.splice(index, 1); 
+        saveWhitelist(whitelist);
     }
 
     /** Reads localstorage values to the dependencies and whitelist hooks. */
@@ -31,7 +39,7 @@ function Settings() {
         
         let wlist = localStorage.getItem(LS_KEY_WL);
         if (wlist !== null)
-            setWhitelist(wlist);
+            setWhitelist(JSON.parse(wlist));
     }
 
     useEffect(() => {
@@ -39,7 +47,7 @@ function Settings() {
             readLocalStorage();
             isLoaded.current = true;
         }
-    }, [dependencies, whitelist])
+    })
 
     return (
         <>
@@ -70,20 +78,12 @@ function Settings() {
                         </Form>
                     </Col>
                     <Col lg="6">
-                        <Form>
-                            <Form.Group className='mb-3' controlId='whitelistGroup'>
-                                <Form.Label className='h3'>Vendor whitelist</Form.Label>
-                                <Form.Control style={{fontFamily:"monospace"}}  
-                                              as="textarea" rows={10} 
-                                              placeholder="[{}]"
-                                              value={whitelist}
-                                              onChange={(e) => {setWhitelist(e.target.value)}}
-                                              >
-                                </Form.Control>
-                                <Form.Text className='text-muted'>Specify as JSON object</Form.Text>
-                            </Form.Group>
-                            <Button variant='primary' onClick={saveWhitelist}>Save whitelist</Button>
-                        </Form>
+                        <h2>Whitelisted vendors</h2>
+                        <WhiteListList whitelist={whitelist} remove={removeWhitelistVendor} />
+                        <br />
+                        <h2>Whitelist vendors</h2>
+                        Add new vendors to the whitelist from their vendor smart contract addresses.
+                        <NewVendorWhitelistForm whitelist={whitelist} saveWhitelist={saveWhitelist} />
                     </Col>
                 </Row>
             </Container>
