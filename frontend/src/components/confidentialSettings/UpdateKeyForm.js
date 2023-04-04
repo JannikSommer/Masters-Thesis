@@ -44,6 +44,9 @@ function UpdateKeyForm({accounts}) {
         selectedAccount.current = JSON.parse(value);
     }
 
+    /**
+     * Generates a new RSA-OAEP key pair.
+     */
     const generateKeyPair = () => {
         const rsa = new RSA();
         rsa.generateKeyPair().then((keyPair) => {
@@ -56,7 +59,10 @@ function UpdateKeyForm({accounts}) {
         });
     }
 
-    const setKey = () => {
+    /**
+     * Updates the RSA-OAEP public key on the 'Private' smart contract.
+     */
+    const updateKey = () => {
         if (!accept) {
             return;
         };
@@ -94,7 +100,7 @@ function UpdateKeyForm({accounts}) {
         <div>
             <h3>Update public key</h3>
             <br />
-            <AcceptModal state={showWarning} dismiss={dismissWarning} announce={setKey}></AcceptModal>
+            <AcceptModal state={showWarning} dismiss={dismissWarning} announce={updateKey}></AcceptModal>
             <ErrorModal state={showError} dismiss={dismissError} error={error}></ErrorModal>
             <SuccessModal state={showTransaction} dismiss={dismissTransaction} tx={transaction}></SuccessModal>
             <Form>

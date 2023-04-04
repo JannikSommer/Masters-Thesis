@@ -90,6 +90,13 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
         return cid.toString();
     }
 
+    /**
+     * Creates a transaction announcing a confidential advisory on the 'Private' smart contract.
+     * @param {String} fileLocation The IPFS CID.
+     * @param {ArrayBuffer} fileHash The SHA-256 hash of the uploaded file.
+     * @param {ArrayBuffer} wrappedKey The wrapped AES key.
+     * @param {Uint8Array} iv The initialization vector used in the AES encryption.
+     */
     const contractTransaction = (fileLocation, fileHash, wrappedKey, iv) => {
         const config = {
             from: selectedAccount.current.wallet,
@@ -116,6 +123,9 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
         })
     }
 
+    /**
+     * Tries to encrypt, upload and announce a confidential security advisory to the 'Private' smart contract.
+     */
     const announce = async () => {
         if (!accept) {
             return;

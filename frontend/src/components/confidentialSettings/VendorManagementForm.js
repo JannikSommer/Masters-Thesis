@@ -45,6 +45,10 @@ function VendorManagementForm({accounts}) {
         selectedAccount.current = JSON.parse(value);
     }
 
+    /**
+     * Creates a transaction calling a method on the 'Private' smart contract.
+     * @param {String} method The method to call encoded as ABI bytecode.
+     */
     const contractTransaction = (method) => {
         let config = {
             from: selectedAccount.current.wallet,
@@ -67,6 +71,9 @@ function VendorManagementForm({accounts}) {
         });
     }
 
+    /**
+     * Tries to remove an Ethereum wallet address to the whitelist of the 'Private' smart contract.
+     */
     const removeVendor = () => {
         if (!accept) {
             return;
@@ -83,6 +90,9 @@ function VendorManagementForm({accounts}) {
         }
     }
 
+    /**
+     * Tries to add an Ethereum wallet address to the whitelist of the 'Private' smart contract.
+     */
     const AddVendor = () => {
         if (!accept) {
             return;
