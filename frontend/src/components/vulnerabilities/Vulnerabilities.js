@@ -21,7 +21,6 @@ function Vulnerabilities({ ipfs }) {
     let whitelist = useRef([]);
 
     let web3 = useRef(null);
-    let subscriptions = useRef([]);
 
     // Used to control the modal for refresh confirmation
     const [showModal, setShowModal] = useState(false);
@@ -97,9 +96,12 @@ function Vulnerabilities({ ipfs }) {
         return matches;
     }
 
-    /** Deletes and retrieves all data. */
+    /** Clear and re-assign subscriptions. */
     async function refreshVulnerabilities() {
-        subscriptions.current = subscriptions.current.push(await subscribeToNewAdvisories());
+        vulnerabilities.current = [];
+        setAllVulnerabilities([]);
+        await web3.current.eth.clearSubscriptions();
+        await subscribeToNewAdvisories();
         modalClose();
     }
 
@@ -110,7 +112,7 @@ function Vulnerabilities({ ipfs }) {
         //dependencies.current = JSON.parse(localStorage.getItem(LS_KEY_DEP));
         whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
         web3.current = new Web3(Web3.givenProvider || 'ws://localhost:7545');
-        subscriptions.current.push(subscribeToNewAdvisories());
+        subscribeToNewAdvisories();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ipfs])
 
