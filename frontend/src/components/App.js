@@ -1,10 +1,12 @@
 import { Route, Routes } from "react-router-dom"
 import Container from 'react-bootstrap/Container';
-import Vulnerabilities from './Vulnerabilities';
-import Announcement from './Announcement';
-import Settings from './Settings';
-import Accounts from './Accounts';
+import Vulnerabilities from './vulnerabilities/Vulnerabilities';
+import Announcement from './announcement/Announcement';
+import Settings from './settings/Settings';
+import Accounts from './accounts/Accounts';
 import Spinner from 'react-bootstrap/Spinner';
+import ConfidentialAnnouncements from './confidentialAnnouncement/ConfidentialAnnouncements';
+import ConfidentialSettings from "./confidentialSettings/ConfidentialSettings";
 
 import { useEffect, useState } from "react";
 import * as IPFS from 'ipfs-core';
@@ -13,8 +15,8 @@ function App() {
   const [ipfs, setIpfs] = useState();
 
   async function loadIpfs() {
-    var result = await IPFS.create({ repo: '/var/ipfs/data' });
-    setIpfs(result);
+    var node = await IPFS.create({ repo: '/var/ipfs/data' });
+    setIpfs(node);
   }
 
   useEffect(() => {
@@ -34,6 +36,8 @@ function App() {
             <Route path='announcement' Component={Announcement} />
             <Route path='settings' Component={Settings} />
             <Route path='accounts' Component={Accounts} />
+            <Route path='confidentialAnnouncement' Component={() => <ConfidentialAnnouncements ipfs={ipfs} />} />
+            <Route path='confidentialSettings' Component={ConfidentialSettings} />
           </Routes>
         }
       </Container>

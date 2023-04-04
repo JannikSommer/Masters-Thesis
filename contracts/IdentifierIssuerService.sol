@@ -17,6 +17,9 @@ contract IdentifierIssuerService is MessageControlable {
   // VendorId => VulnerabilityId
   mapping(uint64 => uint64[]) public vulnerabilites;
 
+  // VendorId => AdvisoryId
+  mapping(uint64 => uint64[]) public advisories;
+
   /// @notice Registers a vendor smart contract for this service. 
   /// @dev A smart contract can only be regisered once. 
   function registerVendor() external onlyContract returns (uint64) {
@@ -28,14 +31,34 @@ contract IdentifierIssuerService is MessageControlable {
 
   /// @notice Generates a new vulnerability identifier for a given vendor. 
   /// @return string of the new identifier generated. 
-  function requestVulnerabilityIdentifier() external onlyContract returns (string memory) {
+  function requestVulnerabilityIdentifiers(uint16 count) external onlyContract returns (string memory) {
+    require(vendors[msg.sender] != 0, "Vendor must be registered");
+    uint64 vendorId = vendors[msg.sender];
+    string memory ids = "";
+
+    for (uint16 index = 0; index < count; index++) {
+      vulnerabilites[vendorId].push(uint64(vulnerabilites[vendorId].length + 1));
+      uint64 vulnerabilityNumber = uint64(vulnerabilites[vendorId].length);
+      string memory id = string.concat("SNTL-V-", Strings.toString(vendorId), "-", Strings.toString(vulnerabilityNumber));
+      if (index != 0) 
+        ids = string.concat(ids, ",", id);
+      else 
+        ids = string.concat(ids, id); 
+    }
+
+    return ids;
+  }
+
+  /// @notice Generates a new advisory identifier for a given vendor. 
+  /// @return string of the new identifier generated. 
+  function requestAdvisoryIdentifier() external onlyContract returns (string memory) {
     require(vendors[msg.sender] != 0, "Vendor must be registered");
     uint64 vendorId = vendors[msg.sender];
 
-    vulnerabilites[vendorId].push(uint64(vulnerabilites[vendorId].length + 1));
-    uint64 vulnerabilityNumber = uint64(vulnerabilites[vendorId].length);
+    advisories[vendorId].push(uint64(advisories[vendorId].length + 1));
+    uint64 advisoryNumber = uint64(advisories[vendorId].length);
 
-    return string.concat("SNTL-", Strings.toString(vendorId), "-", Strings.toString(vulnerabilityNumber));
+    return string.concat("SNTL-A-", Strings.toString(vendorId), "-", Strings.toString(advisoryNumber));
   }
 
   /// @notice Getter for a vendor identifier from a given address. 
@@ -51,7 +74,7 @@ contract IdentifierIssuerService is MessageControlable {
     string[] memory result = new string[](vulnIds.length);
 
     for (uint64 index = 0; index < vulnIds.length; index++) {
-      result[index] = string.concat("SNTL-", Strings.toString(vendorId), "-", Strings.toString(vulnIds[index]));
+      result[index] = string.concat("SNTL-V-", Strings.toString(vendorId), "-", Strings.toString(vulnIds[index]));
     }
 
     return result;

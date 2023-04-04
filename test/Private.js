@@ -74,21 +74,23 @@ contract("Private", async (accounts) => {
 
     it("should not allow non-whitelisted addresses to announce security advisories", async () => {
         await truffleAssert.fails(
-            priv.announce("download location", "0xe2201f05ee574ee7a07a673c8b55ff50ffb7ee778d9d9abe1e9864b0fb3ae779", "0x68656c6c6f20776f726c64"), 
+            priv.announce("download location", "0xe2201f05ee574ee7a07a673c8b55ff50ffb7ee778d9d9abe1e9864b0fb3ae779", "0x68656c6c6f20776f726c64", "0x000000000000000000000000"), 
             truffleAssert.ErrorType.REVERT, 
             "Caller is not whitelisted"
         );
     });
 
-    it("should emit event with location, file hash, and decryption key", async () => {
+    it("should emit event with location, file hash, decryption key and iv", async () => {
         await priv.addVendor(accounts[1], {from: accounts[0]});
-        await priv.announce("download location", "0xe2201f05ee574ee7a07a673c8b55ff50ffb7ee778d9d9abe1e9864b0fb3ae779", "0x68656c6c6f20776f726c64", {from: accounts[1]});
+        await priv.announce("download location", "0xe2201f05ee574ee7a07a673c8b55ff50ffb7ee778d9d9abe1e9864b0fb3ae779", "0x68656c6c6f20776f726c64", "0x000000000000000000000000", {from: accounts[1]});
 
         const events = await priv.getPastEvents("Announcement", { fromBlock: 0, toBlock: 'latest' });
         assert.equal(events.length, 1);
         assert.equal(events[0].returnValues.location, "download location", "location does not match expected value");
         assert.equal(events[0].returnValues.hash, "0xe2201f05ee574ee7a07a673c8b55ff50ffb7ee778d9d9abe1e9864b0fb3ae779", "hash does not match expected value");
         assert.equal(events[0].returnValues.decryptionKey, "0x68656c6c6f20776f726c64", "decryptionKey does not match expected value");
+        assert.equal(events[0].returnValues.iv, "0x000000000000000000000000", "iv does not match expected value");
+
 
     });
 

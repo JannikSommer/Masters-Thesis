@@ -1,8 +1,9 @@
 // localstorage keys
-export const LS_KEY_DEP = "SENTINEL-seetings-dependencies";
-export const LS_KEY_WL = "SENTINEL-seetings-whitelist";
+export const LS_KEY_DEP = "SENTINEL-settings-dependencies";
+export const LS_KEY_WL = "SENTINEL-settings-whitelist";
+export const LS_KEY_ACC = "SENTINEL-settings-accounts";
 
-export const CONTACT_ADDRESS = "0xc5E576D2a662D773491D2825205De48561f09Ff4";
+export const CONTACT_ADDRESS = "0x1d6EBCB2302a3a2a1d660C5f7D2Cb031f60fD12c";
 export const CONTACT_ABI = [
   {
     "anonymous": false,
@@ -10,13 +11,19 @@ export const CONTACT_ABI = [
       {
         "indexed": false,
         "internalType": "string",
-        "name": "vulnerabilityId",
+        "name": "advisoryIdentifier",
         "type": "string"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "productId",
+        "name": "vulnerabilityIdentifiers",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "productIdentifiers",
         "type": "string"
       },
       {
@@ -35,13 +42,19 @@ export const CONTACT_ABI = [
       {
         "indexed": true,
         "internalType": "string",
-        "name": "vulnerabilityId",
+        "name": "advisoryIdentifier",
         "type": "string"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "productId",
+        "name": "vulnerabilityIdentifiers",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "productIdentifiers",
         "type": "string"
       },
       {
@@ -58,12 +71,17 @@ export const CONTACT_ABI = [
     "inputs": [
       {
         "internalType": "string",
-        "name": "vulnerabilityId",
+        "name": "advisoryIdentifier",
         "type": "string"
       },
       {
         "internalType": "string",
-        "name": "productId",
+        "name": "vulnerabilityIdentifiers",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "productIdentifiers",
         "type": "string"
       },
       {
@@ -81,12 +99,17 @@ export const CONTACT_ABI = [
     "inputs": [
       {
         "internalType": "string",
-        "name": "vulnerabilityId",
+        "name": "advisoryIdentifier",
         "type": "string"
       },
       {
         "internalType": "string",
-        "name": "productId",
+        "name": "vulnerabilityIdentifiers",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "productIdentifiers",
         "type": "string"
       },
       {
@@ -101,3 +124,360 @@ export const CONTACT_ABI = [
     "type": "function"
   }
 ];
+export const VENDOR_CONTRACT_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "announcementServiceAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "identifierIssuerServiceAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vendorId",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [],
+    "name": "vendorName",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "count",
+        "type": "uint16"
+      }
+    ],
+    "name": "getVulnerabilityIds",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAdvisoryId",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "count",
+        "type": "uint16"
+      },
+      {
+        "internalType": "string",
+        "name": "productIds",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "location",
+        "type": "string"
+      }
+    ],
+    "name": "announceNewAdvisory",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "advisoryId",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "vulnerabilityIds",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "productId",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "location",
+        "type": "string"
+      }
+    ],
+    "name": "announceUpdatedAdvisory",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];
+export const PRIVATE_CONTRACT_ABI = [
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "location",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "hash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "decryptionKey",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes12",
+        "name": "iv",
+        "type": "bytes12"
+      }
+    ],
+    "name": "Announcement",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "publicKey",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "pKey",
+        "type": "bytes"
+      }
+    ],
+    "name": "setPublicKey",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vendor",
+        "type": "address"
+      }
+    ],
+    "name": "addVendor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vendor",
+        "type": "address"
+      }
+    ],
+    "name": "removeVendor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "location",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "hash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "dKey",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes12",
+        "name": "iv",
+        "type": "bytes12"
+      }
+    ],
+    "name": "announce",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

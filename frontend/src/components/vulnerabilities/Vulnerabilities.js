@@ -8,13 +8,12 @@ import Container from 'react-bootstrap/Container';
 import Web3 from 'web3';
 import { Buffer } from 'buffer';
 import { useEffect, useRef, useState } from 'react';
-import { CONTACT_ABI, CONTACT_ADDRESS, LS_KEY_DEP, LS_KEY_WL } from '../config.js';
-import SecurityAdvisory from "../models/SecurityAdvisory";
+import { CONTACT_ABI, CONTACT_ADDRESS, LS_KEY_DEP, LS_KEY_WL } from '../../config.js';
+import SecurityAdvisory from "../../models/SecurityAdvisory";
 
 // components
 import RefreshConfirmation from './RefreshConfirmation.js';
 import VulnerabilityAccordion from './VulnerabilityAccordion.js';
-import FilterSwitch from './FilterSwitch.js';
 
 /** Component of the /vulnerabilities page.
  * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
@@ -28,9 +27,6 @@ function Vulnerabilities({ ipfs }) {
     const [showModal, setShowModal] = useState(false);
     const modalClose = () => setShowModal(false);
     const modalShow = () => setShowModal(true);
-
-    // Used to enable/disable filtering 
-    const [filtering, setFiltering] = useState(true);
 
     // Used to control update button
     const [showUpdateButton, setShowUpdateButton] = useState(true);
@@ -56,7 +52,6 @@ function Vulnerabilities({ ipfs }) {
         }
         setAllVulnerabilities(allVulnerabilities);
         setUserVulnerabilities(await filterVulnerabilities(events, txs, blocks, advisories));
-        //console.log(allVulnerabilities[0].advisory.getProductInformation(dependencies.current[0]));
     }
 
     /** Load events of type NewSecurityAdvisory from a Ethereum network. 
@@ -66,7 +61,7 @@ function Vulnerabilities({ ipfs }) {
      * @returns List of events. */
     async function loadEvents(web3, from = 0, to = 'latest') {
         // Load events
-        let contract = await new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+        let contract = new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         let events = await contract.getPastEvents(
             "NewSecurityAdvisory", { fromBlock: from, toBlock: to },
             function (error, events) {
@@ -85,7 +80,7 @@ function Vulnerabilities({ ipfs }) {
     async function loadEventRelatedData(web3, events, ipfs) {
         // Load event transactions, blocks that events were mined in, and IPFS content
         let txs = [], blocks = [], advisories = [], content = [];
-        for (const event of events) {
+        for await (const event of events) {
             txs.push(await web3.eth.getTransaction(event.transactionHash));
             blocks.push(await web3.eth.getBlock(event.blockNumber));
             for await (const chunk of await ipfs.cat(event.returnValues.documentLocation)) {
@@ -93,6 +88,7 @@ function Vulnerabilities({ ipfs }) {
             }
             let advisory = new SecurityAdvisory(Buffer.from(content).toString('utf8'));
             advisories.push(advisory);
+            content = [];
         }
         return [txs, blocks, advisories];
     }
@@ -106,7 +102,7 @@ function Vulnerabilities({ ipfs }) {
     async function filterVulnerabilities(events, txs, blocks, advisories) {
         let matches = []
         for (const [index, event] of events.entries()) {
-            let pids = event.returnValues.productId.split(",");
+            let pids = event.returnValues.productIdentifiers.split(",");
             if (pids.some(element => {return dependencies.current.includes(element)})) {
                 if (whitelist.current.some(obj => {return txs[index].to === Object.keys(obj)[0]})){
                     matches.push({event: event, tx: txs[index], block: blocks[index], advisory: advisories[index]});
@@ -122,10 +118,10 @@ function Vulnerabilities({ ipfs }) {
     async function getNewEvents(ipfs, to = 'latest') {
         deactivateUpdateButton(); // deactivate
         // load new events since last scan
-        let web3 = await new Web3(Web3.givenProvider || 'http://localhost:7545');
-        let contract = await new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+        let web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+        let contract = new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         let newEvents = await contract.getPastEvents(
-            "NewSecuriytAdvisory", { fromBlock: lastBlockRead.current + 1, toBlock: to },
+            "NewSecurityAdvisory", { fromBlock: lastBlockRead.current + 1, toBlock: to },
             function (error, events) {
                 if (error) throw error;
                 return events;
@@ -171,10 +167,7 @@ function Vulnerabilities({ ipfs }) {
             <RefreshConfirmation ipfs={ipfs} state={showModal} close={modalClose} loadEvents={() => refreshVulnerabilities(ipfs)} />
             <Container>
                 <Row>
-                    <Col lg="8"><h1>Vulnerabilities</h1></Col>
-                    <Col lg="2">
-                        <FilterSwitch setFiltering={setFiltering} />
-                    </Col>
+                    <Col lg="10"><h1>Vulnerabilities</h1></Col>
                     <Col lg="2">
                         {showUpdateButton
                             ? <Button variant="primary" size='md' onClick={() => getNewEvents(ipfs)}>Update</Button>
@@ -183,9 +176,11 @@ function Vulnerabilities({ ipfs }) {
                     </Col>
                 </Row>
             </Container>
-            {filtering
-                ? userVulnerabilities.length > 0 ? <VulnerabilityAccordion vulnerabilities={userVulnerabilities} dependencies={dependencies.current} /> : <h4>No matching vulnerabilities found.</h4>
-                : allVulnerabilities.length > 0  ? <VulnerabilityAccordion vulnerabilities={allVulnerabilities} dependencies={dependencies.current} />  : <h4>No vulnerabilities found.</h4>}
+            {userVulnerabilities.length > 0 
+            ? <VulnerabilityAccordion 
+                vulnerabilities={userVulnerabilities} 
+                dependencies={dependencies.current} /> 
+            : <h4>No matching vulnerabilities found.</h4>}
         </>
     );
 }
