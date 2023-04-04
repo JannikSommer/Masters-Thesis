@@ -17,21 +17,25 @@ import SuccessModal from '../announcement/SuccessModal';
 function VendorManagementForm({accounts}) {
     const selectedAccount = useRef();
     const [address, setAddress] = useState("");
-    const [publicKey, setPublicKey] = useState("");
-    const [privateKey, setPrivateKey] = useState("");
     const [vendorAddress, setVendorAddress] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
     const [error, setError] = useState("");
 
-    const [showWarning, setShowWarning] = useState(false);
-    const dismissWarning = () => setShowWarning(false);
+    const [showWarningAdd, setShowWarningAdd] = useState(false);
+    const dismissWarningAdd = () => setShowWarningAdd(false);
+
+    const [showWarningRemove, setShowWarningRemove] = useState(false);
+    const dismissWarningRemove = () => setShowWarningRemove(false);
 
     const [showTransaction, setShowTransaction] = useState(false);
     const dismissTransaction = () => setShowTransaction(false);
 
     const [showError, setShowError] = useState(false);
     const dismissError = () => setShowError(false);
+
+    const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+    const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
 
     const selectAccount = (value) => {
         if (value === "Select an account") {
@@ -41,35 +45,54 @@ function VendorManagementForm({accounts}) {
         selectedAccount.current = JSON.parse(value);
     }
 
-    const setKey = () => {
+    const contractTransaction = (method) => {
+        let config = {
+            from: selectedAccount.current.wallet,
+            to: address,
+            gas: 6721975,   
+            data: method
+        }
+
+        web3.eth.accounts.signTransaction(config, selectedAccount.current.key)
+        .then((signedTx) => {
+            const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+            sentTx.on("receipt", receipt => {
+                setTransaction(receipt);
+                setShowTransaction(true);
+            });
+            sentTx.on("error", err => {
+                setError(err);
+                setShowError(true);
+            });
+        });
+    }
+
+    const removeVendor = () => {
         if (!accept) {
             return;
         };
-        dismissWarning();
+        dismissWarningRemove();
+
+        try {
+            contractTransaction(
+                contract.methods.removeVendor(vendorAddress).encodeABI()
+            );
+        } catch (err) {
+            setError(err);
+            setShowError(true);
+        }
+    }
+
+    const AddVendor = () => {
+        if (!accept) {
+            return;
+        };
+        dismissWarningAdd();
+
         try {  
-            var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-            const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
-            web3.eth.accounts.signTransaction({
-                from: selectedAccount.current.wallet,
-                to: address,
-                gas: 6721975,   
-                data: contract.methods.setPublicKey(
-                    web3.utils.utf8ToHex(publicKey) // TODO: We might be able to optimize by converting to binary first. https://stackoverflow.com/questions/11402329/what-is-the-effect-of-encoding-an-image-in-base64
-                ).encodeABI()
-            }, selectedAccount.current.key).then((signedTx) => {
-                const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
-                sentTx.on("receipt", receipt => {
-                    setTransaction(receipt);
-                    setShowTransaction(true);
-                });
-                sentTx.on("error", err => {
-                    setError(err);
-                    setShowError(true);
-                });
-            }).catch((err) => {
-                setError(err);
-                setShowError(true);
-             })
+            contractTransaction(
+                contract.methods.addVendor(vendorAddress).encodeABI()
+            );
         } catch (err) {
             setError(err);
             setShowError(true);
@@ -80,7 +103,8 @@ function VendorManagementForm({accounts}) {
         <div>
             <h3>Manage Vendor Whitelist</h3>
             <br />
-            <AcceptModal state={showWarning} dismiss={dismissWarning} announce={setKey}></AcceptModal>
+            <AcceptModal state={showWarningAdd} dismiss={dismissWarningAdd} announce={AddVendor}></AcceptModal>
+            <AcceptModal state={showWarningRemove} dismiss={dismissWarningRemove} announce={removeVendor}></AcceptModal>
             <ErrorModal state={showError} dismiss={dismissError} error={error}></ErrorModal>
             <SuccessModal state={showTransaction} dismiss={dismissTransaction} tx={transaction}></SuccessModal>
             <Form>
@@ -103,23 +127,23 @@ function VendorManagementForm({accounts}) {
 
                 <Form.Group className='mb-3' controlId='manageVendorAddress'>
                     <FloatingLabel className='mb-3' controlId='manageVendorAddressLabel' label="Vendor Address">
-                        <Form.Control value={publicKey} onChange={(e) => setVendorAddress(e.target.value)}></Form.Control>
+                        <Form.Control value={vendorAddress} onChange={(e) => setVendorAddress(e.target.value)}></Form.Control>
                         <Form.Text className='text-muted'>The address of the vendor to add/remove from the whitelist</Form.Text>
                     </FloatingLabel>
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="updateKeyCheck">
+                <Form.Group className="mb-3" controlId="manageVendorCheck">
                     <Form.Check type="checkbox" value={accept} onChange={(e) => setAccept(e.target.value)}
                         label="I accept the consequences of creating a transaction!" />
                 </Form.Group>
                     <Row>
                         <Col lg="2">
-                            <Button variant="success" type="button" onClick={() => setShowWarning(true)}>  {/* TODO: Disable if values form is not filled correctly*/}
+                            <Button variant="primary" type="button" onClick={() => setShowWarningAdd(true)}>  {/* TODO: Disable if values form is not filled correctly*/}
                                 Add
                             </Button>
                         </Col>
                         <Col lg="2">
-                            <Button variant="danger" type="button">
+                            <Button variant="danger" type="button" onClick={() => setShowWarningRemove(true)}>
                                 Remove
                             </Button>
                         </Col>
