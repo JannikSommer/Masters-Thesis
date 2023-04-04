@@ -30,6 +30,11 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
     const [showError, setShowError] = useState(false);
     const dismissError = () => setShowError(false);
 
+    var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+    const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
+
+    const rsa = new RSA();
+
     const selectAccount = (value) => {
         if (value === "Select an account") {
             selectedAccount.current= {name: "", wallet: "", key: ""};
@@ -76,7 +81,6 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
      * @returns {Promise<ArrayBuffer>} A promise of an ArrayBuffer.
      */
     const computeHash = async () => {
-        const rsa = new RSA();
         const fileBuffer = rsa.stringToArrayBuffer(file);
         return window.crypto.subtle.digest("SHA-256", fileBuffer);
     }
@@ -86,58 +90,48 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
         return cid.toString();
     }
 
+    const contractTransaction = (fileLocation, fileHash, wrappedKey, iv) => {
+        const config = {
+            from: selectedAccount.current.wallet,
+            to: address,
+            gas: 6721975,   
+            data: contract.methods.announce(
+                fileLocation,
+                web3.utils.bytesToHex(new Uint8Array(fileHash)),
+                web3.utils.bytesToHex(new Uint8Array(wrappedKey)),
+                web3.utils.bytesToHex(iv)
+            ).encodeABI()
+        }
+
+        web3.eth.accounts.signTransaction(config, selectedAccount.current.key).then((signedTx) => {
+            const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+            sentTx.on("receipt", receipt => {
+                setTransaction(receipt);
+                setShowTransaction(true);
+            });
+            sentTx.on("error", err => {
+                setError(err);
+                setShowError(true);
+            });
+        })
+    }
+
     const announce = async () => {
         if (!accept) {
             return;
         };
         dismissWarning();
         try {
-            const rsa = new RSA();
-            // Compute hash of file
             const fileHash = await computeHash();
 
-            // Generate AES-128 key, encode and encrypt data
             const aes = new AES();
             const aesKey = await aes.generateKey();
             const { ciphertext, iv } = await aes.encrypt(file, aesKey);
-
-            // Export and wrap key
+            
             const wrappedKey = await wrapKey(aesKey);
+            const fileLocation = await uploadFile(ciphertext); 
 
-            // Upload file to IPFS
-            let fileLocation = await uploadFile(ciphertext);
-
-            const ls = await ipfs.ls(fileLocation);
-
-            //Announce with IV and key         
-            var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-            const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
-            web3.eth.accounts.signTransaction({
-                from: selectedAccount.current.wallet,
-                to: address,
-                gas: 6721975,   
-                data: contract.methods.announce(
-                    fileLocation,
-                    web3.utils.bytesToHex(new Uint8Array(fileHash)),
-                    web3.utils.bytesToHex(new Uint8Array(wrappedKey)),
-                    web3.utils.bytesToHex(iv)
-                ).encodeABI()
-            }, selectedAccount.current.key).then((signedTx) => {
-                const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
-                sentTx.on("receipt", receipt => {
-                    setTransaction(receipt);
-                    setShowTransaction(true);
-                });
-                sentTx.on("error", err => {
-                    console.log(err);
-
-                    setError(err);
-                    setShowError(true);
-                });
-            }).catch((err) => {
-                setError(err);
-                setShowError(true);
-            })
+            contractTransaction(fileLocation, fileHash, wrappedKey, iv);
         } catch (err) {
             setError(err);
             setShowError(true);
