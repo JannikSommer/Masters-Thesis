@@ -33,6 +33,9 @@ function UpdateKeyForm({accounts}) {
     const [showError, setShowError] = useState(false);
     const dismissError = () => setShowError(false);
 
+    var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+    const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
+
     const selectAccount = (value) => {
         if (value === "Select an account") {
             selectedAccount.current= {name: "", wallet: "", key: ""};
@@ -60,20 +63,17 @@ function UpdateKeyForm({accounts}) {
         dismissWarning();
         try {  
             const rsa = new RSA();
-            var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-            const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
-            web3.eth.accounts.signTransaction({
+            const publickeyByteArray = new Uint8Array(rsa.base64ToArrayBuffer(publicKey));
+            const publicKeyHex = web3.utils.bytesToHex(publickeyByteArray)
+
+            const config = {
                 from: selectedAccount.current.wallet,
                 to: address,
                 gas: 6721975,
-                data: contract.methods.setPublicKey(
-                    web3.utils.bytesToHex(
-                        new Uint8Array(
-                            rsa.base64ToArrayBuffer(publicKey)
-                        )
-                    )
-                ).encodeABI()
-            }, selectedAccount.current.key).then((signedTx) => {
+                data: contract.methods.setPublicKey(publicKeyHex).encodeABI()
+            }
+
+            web3.eth.accounts.signTransaction(config, selectedAccount.current.key).then((signedTx) => {
                 const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
                 sentTx.on("receipt", receipt => {
                     setTransaction(receipt);
@@ -83,10 +83,7 @@ function UpdateKeyForm({accounts}) {
                     setError(err);
                     setShowError(true);
                 });
-            }).catch((err) => {
-                setError(err);
-                setShowError(true);
-             })
+            });
         } catch (err) {
             setError(err);
             setShowError(true);
@@ -137,14 +134,14 @@ function UpdateKeyForm({accounts}) {
                         label="I accept the consequences of creating a transaction!" />
                 </Form.Group>
                     <Row>
-                        <Col>
-                            <Button variant="primary" type="button" onClick={() => setShowWarning(true)}>  {/* TODO: Disable if values form is not filled correctly*/}
-                                Update Public Key
+                        <Col lg="3">
+                            <Button variant="primary" type="button" onClick={() => setShowWarning(true)}>
+                                Update Key
                             </Button>
                         </Col>
-                        <Col>
-                            <Button type="button" onClick={() => generateKeyPair()}>
-                                Generate Key Pair
+                        <Col lg="4">
+                            <Button type="button" variant="primary" onClick={() => generateKeyPair()}>
+                                Generate Keys
                             </Button>
                         </Col>
                     </Row>
