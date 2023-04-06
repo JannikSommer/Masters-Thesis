@@ -8,40 +8,55 @@ import Spinner from 'react-bootstrap/Spinner';
 import ConfidentialAnnouncements from './confidentialAnnouncement/ConfidentialAnnouncements';
 import ConfidentialSettings from "./confidentialSettings/ConfidentialSettings";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as IPFS from 'ipfs-core';
+import Web3 from "web3";
 
 function App() {
-  const [ipfs, setIpfs] = useState();
+    const [ipfs, setIpfs] = useState(); // IPFS node 
 
-  async function loadIpfs() {
-    var node = await IPFS.create({ repo: '/var/ipfs/data' });
-    setIpfs(node);
-  }
+    const vulnerabilities = useRef([]); // set here to persist from page to page
+    const updateVulnerabilities = (updatedVulnerabilities) => { vulnerabilities.current = [...updatedVulnerabilities].reverse(); }
 
-  useEffect(() => {
-    loadIpfs();
-  }, []);
+    const web3 = useRef(new Web3(Web3.givenProvider || 'ws://localhost:7545')); // set here to persist from page to page
+    const clearSubscriptions = () => { web3.current.eth.clearSubscriptions(); }
 
-  return (
-    <div>
-      <Container>
-        {ipfs === undefined
-        ? <Spinner animation="border" role="status"  style={{ width: "4rem", height: "4rem", position: "absolute", top: "20%", left: "50%" }}>
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-        : 
-          <Routes>
-            <Route exact path='/' Component={() => <Vulnerabilities ipfs={ipfs}/>}/>
-            <Route path='announcement' Component={Announcement} />
-            <Route path='settings' Component={Settings} />
-            <Route path='accounts' Component={Accounts} />
-            <Route path='confidentialAnnouncement' Component={() => <ConfidentialAnnouncements ipfs={ipfs} />} />
-            <Route path='confidentialSettings' Component={ConfidentialSettings} />
-          </Routes>
-        }
-      </Container>
-    </div>
-  )
+    async function loadIpfs() {
+        var node = await IPFS.create({ repo: '/var/ipfs/data' });
+        setIpfs(node);
+    }
+
+    useEffect(() => {
+        loadIpfs();
+    }, []);
+
+    return (
+        <div>
+            <Container>
+                {ipfs === undefined
+                    ? <Spinner animation="border" role="status" style={{ width: "4rem", height: "4rem", position: "absolute", top: "20%", left: "50%" }}>
+                        <span className="visually-hidden">Loading...</span>
+                    </Spinner>
+                    :
+                    <Routes>
+                        <Route exact path='/' Component={() =>
+                            <Vulnerabilities 
+                                ipfs={ipfs} 
+                                vulnerabilitiesRef={vulnerabilities.current}
+                                updateVulnerabilitiesRef={updateVulnerabilities}
+                                web3Ref={web3.current}
+                                clearSubscriptions={clearSubscriptions}
+                            />} 
+                        />
+                        <Route path='announcement' Component={Announcement} />
+                        <Route path='settings' Component={Settings} />
+                        <Route path='accounts' Component={Accounts} />
+                        <Route path='confidentialAnnouncement' Component={() => <ConfidentialAnnouncements ipfs={ipfs} />} />
+                        <Route path='confidentialSettings' Component={ConfidentialSettings} />
+                    </Routes>
+                }
+            </Container>
+        </div>
+    )
 }
 export default App;
