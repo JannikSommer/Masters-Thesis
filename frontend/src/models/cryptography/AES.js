@@ -1,3 +1,5 @@
+import Utilities from "./Utilities";
+
 class AES {
     aesOptions = {
         name: 'AES-GCM',
@@ -17,17 +19,6 @@ class AES {
     }
     
     /**
-     * Converts string to bytes.
-     * @private
-     * @param {String} data The data to convert.
-     * @returns {Uint8Array} The data as a byte array.
-     */
-    encode(data) {
-        const encoder = new TextEncoder();
-        return encoder.encode(data);
-    }
-    
-    /**
      * Generates a pseudo-random initialization vector for AES encryption.
      * @private
      * @returns {Uint8Array} A byte array containing an initialization vector.
@@ -43,7 +34,7 @@ class AES {
      * @returns {Object} An object containing the 'ciphertext' and the 'iv'.
      */
     async encrypt(data, key) {
-        const encoded = this.encode(data);
+        const encoded = Utilities.encode(data);
         const iv = this.generateIv();
         const ciphertext = await window.crypto.subtle.encrypt({
             name: this.aesOptions.name,
@@ -52,17 +43,6 @@ class AES {
         }, key, encoded);
         
         return {ciphertext, iv, }
-    }
-    
-    /**
-     * Converts bytes to string.
-     * @private
-     * @param {Buffer} byteStream The byte stream to convert.
-     * @returns {String} The byte stream in string format.
-     */
-    decode(byteStream) {
-        const decoder = new TextDecoder();
-        return decoder.decode(byteStream);
     }
     
     /**
@@ -77,8 +57,8 @@ class AES {
             name: this.aesOptions.name,
             iv: iv,
         }, key, cipher);
-        return this.decode(encoded);
+        return Utilities.decode(encoded);
     }
 }
 
-module.exports = AES;
+export default AES

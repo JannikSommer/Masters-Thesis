@@ -6,8 +6,9 @@ import { useRef, useState } from 'react';
 
 import { PRIVATE_CONTRACT_ABI } from '../../config';
 import Web3 from 'web3';
-import AES from '../../models/AES';
-import RSA from '../../models/RSA';
+import AES from '../../models/cryptography/AES';
+import RSA from '../../models/cryptography/RSA';
+import Utilities from '../../models/cryptography/Utilities';
 
 import AcceptModal from '../announcement/AcceptModal';
 import ErrorModal from '../announcement/ErrorModal';
@@ -33,7 +34,6 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
     var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
     const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
 
-    const rsa = new RSA();
 
     const selectAccount = (value) => {
         if (value === "Select an account") {
@@ -69,7 +69,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
     const wrapKey = async (key) => {
         const rsa = new RSA();
         return getPublicKey().then(async (stringPKey) => {
-            const rawPKey = rsa.base64ToArrayBuffer(stringPKey);
+            const rawPKey = Utilities.base64ToArrayBuffer(stringPKey);
             const pKey = await rsa.importPublicKey(rawPKey);
             const wrappedKey =  await rsa.wrapKey(key, pKey);
             return wrappedKey;
@@ -81,7 +81,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
      * @returns {Promise<ArrayBuffer>} A promise of an ArrayBuffer.
      */
     const computeHash = async () => {
-        const fileBuffer = rsa.stringToArrayBuffer(file);
+        const fileBuffer = Utilities.stringToArrayBuffer(file);
         return window.crypto.subtle.digest("SHA-256", fileBuffer);
     }
 
@@ -110,7 +110,8 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
             ).encodeABI()
         }
 
-        web3.eth.accounts.signTransaction(config, selectedAccount.current.key).then((signedTx) => {
+        web3.eth.accounts.signTransaction(config, selectedAccount.current.key)
+        .then((signedTx) => {
             const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
             sentTx.on("receipt", receipt => {
                 setTransaction(receipt);

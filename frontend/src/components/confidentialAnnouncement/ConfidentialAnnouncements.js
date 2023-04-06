@@ -5,7 +5,7 @@ import Col from 'react-bootstrap/Col';
 
 import ConfidentialAdvisoryForm from './ConfidentialAdvisoryForm';
 
-import RSA from '../../models/RSA';
+import Utilities from '../../models/cryptography/Utilities';
 
 import { PasswordContext } from '../../contexts/PasswordContext';
 
@@ -21,12 +21,11 @@ function ConfidentialAnnouncements({ ipfs }) {
     
 
     async function decryptAccounts(data) {
-        const rsa = new RSA();
         const dataDecrypted = await window.crypto.subtle.decrypt(
             {
                 name: "AES-GCM",
                 length: 256,
-                iv: rsa.base64ToArrayBuffer(JSON.parse(localStorage.getItem(LS_KEY_PWD)).iv),
+                iv: Utilities.base64ToArrayBuffer(JSON.parse(localStorage.getItem(LS_KEY_PWD)).iv),
             }, 
             aesKey,
             data
@@ -35,10 +34,9 @@ function ConfidentialAnnouncements({ ipfs }) {
     }
 
     async function loadAccounts() { 
-        const rsa = new RSA();
         let acc = localStorage.getItem(LS_KEY_ACC); 
         if (acc !== null) {
-            const decAccounts = await decryptAccounts(rsa.base64ToArrayBuffer(acc));
+            const decAccounts = await decryptAccounts(Utilities.base64ToArrayBuffer(acc));
             setAccounts(JSON.parse(decAccounts));
         }
     };

@@ -5,7 +5,9 @@ import Row from 'react-bootstrap/esm/Row';
 import Form from 'react-bootstrap/Form';
 import { useState, useEffect, useContext } from 'react';
 import { LS_KEY_PWD } from '../config';
-import RSA from "../models/RSA";
+
+import Utilities from '../models/cryptography/Utilities';
+
 
 function PasswordModal({state, dismiss, done, setPasswordContext}) {
 
@@ -63,16 +65,15 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
     }
 
     async function newPassword() {
-        const rsa = new RSA();
         const salt = window.crypto.getRandomValues(new Uint8Array(16))
         const aesKey = await deriveAesKey(salt);
         const keyHash = await getKeyHash(aesKey);
         const iv = window.crypto.getRandomValues(new Uint8Array(16));
 
         const result = {
-            hash: rsa.arrayBufferToBase64(keyHash),
-            salt: rsa.arrayBufferToBase64(salt.buffer),
-            iv: rsa.arrayBufferToBase64(iv.buffer),
+            hash: Utilities.arrayBufferToBase64(keyHash),
+            salt: Utilities.arrayBufferToBase64(salt.buffer),
+            iv: Utilities.arrayBufferToBase64(iv.buffer),
         };
         localStorage.setItem(LS_KEY_PWD, JSON.stringify(result));
         setPasswordData(result);
@@ -85,10 +86,9 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
             done();
         };
 
-        const rsa = new RSA();
-        const salt = rsa.base64ToArrayBuffer(passwordData.salt)
+        const salt = Utilities.base64ToArrayBuffer(passwordData.salt)
         const aesKey = await deriveAesKey(salt);
-        const keyHash = rsa.arrayBufferToBase64(await getKeyHash(aesKey));
+        const keyHash = Utilities.arrayBufferToBase64(await getKeyHash(aesKey));
 
         if(passwordData.hash !== keyHash) {
             console.log("Password incorrect");
