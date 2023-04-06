@@ -54,11 +54,9 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
      * @returns {Promise<String>} A Base64 encoded string representing a RSA-OAEP public key.
      */
     const getPublicKey = async () => {
-        const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-        const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
         const result = await contract.methods.publicKey().call({from: selectedAccount.current.wallet});
-        const pKey = web3.utils.hexToUtf8(result);
-        return pKey;
+        const pKey = web3.utils.hexToBytes(result);
+        return new Uint8Array(pKey);
     };
 
     /**
@@ -68,9 +66,10 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
      */
     const wrapKey = async (key) => {
         const rsa = new RSA();
-        return getPublicKey().then(async (stringPKey) => {
-            const rawPKey = Utilities.base64ToArrayBuffer(stringPKey);
+        return getPublicKey().then(async (rawPKey) => {
+            console.log(rawPKey);
             const pKey = await rsa.importPublicKey(rawPKey);
+            console.log(pKey);
             const wrappedKey =  await rsa.wrapKey(key, pKey);
             return wrappedKey;
         });
@@ -144,6 +143,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
 
             contractTransaction(fileLocation, fileHash, wrappedKey, iv);
         } catch (err) {
+            console.log(err);
             setError(err);
             setShowError(true);
         }
