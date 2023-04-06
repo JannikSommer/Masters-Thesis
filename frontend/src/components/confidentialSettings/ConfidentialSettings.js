@@ -17,7 +17,6 @@ import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
 function ConfidentialSettings({ ipfs }) {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
-    const isLoaded = useRef(false); 
     const aesKey = useContext(PasswordContext);
     
 
@@ -43,11 +42,8 @@ function ConfidentialSettings({ ipfs }) {
     };
 
     useEffect(() => {
-        if (!isLoaded.current) {
-            loadAccounts(); 
-            isLoaded.current = true;
-        }
-    });
+        if(aesKey !== null) loadAccounts(); 
+    }, [aesKey]);
 
     return (
         <div>

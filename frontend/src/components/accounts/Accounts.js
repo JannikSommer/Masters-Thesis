@@ -56,11 +56,8 @@ function Accounts() {
     };
 
     useEffect(() => {
-        if (!isLoaded.current) {
-            loadAccounts();
-            isLoaded.current = true;
-        }
-    });
+        if(aesKey !== null) loadAccounts(); 
+    }, [aesKey]);
 
     return (
         <>
