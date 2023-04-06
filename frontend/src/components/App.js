@@ -8,11 +8,16 @@ import Spinner from 'react-bootstrap/Spinner';
 import ConfidentialAnnouncements from './confidentialAnnouncement/ConfidentialAnnouncements';
 import ConfidentialSettings from "./confidentialSettings/ConfidentialSettings";
 
+
 import { useEffect, useState } from "react";
 import * as IPFS from 'ipfs-core';
+import { PasswordContext } from "../contexts/PasswordContext";
+import PasswordModal from "./PasswordModal";
 
 function App() {
   const [ipfs, setIpfs] = useState();
+  const [cryptoKey, setCryptoKey] = useState(null);
+  const [showPwModal, setShowPwModal] = useState(true);
 
   async function loadIpfs() {
     var node = await IPFS.create({ repo: '/var/ipfs/data' });
@@ -31,14 +36,17 @@ function App() {
           <span className="visually-hidden">Loading...</span>
         </Spinner>
         : 
-          <Routes>
-            <Route exact path='/' Component={() => <Vulnerabilities ipfs={ipfs}/>}/>
-            <Route path='announcement' Component={Announcement} />
-            <Route path='settings' Component={Settings} />
-            <Route path='accounts' Component={Accounts} />
-            <Route path='confidentialAnnouncement' Component={() => <ConfidentialAnnouncements ipfs={ipfs} />} />
-            <Route path='confidentialSettings' Component={ConfidentialSettings} />
-          </Routes>
+        <PasswordContext.Provider value={cryptoKey}>
+            <PasswordModal state={showPwModal} setPasswordContext={(key) => setCryptoKey(key)} dismiss={() => setShowPwModal(false)} done={() => setShowPwModal(false)} ></PasswordModal>
+            <Routes>
+                <Route exact path='/' Component={() => <Vulnerabilities ipfs={ipfs}/>}/>
+                <Route path='announcement' Component={Announcement} />
+                <Route path='settings' Component={Settings} />
+                <Route path='accounts' Component={Accounts} />
+                <Route path='confidentialAnnouncement' Component={() => <ConfidentialAnnouncements ipfs={ipfs} />} />
+                <Route path='confidentialSettings' Component={ConfidentialSettings} />
+            </Routes>    
+        </PasswordContext.Provider>
         }
       </Container>
     </div>
