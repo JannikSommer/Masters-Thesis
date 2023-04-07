@@ -24,22 +24,8 @@ function App() {
     async function loadIpfs() {
         var node = await IPFS.create({ repo: '/var/ipfs/data' });
         setIpfs(node);
-        let file = {
-            path: '/test/bsi.txt',
-            content: JSON.stringify({"title":"CVRF-CSAF-Converter: XML External Entities Vulnerability","severity":"Moderate","description":"No description provided.","vendors":[{"name":"CSAF Tools","products":[{"versions":[{"fullName":"CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha","identifier":"CSAFPID-0001","version":"1.0.0-alpha"},{"fullName":"CSAF Tools CVRF-CSAF-Converter 1.0.0-dev1","identifier":"CSAFPID-0002","version":"1.0.0-dev1"},{"fullName":"CSAF Tools CVRF-CSAF-Converter 1.0.0-dev2","identifier":"CSAFPID-0003","version":"1.0.0-dev2"},{"fullName":"CSAF Tools CVRF-CSAF-Converter 1.0.0-dev3","identifier":"CSAFPID-0004","version":"1.0.0-dev3"},{"fullName":"CSAF Tools CVRF-CSAF-Converter 1.0.0-rc1","identifier":"CSAFPID-0005","version":"1.0.0-rc1"},{"fullName":"CSAF Tools CVRF-CSAF-Converter 1.0.0-rc2","identifier":"CSAFPID-0006","version":"1.0.0-rc2"}],"name":"CVRF-CSAF-Converter"}]}],"vulnerabilities":[{"cwe":"CWE-611","cvss":{},"productStatus":{},"description":["CSAF Tools CVRF-CSAF-Converter 1.0.0-rc1 resolves XML External Entities (XXE). This leads to the inclusion of arbitrary (local) file content into the generated output document. An attacker can exploit this to disclose information from the system running the converter."],"remediations":[{"details":"Update to the latest version of the product. At least version 1.0.0-rc2","url":"https://github.com/csaf-tools/CVRF-CSAF-Converter/releases/tag/1.0.0-rc2","productIds":{}}]}]})
-        };
-        let cid = await node.add(file); 
-        console.log(cid.cid.toString());
-
-        const pcid = await node.pin.add(cid.cid);
-        console.log(pcid.toString());
-        console.log(await node.bootstrap.reset());
-
-        // ipfs.io/ipfs/QmcH8qSWZY81cyDVG9xpTT9Q3tjkXjYQVhMuMy3SBqLfYT/bsi.txt
-        // dweb.link/ipfs/QmcH8qSWZY81cyDVG9xpTT9Q3tjkXjYQVhMuMy3SBqLfYT/bsi.txt
-        // QmcH8qSWZY81cyDVG9xpTT9Q3tjkXjYQVhMuMy3SBqLfYT
     }
-
+    
     useEffect(() => {
         loadIpfs();
     }, []);
