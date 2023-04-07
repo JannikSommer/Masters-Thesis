@@ -6,27 +6,44 @@ import Col from 'react-bootstrap/Col'
 import NewAdvisoryForm from './NewAdvisoryForm';
 import UpdateAdvisoryForm from './UpdateAdvisoryForm';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { LS_KEY_ACC } from '../../config';
+import Utilities from '../../models/cryptography/Utilities';
+
+import { PasswordContext } from '../../contexts/PasswordContext';
+
+import React, { useEffect, useRef, useState, useContext } from 'react';
+import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
 
 
-function Announcement() {
+function Announcement({ipfs}) {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
-    const isLoaded = useRef(false); 
+    const aesKey = useContext(PasswordContext);
+    
 
-    async function loadAccounts() {
-        let savedAccounts = localStorage.getItem(LS_KEY_ACC); 
-        if (savedAccounts !== null)
-            setAccounts(JSON.parse(savedAccounts));
+    async function decryptAccounts(data) {
+        const dataDecrypted = await window.crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                length: 256,
+                iv: Utilities.base64ToArrayBuffer(JSON.parse(localStorage.getItem(LS_KEY_PWD)).iv),
+            }, 
+            aesKey,
+            data
+        );
+        return new TextDecoder().decode(dataDecrypted);
     }
 
-    useEffect(() => {
-        if (!isLoaded.current) {
-            loadAccounts(); 
-            isLoaded.current = true;
+    async function loadAccounts() { 
+        let acc = localStorage.getItem(LS_KEY_ACC); 
+        if (acc !== null) {
+            const decAccounts = await decryptAccounts(Utilities.base64ToArrayBuffer(acc));
+            setAccounts(JSON.parse(decAccounts));
         }
-    });
+    };
+
+    useEffect(() => {
+        if(aesKey !== null) loadAccounts(); 
+    }, [aesKey]);
 
     return (
         <div>
@@ -44,7 +61,7 @@ function Announcement() {
             <Container>
                 <Row>
                     <Col lg="5">
-                        <NewAdvisoryForm accounts={accounts} />
+                        <NewAdvisoryForm accounts={accounts} ipfs={ipfs}/>
                     </Col>
                     <Col>
                         <div style={{height: '40%', 
@@ -55,7 +72,7 @@ function Announcement() {
                         </div>
                     </Col>
                     <Col lg="5">
-                        <UpdateAdvisoryForm accounts={accounts}/>
+                        <UpdateAdvisoryForm accounts={accounts} ipfs={ipfs}/>
                     </Col>
                 </Row>
             </Container>

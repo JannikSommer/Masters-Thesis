@@ -104,12 +104,12 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
     }
 
     useEffect(() => {
-        if (vulnerabilities.length === 0) {
-            subscribeToNewAdvisories();
-        }
-        for (const dep of JSON.parse(localStorage.getItem(LS_KEY_DEP))) {
+        const lsDep = localStorage.getItem(LS_KEY_DEP);
+        if(lsDep === null) return;
+        for (const dep of JSON.parse(lsDep)) {
             dependencies.current.push(dep.identifier);
         }
+        
         whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ipfs])

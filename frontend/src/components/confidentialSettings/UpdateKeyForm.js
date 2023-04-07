@@ -8,11 +8,12 @@ import { useRef, useState } from 'react';
 
 import { PRIVATE_CONTRACT_ABI } from '../../config';
 import Web3 from 'web3';
-import RSA from '../../models/RSA';
+import RSA from '../../models/cryptography/RSA';
 
 import AcceptModal from '../announcement/AcceptModal';
 import ErrorModal from '../announcement/ErrorModal';
 import SuccessModal from '../announcement/SuccessModal';
+import Utilities from '../../models/cryptography/Utilities';
 
 
 function UpdateKeyForm({accounts}) {
@@ -51,10 +52,10 @@ function UpdateKeyForm({accounts}) {
         const rsa = new RSA();
         rsa.generateKeyPair().then((keyPair) => {
             rsa.exportPublicKey(keyPair.publicKey).then((key) => {
-                setPublicKey(rsa.arrayBufferToBase64(key));
+                setPublicKey(Utilities.arrayBufferToBase64(key));
             });
             rsa.exportPrivateKey(keyPair.privateKey).then((key) => {
-                setPrivateKey(rsa.arrayBufferToBase64(key));
+                setPrivateKey(Utilities.arrayBufferToBase64(key));
             });
         });
     }
@@ -68,8 +69,7 @@ function UpdateKeyForm({accounts}) {
         };
         dismissWarning();
         try {  
-            const rsa = new RSA();
-            const publickeyByteArray = new Uint8Array(rsa.base64ToArrayBuffer(publicKey));
+            const publickeyByteArray = new Uint8Array(Utilities.base64ToArrayBuffer(publicKey));
             const publicKeyHex = web3.utils.bytesToHex(publickeyByteArray)
 
             const config = {
