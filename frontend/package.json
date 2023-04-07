@@ -8,7 +8,6 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "bootstrap": "^5.2.3",
-    "chai": "^4.3.7",
     "fs": "^0.0.1-security",
     "ipfs-core": "^0.18.0",
     "ipfs-http-client": "^60.0.0",
@@ -47,6 +46,8 @@
     ]
   },
   "devDependencies": {
-    "eslint-plugin-jest": "^27.2.1"
+    "chai": "^4.3.7",
+    "eslint-plugin-jest": "^27.2.1",
+    "mocha": "^10.2.0"
   }
 }
