@@ -1,9 +1,9 @@
 class Utilities {
 
     /**
-     * 
+     * Converts an ArrayBuffer to string format.
      * @param {ArrayBuffer} buffer 
-     * @returns 
+     * @returns {String}
      */
     static ArrayBufferToString(buffer) {
         return String.fromCharCode.apply(null, new Uint8Array(buffer));

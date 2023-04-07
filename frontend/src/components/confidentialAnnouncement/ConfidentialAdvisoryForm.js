@@ -31,7 +31,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
     const [showError, setShowError] = useState(false);
     const dismissError = () => setShowError(false);
 
-    var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+    const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
     const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
 
 

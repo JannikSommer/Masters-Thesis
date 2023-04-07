@@ -7,9 +7,9 @@ import Accounts from './accounts/Accounts';
 import Spinner from 'react-bootstrap/Spinner';
 import ConfidentialAnnouncements from './confidentialAnnouncement/ConfidentialAnnouncements';
 import ConfidentialSettings from "./confidentialSettings/ConfidentialSettings";
+import Web3 from 'web3';
 
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import * as IPFS from 'ipfs-core';
 import { PasswordContext } from "../contexts/PasswordContext";
 import PasswordModal from "./PasswordModal";
@@ -19,14 +19,21 @@ function App() {
   const [cryptoKey, setCryptoKey] = useState(null);
   const [showPwModal, setShowPwModal] = useState(true);
 
-  async function loadIpfs() {
-    var node = await IPFS.create({ repo: '/var/ipfs/data' });
-    setIpfs(node);
-  }
+    const vulnerabilities = useRef([]); // set here to persist from page to page
+    const updateVulnerabilities = (updatedVulnerabilities) => { vulnerabilities.current = [...updatedVulnerabilities].reverse(); }
 
-  useEffect(() => {
-    loadIpfs();
-  }, []);
+    const web3 = useRef(new Web3(Web3.givenProvider || 'ws://localhost:7545')); // set here to persist from page to page
+    const clearSubscriptions = () => { web3.current.eth.clearSubscriptions(); }
+
+    
+    async function loadIpfs() {
+        var node = await IPFS.create({ repo: '/var/ipfs/data' });
+        setIpfs(node);
+    }
+
+    useEffect(() => {
+        loadIpfs();
+    }, []);
 
   return (
     <div>

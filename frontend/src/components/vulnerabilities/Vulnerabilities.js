@@ -109,7 +109,7 @@ function Vulnerabilities({ ipfs }) {
         for (const dep of JSON.parse(lsDep)) {
             dependencies.current.push(dep.identifier);
         }
-        //dependencies.current = JSON.parse(localStorage.getItem(LS_KEY_DEP));
+        
         whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
         web3.current = new Web3(Web3.givenProvider || 'ws://localhost:7545');
         subscriptions.current.push(subscribeToNewAdvisories());
