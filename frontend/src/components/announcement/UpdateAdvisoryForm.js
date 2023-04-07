@@ -10,11 +10,11 @@ import { VENDOR_CONTRACT_ABI } from '../../config';
 import { useRef, useState } from 'react';
 import Web3 from 'web3';
 
-function UpdateAdvisoryForm({accounts}) {
+function UpdateAdvisoryForm({ accounts, ipfs }) {
     const selectedAccount = useRef();
     const [address, setAddress] = useState("");
     const [pids, setPids] = useState("");
-    const [cid, setCid] = useState("");
+    const [file, setFile] = useState("");
     const [advisoryId, setAdvisoryId] = useState("");
     const [vids, setVids] = useState("");
     const [accept, setAccept] = useState(false);
@@ -38,7 +38,18 @@ function UpdateAdvisoryForm({accounts}) {
         selectedAccount.current = JSON.parse(value);
     }
 
-    const announce = () => {
+    const handleFileChosen = (chosenFile) => {
+        const fileReader = new FileReader();
+        fileReader.readAsText(chosenFile);
+        fileReader.onloadend = () => {setFile(fileReader.result);};
+    }
+
+    const uploadFile = async (data) => {
+        const { cid } = await ipfs.add(data);
+        return cid.toString();
+    }
+
+    const announce = async () => {
         if (!accept) {
             return;
         };
@@ -46,6 +57,8 @@ function UpdateAdvisoryForm({accounts}) {
         try {
             var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
             const contract = new web3.eth.Contract(VENDOR_CONTRACT_ABI, address);
+            const cid = await uploadFile(file);
+
             web3.eth.accounts.signTransaction({
                 from: selectedAccount.current.wallet,
                 to: address,
@@ -104,10 +117,8 @@ function UpdateAdvisoryForm({accounts}) {
             </Form.Group>
             
             <Form.Group className='mb-3' controlId='upVulnIPFS'>
-                <FloatingLabel className='mb-3' controlId='upVulnIpfsLabel' label="IPFS Content ID">
-                <Form.Control value={cid} onChange={(e) => setCid(e.target.value)}></Form.Control>
-                    <Form.Text className='text-muted'></Form.Text>
-                </FloatingLabel>
+                    <Form.Label>CSAF File</Form.Label>
+                    <Form.Control className='mb-3' type='file' accept='.json' onChange={e => handleFileChosen(e.target.files[0])}/>
             </Form.Group>
 
             <Form.Group className='mb-3' controlId='upAdvisoryId'>

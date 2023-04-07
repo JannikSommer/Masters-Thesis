@@ -10,12 +10,12 @@ import AcceptModal from './AcceptModal';
 import ErrorModal from './ErrorModal';
 import SuccessModal from './SuccessModal';
 
-function NewAdvisoryForm({accounts}) {
+function NewAdvisoryForm({ accounts, ipfs }) {
     const selectedAccount = useRef();
     const [address, setAddress] = useState("");
     const [pids, setPids] = useState("");
-    const [cid, setCid] = useState("");
     const [vulnCount, setVulnCount] = useState(0);
+    const [file, setFile] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
     const [error, setError] = useState("");
@@ -37,20 +37,34 @@ function NewAdvisoryForm({accounts}) {
         selectedAccount.current = JSON.parse(value);
     }
 
-    const announce = () => {
+    const handleFileChosen = (chosenFile) => {
+        const fileReader = new FileReader();
+        fileReader.readAsText(chosenFile);
+        fileReader.onloadend = () => {setFile(fileReader.result);};
+    }
+
+    const uploadFile = async (data) => {
+        const { cid } = await ipfs.add(data);
+        return cid.toString();
+    }
+
+    const announce = async () => {
         if (!accept) {
             return;
         };
         dismissWarning();
         try {
-            var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+            const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
             const contract = new web3.eth.Contract(VENDOR_CONTRACT_ABI, address);
+            const cid = await uploadFile(file);
+            
             web3.eth.accounts.signTransaction({
                 from: selectedAccount.current.wallet,
                 to: address,
                 gas: 6721975,   
                 data: contract.methods.announceNewAdvisory(vulnCount, pids, cid).encodeABI()
-            }, selectedAccount.current.key).then((signedTx) => {
+            }, selectedAccount.current.key)
+            .then((signedTx) => {
                 const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
                 sentTx.on("receipt", receipt => {
                     setTransaction(receipt);
@@ -60,10 +74,7 @@ function NewAdvisoryForm({accounts}) {
                     setError(err);
                     setShowError(true);
                 });
-            }).catch((err) => {
-                setError(err);
-                setShowError(true);
-            })
+            });
         } catch (err) {
             setError(err);
             setShowError(true);
@@ -103,10 +114,8 @@ function NewAdvisoryForm({accounts}) {
                 </Form.Group>
 
                 <Form.Group className='mb-3' controlId='newVulnIPFS'>
-                    <FloatingLabel className='mb-3' controlId='new' label="IPFS Content ID">
-                        <Form.Control value={cid} onChange={(e) => setCid(e.target.value)}></Form.Control>
-                        <Form.Text className='text-muted'></Form.Text>
-                    </FloatingLabel>
+                    <Form.Label>CSAF File</Form.Label>
+                    <Form.Control className='mb-3' type='file' accept='.json' onChange={e => handleFileChosen(e.target.files[0])}/>
                 </Form.Group>
 
                 <Form.Group className='mb-3' controlId='newVulnCount'>

@@ -14,7 +14,7 @@ import React, { useEffect, useRef, useState, useContext } from 'react';
 import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
 
 
-function Announcement() {
+function Announcement({ipfs}) {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
     const aesKey = useContext(PasswordContext);
@@ -61,7 +61,7 @@ function Announcement() {
             <Container>
                 <Row>
                     <Col lg="5">
-                        <NewAdvisoryForm accounts={accounts} />
+                        <NewAdvisoryForm accounts={accounts} ipfs={ipfs}/>
                     </Col>
                     <Col>
                         <div style={{height: '40%', 
@@ -72,7 +72,7 @@ function Announcement() {
                         </div>
                     </Col>
                     <Col lg="5">
-                        <UpdateAdvisoryForm accounts={accounts}/>
+                        <UpdateAdvisoryForm accounts={accounts} ipfs={ipfs}/>
                     </Col>
                 </Row>
             </Container>
