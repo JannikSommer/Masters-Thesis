@@ -2,6 +2,7 @@
 export const LS_KEY_DEP = "SENTINEL-settings-dependencies";
 export const LS_KEY_WL = "SENTINEL-settings-whitelist";
 export const LS_KEY_ACC = "SENTINEL-settings-accounts";
+export const LS_KEY_PWD = "SENTINEL-password-data";
 
 export const CONTACT_ADDRESS = "0x1d6EBCB2302a3a2a1d660C5f7D2Cb031f60fD12c";
 export const CONTACT_ABI = [

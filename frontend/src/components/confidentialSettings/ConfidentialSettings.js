@@ -4,29 +4,46 @@ import Row from 'react-bootstrap/esm/Row';
 import Col from 'react-bootstrap/Col';
 
 import UpdateKeyForm from './UpdateKeyForm';
-
-import React, { useEffect, useRef, useState } from 'react';
-import { LS_KEY_ACC } from '../../config';
 import VendorManagementForm from './VendorManagementForm';
+
+import Utilities from '../../models/cryptography/Utilities';
+
+import { PasswordContext } from '../../contexts/PasswordContext';
+
+import React, { useEffect, useRef, useState, useContext } from 'react';
+import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
 
 
 function ConfidentialSettings({ ipfs }) {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
-    const isLoaded = useRef(false); 
+    const aesKey = useContext(PasswordContext);
+    
 
-    async function loadAccounts() {
-        let savedAccounts = localStorage.getItem(LS_KEY_ACC); 
-        if (savedAccounts !== null)
-            setAccounts(JSON.parse(savedAccounts));
+    async function decryptAccounts(data) {
+        const dataDecrypted = await window.crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                length: 256,
+                iv: Utilities.base64ToArrayBuffer(JSON.parse(localStorage.getItem(LS_KEY_PWD)).iv),
+            }, 
+            aesKey,
+            data
+        );
+        return new TextDecoder().decode(dataDecrypted);
     }
 
-    useEffect(() => {
-        if (!isLoaded.current) {
-            loadAccounts(); 
-            isLoaded.current = true;
+    async function loadAccounts() { 
+        let acc = localStorage.getItem(LS_KEY_ACC); 
+        if (acc !== null) {
+            const decAccounts = await decryptAccounts(Utilities.base64ToArrayBuffer(acc));
+            setAccounts(JSON.parse(decAccounts));
         }
-    });
+    };
+
+    useEffect(() => {
+        if(aesKey !== null) loadAccounts(); 
+    }, [aesKey]);
 
     return (
         <div>

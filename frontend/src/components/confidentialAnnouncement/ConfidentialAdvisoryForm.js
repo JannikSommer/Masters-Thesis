@@ -6,8 +6,9 @@ import { useRef, useState } from 'react';
 
 import { PRIVATE_CONTRACT_ABI } from '../../config';
 import Web3 from 'web3';
-import AES from '../../models/AES';
-import RSA from '../../models/RSA';
+import AES from '../../models/cryptography/AES';
+import RSA from '../../models/cryptography/RSA';
+import Utilities from '../../models/cryptography/Utilities';
 
 import AcceptModal from '../announcement/AcceptModal';
 import ErrorModal from '../announcement/ErrorModal';
@@ -30,10 +31,9 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
     const [showError, setShowError] = useState(false);
     const dismissError = () => setShowError(false);
 
-    var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+    const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
     const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
 
-    const rsa = new RSA();
 
     const selectAccount = (value) => {
         if (value === "Select an account") {
@@ -54,11 +54,9 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
      * @returns {Promise<String>} A Base64 encoded string representing a RSA-OAEP public key.
      */
     const getPublicKey = async () => {
-        const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-        const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
         const result = await contract.methods.publicKey().call({from: selectedAccount.current.wallet});
-        const pKey = web3.utils.hexToUtf8(result);
-        return pKey;
+        const pKey = web3.utils.hexToBytes(result);
+        return new Uint8Array(pKey);
     };
 
     /**
@@ -68,9 +66,10 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
      */
     const wrapKey = async (key) => {
         const rsa = new RSA();
-        return getPublicKey().then(async (stringPKey) => {
-            const rawPKey = rsa.base64ToArrayBuffer(stringPKey);
+        return getPublicKey().then(async (rawPKey) => {
+            console.log(rawPKey);
             const pKey = await rsa.importPublicKey(rawPKey);
+            console.log(pKey);
             const wrappedKey =  await rsa.wrapKey(key, pKey);
             return wrappedKey;
         });
@@ -81,7 +80,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
      * @returns {Promise<ArrayBuffer>} A promise of an ArrayBuffer.
      */
     const computeHash = async () => {
-        const fileBuffer = rsa.stringToArrayBuffer(file);
+        const fileBuffer = Utilities.stringToArrayBuffer(file);
         return window.crypto.subtle.digest("SHA-256", fileBuffer);
     }
 
@@ -110,7 +109,8 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
             ).encodeABI()
         }
 
-        web3.eth.accounts.signTransaction(config, selectedAccount.current.key).then((signedTx) => {
+        web3.eth.accounts.signTransaction(config, selectedAccount.current.key)
+        .then((signedTx) => {
             const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
             sentTx.on("receipt", receipt => {
                 setTransaction(receipt);
@@ -143,6 +143,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
 
             contractTransaction(fileLocation, fileHash, wrappedKey, iv);
         } catch (err) {
+            console.log(err);
             setError(err);
             setShowError(true);
         }
