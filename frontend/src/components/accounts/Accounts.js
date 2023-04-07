@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import NewAccountForm from './NewAccountForm';
 import AccountList from './AccountList';
@@ -9,7 +9,6 @@ import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
 import { PasswordContext } from '../../contexts/PasswordContext';
 
 function Accounts() {
-    let isLoaded = useRef(false);
     const [accounts, setAccounts] = useState([]);
     const aesKey = useContext(PasswordContext);
     const aesParams = {
@@ -57,6 +56,7 @@ function Accounts() {
 
     useEffect(() => {
         if(aesKey !== null) loadAccounts(); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [aesKey]);
 
     return (

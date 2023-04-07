@@ -10,7 +10,7 @@ import Utilities from '../../models/cryptography/Utilities';
 
 import { PasswordContext } from '../../contexts/PasswordContext';
 
-import React, { useEffect, useRef, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
 
 
@@ -43,6 +43,7 @@ function ConfidentialSettings({ ipfs }) {
 
     useEffect(() => {
         if(aesKey !== null) loadAccounts(); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [aesKey]);
 
     return (

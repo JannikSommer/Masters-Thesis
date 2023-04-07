@@ -109,6 +109,8 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
         for (const dep of JSON.parse(lsDep)) {
             dependencies.current.push(dep.identifier);
         }
+        if (vulnerabilities.length === 0) 
+            subscribeToNewAdvisories();
         
         whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
         // eslint-disable-next-line react-hooks/exhaustive-deps
