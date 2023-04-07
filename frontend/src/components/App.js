@@ -8,9 +8,8 @@ import Spinner from 'react-bootstrap/Spinner';
 import ConfidentialAnnouncements from './confidentialAnnouncement/ConfidentialAnnouncements';
 import ConfidentialSettings from "./confidentialSettings/ConfidentialSettings";
 import Web3 from 'web3';
-
-import { useEffect, useState, useRef } from "react";
-import * as IPFS from 'ipfs-core';
+import { useEffect, useRef, useState } from "react";
+import { create } from "ipfs-http-client";
 import { PasswordContext } from "../contexts/PasswordContext";
 import PasswordModal from "./PasswordModal";
 
@@ -27,8 +26,11 @@ function App() {
 
     
     async function loadIpfs() {
-        var node = await IPFS.create({ repo: '/var/ipfs/data' });
-        setIpfs(node);
+        var ipfsClient = create({ 
+            host: "127.0.0.1",
+            port: 5001,
+            protocol: "http"});
+        setIpfs(ipfsClient);
     }
 
     useEffect(() => {
