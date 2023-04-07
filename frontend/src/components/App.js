@@ -48,7 +48,7 @@ function App() {
                                 clearSubscriptions={clearSubscriptions}
                             />} 
                         />
-                        <Route path='announcement' Component={Announcement} />
+                        <Route path='announcement' Component={() => <Announcement ipfs={ipfs}/>} />
                         <Route path='settings' Component={Settings} />
                         <Route path='accounts' Component={Accounts} />
                         <Route path='confidentialAnnouncement' Component={() => <ConfidentialAnnouncements ipfs={ipfs} />} />
