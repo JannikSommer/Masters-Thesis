@@ -11,6 +11,7 @@
     "chai": "^4.3.7",
     "fs": "^0.0.1-security",
     "ipfs-core": "^0.18.0",
+    "ipfs-http-client": "^60.0.0",
     "mocha": "^10.2.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.2",

@@ -9,7 +9,7 @@ import ConfidentialAnnouncements from './confidentialAnnouncement/ConfidentialAn
 import ConfidentialSettings from "./confidentialSettings/ConfidentialSettings";
 
 import { useEffect, useRef, useState } from "react";
-import * as IPFS from 'ipfs-core';
+import { create } from "ipfs-http-client";
 import Web3 from "web3";
 
 function App() {
@@ -22,8 +22,11 @@ function App() {
     const clearSubscriptions = () => { web3.current.eth.clearSubscriptions(); }
 
     async function loadIpfs() {
-        var node = await IPFS.create({ repo: '/var/ipfs/data' });
-        setIpfs(node);
+        var ipfsClient = create({ 
+            host: "127.0.0.1",
+            port: 5001,
+            protocol: "http"});
+        setIpfs(ipfsClient);
     }
 
     useEffect(() => {
