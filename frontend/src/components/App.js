@@ -33,7 +33,7 @@ function App() {
         });
         setIpfs(ipfsClient);
     }
-
+    
     useEffect(() => {
         loadIpfs();
     }, []);
@@ -49,7 +49,14 @@ function App() {
                     <PasswordContext.Provider value={cryptoKey}>
                         <PasswordModal state={showPwModal} setPasswordContext={(key) => setCryptoKey(key)} dismiss={() => setShowPwModal(false)} done={() => setShowPwModal(false)} ></PasswordModal>
                         <Routes>
-                            <Route exact path='/' Component={() => <Vulnerabilities ipfs={ipfs} />} />
+                            <Route exact path='/' Component={() => <Vulnerabilities 
+                                    ipfs={ipfs} 
+                                    vulnerabilitiesRef={vulnerabilities.current} 
+                                    updateVulnerabilitiesRef={updateVulnerabilities}
+                                    web3Ref={web3.current}
+                                    clearSubscriptions={clearSubscriptions}
+                                />} 
+                            />
                             <Route path='announcement' Component={Announcement} />
                             <Route path='settings' Component={Settings} />
                             <Route path='accounts' Component={Accounts} />

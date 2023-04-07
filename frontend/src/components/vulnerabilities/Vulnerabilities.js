@@ -5,7 +5,6 @@ import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 
 // libraries
-import Web3 from 'web3';
 import { useEffect, useRef, useState } from 'react';
 import { CONTACT_ABI, CONTACT_ADDRESS, LS_KEY_DEP, LS_KEY_WL } from '../../config.js';
 
@@ -16,12 +15,9 @@ import VulnerabilityAccordion from './VulnerabilityAccordion.js';
 /** Component of the /vulnerabilities page.
  * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
  * @returns The content of the vulnerabilities page.  */
-function Vulnerabilities({ ipfs }) {
+function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, web3Ref, clearSubscriptions }) {
     let dependencies = useRef([]);
     let whitelist = useRef([]);
-
-    let web3 = useRef(null);
-    let subscriptions = useRef([]);
 
     // Used to control the modal for refresh confirmation
     const [showModal, setShowModal] = useState(false);
@@ -29,14 +25,14 @@ function Vulnerabilities({ ipfs }) {
     const modalShow = () => setShowModal(true);
 
     // Vulnerability data hook
-    const vulnerabilities = useRef([]);
-    const [allVulnerabilities, setAllVulnerabilities] = useState([]);
-    const updateAllVulnerabilities = (vulnerabilities) => {
-        setAllVulnerabilities([...vulnerabilities].reverse());
+    const [vulnerabilities, setVulnerabilities] = useState(vulnerabilitiesRef);
+    const updateVulnerabilities = (newVulnerabilities) => {
+        setVulnerabilities([...newVulnerabilities].reverse());
+        updateVulnerabilitiesRef(newVulnerabilities);
     }
 
     async function subscribeToNewAdvisories() {
-        let contract = new web3.current.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+        let contract = new web3Ref.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         return contract.events.NewSecurityAdvisory({
             fromBlock: 0
         }, async function (error, event) {
@@ -46,38 +42,39 @@ function Vulnerabilities({ ipfs }) {
                 type: "new",
                 event: event, 
                 cid: event.returnValues.documentLocation,
-                tx: await web3.current.eth.getTransaction(event.transactionHash), 
-                block: await web3.current.eth.getBlock(event.blockNumber),
+                tx: await web3Ref.eth.getTransaction(event.transactionHash), 
+                block: await web3Ref.eth.getBlock(event.blockNumber),
                 advisory: {} // will be set later
             }]; 
-            vulnerabilities.current.push(newVulnerability);
-            updateAllVulnerabilities(await filterVulnerabilities(vulnerabilities.current));
+            let temp = vulnerabilities;
+            temp.push(newVulnerability);
+            updateVulnerabilities(await filterVulnerabilities(temp));
             await subscribeToUpdates(event.returnValues.advisoryIdentifier);
         });
     }
 
     async function subscribeToUpdates(advisoryIdentifier) {
-        let contract = new web3.current.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+        let contract = new web3Ref.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         return contract.events.UpdatedSecurityAdvisory({
             // eslint-disable-next-line
-            topics: [ , web3.current.utils.soliditySha3({type: 'string', value: advisoryIdentifier})],
+            topics: [ , web3Ref.utils.soliditySha3({type: 'string', value: advisoryIdentifier})],
             fromBlock: 0
         }, async function (error, event) {
             if (error) 
-                throw error; 
-            for (const vulnerability of vulnerabilities.current) {
+                throw error;
+            for (const vulnerability of vulnerabilities) {
                 if (advisoryIdentifier === vulnerability[0].event.returnValues.advisoryIdentifier) {
                     vulnerability.push({
                         type: "update",
                         event: event,
                         cid: event.returnValues.documentLocation,
-                        tx: await web3.current.eth.getTransaction(event.transactionHash), 
-                        block: await web3.current.eth.getBlock(event.blockNumber), 
+                        tx: await web3Ref.eth.getTransaction(event.transactionHash), 
+                        block: await web3Ref.eth.getBlock(event.blockNumber), 
                         advisory: {} // will be set later
                     });
                 }
             }
-            updateAllVulnerabilities(await filterVulnerabilities(vulnerabilities.current));
+            updateVulnerabilities(await filterVulnerabilities(vulnerabilities));
         });
     }
 
@@ -97,9 +94,12 @@ function Vulnerabilities({ ipfs }) {
         return matches;
     }
 
-    /** Deletes and retrieves all data. */
+    /** Clear and re-assign subscriptions. */
     async function refreshVulnerabilities() {
-        subscriptions.current = subscriptions.current.push(await subscribeToNewAdvisories());
+        vulnerabilities.splice(0, vulnerabilities.length);
+        updateVulnerabilities([])
+        clearSubscriptions();
+        await subscribeToNewAdvisories();
         modalClose();
     }
 
@@ -109,10 +109,10 @@ function Vulnerabilities({ ipfs }) {
         for (const dep of JSON.parse(lsDep)) {
             dependencies.current.push(dep.identifier);
         }
+        if (vulnerabilities.length === 0) 
+            subscribeToNewAdvisories();
         
         whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
-        web3.current = new Web3(Web3.givenProvider || 'ws://localhost:7545');
-        subscriptions.current.push(subscribeToNewAdvisories());
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ipfs])
 
@@ -128,9 +128,9 @@ function Vulnerabilities({ ipfs }) {
                     </Col>
                 </Row>
             </Container>
-            {allVulnerabilities.length > 0 
+            {vulnerabilities.length > 0 
             ? <VulnerabilityAccordion 
-                vulnerabilities={allVulnerabilities} 
+                vulnerabilities={vulnerabilities} 
                 whitelist={whitelist.current}
                 dependencies={dependencies.current}
                 ipfs={ipfs} /> 

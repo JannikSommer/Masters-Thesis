@@ -78,8 +78,7 @@ function Settings() {
                     </Col>
                     <WhiteListList whitelist={whitelist} remove={removeWhitelistVendor} />
                     <Col>
-                        <br />
-                        <h2>Whitelist vendors</h2>
+                        <h4>Whitelist vendors</h4>
                         Add new vendors to the whitelist from their vendor smart contract addresses.
                     </Col>
                     <NewVendorWhitelistForm whitelist={whitelist} saveWhitelist={saveWhitelist} />
