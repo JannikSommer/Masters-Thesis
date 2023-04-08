@@ -125,6 +125,16 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
         done();
     }
 
+    /**
+     * Will close modal if enter is pressed with same functionality as clicking confirm.
+     * @param {*} event 
+     */
+    const handleKeyPress = (event) => { 
+        if(event.key === 'Enter') {
+            confirm();
+        }
+    }
+
     return (
         <Modal show={state} onHide={() => dismiss()}>
             <Modal.Header closeButton><Modal.Title>Enter Password</Modal.Title></Modal.Header>
@@ -140,7 +150,7 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
                         Please enter your Password
                     </Row>
                     <Row>
-                        <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <Form.Control type="password" value={password} onKeyDown={(e) => handleKeyPress(e)} onChange={(e) => setPassword(e.target.value)} />
                     </Row>
                 </Container>
             </Modal.Body>
