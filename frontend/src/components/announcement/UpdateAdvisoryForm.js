@@ -12,11 +12,11 @@ import Web3 from 'web3';
 
 function UpdateAdvisoryForm({ accounts, ipfs }) {
     const selectedAccount = useRef();
+    const productIds = useRef([]);
     const [address, setAddress] = useState("");
-    const [pids, setPids] = useState("");
     const [file, setFile] = useState("");
     const [advisoryId, setAdvisoryId] = useState("");
-    const [vids, setVids] = useState("");
+    const [vulnerabilityIds, setVulnerabilityIds] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
     const [error, setError] = useState("");
@@ -49,11 +49,33 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
         return cid.toString();
     }
 
+    const parseCSAF = async () => {
+        productIds.current = []; // reset before parsing
+        let csaf = await JSON.parse(file);
+        for await (const branch of csaf.product_tree.branches) {
+            await visitBranch(branch);
+        }
+    }
+
+    const visitBranch = async (branch) => {
+        if (branch.hasOwnProperty("branches")) {
+            for await (const subBranch of branch.branches) {
+                await visitBranch(subBranch);
+            }
+        } else {
+            if (branch.category === "product_version") {
+                productIds.current.push(branch.product.product_id);
+            }
+        }
+    }
+
     const announce = async () => {
         if (!accept) {
             return;
         };
         dismissWarning();
+
+        await parseCSAF();
         try {
             var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
             const contract = new web3.eth.Contract(VENDOR_CONTRACT_ABI, address);
@@ -63,7 +85,12 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
                 from: selectedAccount.current.wallet,
                 to: address,
                 gas: 6721975,
-                data: contract.methods.announceUpdatedAdvisory(advisoryId, vids, pids, cid).encodeABI()
+                data: contract.methods.announceUpdatedAdvisory(
+                    advisoryId, 
+                    vulnerabilityIds, 
+                    productIds.current.join(","), 
+                    cid)
+                    .encodeABI()
             }, selectedAccount.current.key).then((signedTx) => {
                 const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
                 sentTx.on("receipt", receipt => {
@@ -108,13 +135,6 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
                     <Form.Text className='text-muted'>Address of smart contract used to initiate announcement from</Form.Text>
                 </FloatingLabel>
             </Form.Group>
-
-            <Form.Group className='mb-3' controlId='upVulnProds'>
-                <FloatingLabel className='mb-3' controlId='upVulnProdsLabel' label="Vulnerable product(s)">
-                    <Form.Control as="textarea" rows={2} value={pids} onChange={(e) => setPids(e.target.value)} ></Form.Control>
-                    <Form.Text className='text-muted'>Use comma to separate identifiers</Form.Text>
-                </FloatingLabel>
-            </Form.Group>
             
             <Form.Group className='mb-3' controlId='upVulnIPFS'>
                     <Form.Label>CSAF File</Form.Label>
@@ -130,7 +150,7 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
 
             <Form.Group className='mb-3' controlId='upVulid'>
                 <FloatingLabel className='mb-3' controlId='upVulnSNTLLabel' label="SENTINEL vulnerability IDs">
-                    <Form.Control value={vids} onChange={(e) => setVids(e.target.value)}></Form.Control>
+                    <Form.Control value={vulnerabilityIds} onChange={(e) => setVulnerabilityIds(e.target.value)}></Form.Control>
                     <Form.Text className='text-muted'>The IDs are issued by the Identifier Issuer Service</Form.Text>
                 </FloatingLabel>
             </Form.Group>

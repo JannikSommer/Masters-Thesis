@@ -12,9 +12,9 @@ import SuccessModal from './SuccessModal';
 
 function NewAdvisoryForm({ accounts, ipfs }) {
     const selectedAccount = useRef();
+    const productIds = useRef([]);
+    const vulnerabilityCount = useRef(0);
     const [address, setAddress] = useState("");
-    const [pids, setPids] = useState("");
-    const [vulnCount, setVulnCount] = useState(0);
     const [file, setFile] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
@@ -48,21 +48,47 @@ function NewAdvisoryForm({ accounts, ipfs }) {
         return cid.toString();
     }
 
+    const parseCSAF = async () => {
+        productIds.current = []; // reset before parsing
+        let csaf = await JSON.parse(file);
+        vulnerabilityCount.current = csaf.vulnerabilities.length;
+        for await (const branch of csaf.product_tree.branches) {
+            await visitBranch(branch);
+        }
+    }
+
+    const visitBranch = async (branch) => {
+        if (branch.hasOwnProperty("branches")) {
+            for await (const subBranch of branch.branches) {
+                await visitBranch(subBranch);
+            }
+        } else {
+            if (branch.category === "product_version") {
+                productIds.current.push(branch.product.product_id);
+            }
+        }
+    }
+
     const announce = async () => {
         if (!accept) {
             return;
         };
         dismissWarning();
+
+        await parseCSAF();
         try {
             const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
             const contract = new web3.eth.Contract(VENDOR_CONTRACT_ABI, address);
-            const cid = await uploadFile(file);
-            
+            const cid = await uploadFile(file);            
             web3.eth.accounts.signTransaction({
                 from: selectedAccount.current.wallet,
                 to: address,
                 gas: 6721975,   
-                data: contract.methods.announceNewAdvisory(vulnCount, pids, cid).encodeABI()
+                data: contract.methods.announceNewAdvisory(
+                    vulnerabilityCount.current, 
+                    productIds.current.join(","), 
+                    cid)
+                    .encodeABI()
             }, selectedAccount.current.key)
             .then((signedTx) => {
                 const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
@@ -106,23 +132,9 @@ function NewAdvisoryForm({ accounts, ipfs }) {
                     </FloatingLabel>
                 </Form.Group>
 
-                <Form.Group className='mb-3' controlId='newVulnProds'>
-                    <FloatingLabel className='mb-3' controlId='newVulnProdLabel' label="Vulnerable product(s)">
-                        <Form.Control as="textarea" rows={5} value={pids} onChange={(e) => setPids(e.target.value)}></Form.Control>
-                        <Form.Text className='text-muted'>Use comma to separate identifiers</Form.Text>
-                    </FloatingLabel>
-                </Form.Group>
-
                 <Form.Group className='mb-3' controlId='newVulnIPFS'>
                     <Form.Label>CSAF File</Form.Label>
                     <Form.Control className='mb-3' type='file' accept='.json' onChange={e => handleFileChosen(e.target.files[0])}/>
-                </Form.Group>
-
-                <Form.Group className='mb-3' controlId='newVulnCount'>
-                    <FloatingLabel className='mb-3' controlId='new' label="Vulnerability count in CSAF">
-                        <Form.Control type="number" value={vulnCount} onChange={(e) => setVulnCount(e.target.value)}></Form.Control>
-                        <Form.Text className='text-muted'>Used to generate correct amount of vulnerability IDs</Form.Text>
-                    </FloatingLabel>
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="newVulnCheck">
