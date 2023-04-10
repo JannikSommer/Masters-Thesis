@@ -116,7 +116,6 @@ function ConfidentialAdvisoryForm({accounts, ipfs, supportedStorageSystems}) {
                 setShowTransaction(true);
             });
             sentTx.on("error", err => {
-                console.log(err);
                 setError(err);
                 setShowError(true);
             });
