@@ -10,12 +10,13 @@ import AcceptModal from './AcceptModal';
 import ErrorModal from './ErrorModal';
 import SuccessModal from './SuccessModal';
 
-function NewAdvisoryForm({ accounts, ipfs }) {
+function NewAdvisoryForm({ accounts, ipfs, supportedStorageSystems }) {
     const selectedAccount = useRef();
     const productIds = useRef([]);
     const vulnerabilityCount = useRef(0);
     const [address, setAddress] = useState("");
     const [file, setFile] = useState("");
+    const [storageSystem, setStorageSystem] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
     const [error, setError] = useState("");
@@ -43,7 +44,7 @@ function NewAdvisoryForm({ accounts, ipfs }) {
         fileReader.onloadend = () => {setFile(fileReader.result);};
     }
 
-    const uploadFile = async (data) => {
+    const uploadFileIpfs = async (data) => {
         const { cid } = await ipfs.add(data);
         return cid.toString();
     }
@@ -54,6 +55,12 @@ function NewAdvisoryForm({ accounts, ipfs }) {
         vulnerabilityCount.current = csaf.vulnerabilities.length;
         for await (const branch of csaf.product_tree.branches) {
             await visitBranch(branch);
+        }
+        if (productIds.current.length === 0) {
+            throw new Error("No product IDs found in CSAF file.");
+        }
+        if (vulnerabilityCount.current === 0) {
+            throw new Error("No vulnerabilities found in CSAF file.");
         }
     }
 
@@ -74,12 +81,21 @@ function NewAdvisoryForm({ accounts, ipfs }) {
             return;
         };
         dismissWarning();
-
-        await parseCSAF();
         try {
+            let fileLocation;
+            switch (storageSystem) {
+                case "IPFS":
+                    fileLocation = await uploadFileIpfs(file);
+                    break;  // continue with announcement
+                case "Arweave":
+                    throw new Error("Arweave not supported yet.");
+                default:
+                    throw new Error("No storage system selected.");
+            }
+            await parseCSAF();
+
             const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
             const contract = new web3.eth.Contract(VENDOR_CONTRACT_ABI, address);
-            const cid = await uploadFile(file);            
             web3.eth.accounts.signTransaction({
                 from: selectedAccount.current.wallet,
                 to: address,
@@ -87,7 +103,7 @@ function NewAdvisoryForm({ accounts, ipfs }) {
                 data: contract.methods.announceNewAdvisory(
                     vulnerabilityCount.current, 
                     productIds.current.join(","), 
-                    cid)
+                    storageSystem.toLowerCase().concat("/", fileLocation))
                     .encodeABI()
             }, selectedAccount.current.key)
             .then((signedTx) => {
@@ -135,6 +151,16 @@ function NewAdvisoryForm({ accounts, ipfs }) {
                 <Form.Group className='mb-3' controlId='newVulnIPFS'>
                     <Form.Label>CSAF File</Form.Label>
                     <Form.Control className='mb-3' type='file' accept='.json' onChange={e => handleFileChosen(e.target.files[0])}/>
+                </Form.Group>
+
+                <Form.Group className='mb-3' controlId='newStorageSystem'>
+                    <Form.Select onChange={(e) => setStorageSystem(e.currentTarget.value)}>
+                        <option>Select an storage system</option>
+                        {supportedStorageSystems.map((system, index) => 
+                            <option key={index} value={system}>{system}</option>
+                        )}
+                    </Form.Select>
+                    <Form.Text className='text-muted'>Select storage system for CSAF</Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="newVulnCheck">

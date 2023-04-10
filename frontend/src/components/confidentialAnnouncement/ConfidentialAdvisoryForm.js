@@ -14,10 +14,11 @@ import AcceptModal from '../announcement/AcceptModal';
 import ErrorModal from '../announcement/ErrorModal';
 import SuccessModal from '../announcement/SuccessModal';
 
-function ConfidentialAdvisoryForm({accounts, ipfs }) {
+function ConfidentialAdvisoryForm({accounts, ipfs, supportedStorageSystems}) {
     const selectedAccount = useRef();
     const [address, setAddress] = useState("");
     const [file, setFile] = useState("");
+    const [storageSystem, setStorageSystem] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
     const [error, setError] = useState("");
@@ -67,9 +68,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
     const wrapKey = async (key) => {
         const rsa = new RSA();
         return getPublicKey().then(async (rawPKey) => {
-            console.log(rawPKey);
             const pKey = await rsa.importPublicKey(rawPKey);
-            console.log(pKey);
             const wrappedKey =  await rsa.wrapKey(key, pKey);
             return wrappedKey;
         });
@@ -84,7 +83,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
         return window.crypto.subtle.digest("SHA-256", fileBuffer);
     }
 
-    const uploadFile = async (data) => {
+    const uploadFileIpfs = async (data) => {
         const { cid } = await ipfs.add(data);
         return cid.toString();
     }
@@ -117,6 +116,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
                 setShowTransaction(true);
             });
             sentTx.on("error", err => {
+                console.log(err);
                 setError(err);
                 setShowError(true);
             });
@@ -139,7 +139,19 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
             const { ciphertext, iv } = await aes.encrypt(file, aesKey);
             
             const wrappedKey = await wrapKey(aesKey);
-            const fileLocation = await uploadFile(ciphertext); 
+
+            let fileLocation; 
+            switch (storageSystem) {
+                case "IPFS":
+                    fileLocation = await uploadFileIpfs(file);
+                    break;
+                case "Arweave":
+                    throw new Error("Arweave not supported yet.");
+                case "Swarm":
+                    throw new Error("Swarm not supported yet.");
+                default:
+                    throw new Error("No storage system selected.");
+            }
 
             contractTransaction(fileLocation, fileHash, wrappedKey, iv);
         } catch (err) {
@@ -177,6 +189,16 @@ function ConfidentialAdvisoryForm({accounts, ipfs }) {
                 <Form.Group className='mb-3' controlId='privateCsafFile'>
                     <Form.Label>CSAF File</Form.Label>
                     <Form.Control className='mb-3' type='file' accept='.json' onChange={e => handleFileChosen(e.target.files[0])}/>
+                </Form.Group>
+
+                <Form.Group className='mb-3' controlId='privateStorageSystem'>
+                    <Form.Select onChange={(e) => setStorageSystem(e.currentTarget.value)}>
+                        <option>Select an storage system</option>
+                        {supportedStorageSystems.map((system, index) => 
+                            <option key={index} value={system}>{system}</option>
+                        )}
+                    </Form.Select>
+                    <Form.Text className='text-muted'>Select storage system for CSAF</Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="newVulnCheck">

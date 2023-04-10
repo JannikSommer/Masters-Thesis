@@ -10,13 +10,14 @@ import { VENDOR_CONTRACT_ABI } from '../../config';
 import { useRef, useState } from 'react';
 import Web3 from 'web3';
 
-function UpdateAdvisoryForm({ accounts, ipfs }) {
+function UpdateAdvisoryForm({ accounts, ipfs, supportedStorageSystems }) {
     const selectedAccount = useRef();
     const productIds = useRef([]);
     const [address, setAddress] = useState("");
     const [file, setFile] = useState("");
     const [advisoryId, setAdvisoryId] = useState("");
     const [vulnerabilityIds, setVulnerabilityIds] = useState("");
+    const [storageSystem, setStorageSystem] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
     const [error, setError] = useState("");
@@ -44,7 +45,7 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
         fileReader.onloadend = () => {setFile(fileReader.result);};
     }
 
-    const uploadFile = async (data) => {
+    const uploadFileIpfs = async (data) => {
         const { cid } = await ipfs.add(data);
         return cid.toString();
     }
@@ -54,6 +55,9 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
         let csaf = await JSON.parse(file);
         for await (const branch of csaf.product_tree.branches) {
             await visitBranch(branch);
+        }
+        if (productIds.current.length === 0) {
+            throw new Error("No product IDs found in CSAF file.");
         }
     }
 
@@ -74,12 +78,21 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
             return;
         };
         dismissWarning();
-
-        await parseCSAF();
         try {
+            let fileLocation;
+            switch (storageSystem) {
+                case "IPFS":
+                    fileLocation = await uploadFileIpfs(file);
+                    break; // continue with announcement
+                case "Arweave":
+                    throw new Error("Arweave not yet supported.");
+                default:
+                    throw new Error("No storage system selected.");
+            }
+            await parseCSAF();
+
             var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
             const contract = new web3.eth.Contract(VENDOR_CONTRACT_ABI, address);
-            const cid = await uploadFile(file);
 
             web3.eth.accounts.signTransaction({
                 from: selectedAccount.current.wallet,
@@ -89,7 +102,7 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
                     advisoryId, 
                     vulnerabilityIds, 
                     productIds.current.join(","), 
-                    cid)
+                    storageSystem.toLowerCase().concat("/", fileLocation))
                     .encodeABI()
             }, selectedAccount.current.key).then((signedTx) => {
                 const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
@@ -140,6 +153,16 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
                     <Form.Label>CSAF File</Form.Label>
                     <Form.Control className='mb-3' type='file' accept='.json' onChange={e => handleFileChosen(e.target.files[0])}/>
             </Form.Group>
+
+            <Form.Group className='mb-3' controlId='newStorageSystem'>
+                    <Form.Select onChange={(e) => setStorageSystem(e.currentTarget.value)}>
+                        <option>Select an storage system</option>
+                        {supportedStorageSystems.map((system, index) => 
+                            <option key={index} value={system}>{system}</option>
+                        )}
+                    </Form.Select>
+                    <Form.Text className='text-muted'>Select storage system for CSAF</Form.Text>
+                </Form.Group>
 
             <Form.Group className='mb-3' controlId='upAdvisoryId'>
                 <FloatingLabel className='mb-3' controlId='upAdvisorySNTLLabel' label="SENTINEL advisory ID">

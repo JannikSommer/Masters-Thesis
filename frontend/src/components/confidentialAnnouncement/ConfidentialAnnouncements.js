@@ -9,7 +9,7 @@ import Utilities from '../../models/cryptography/Utilities';
 
 import { PasswordContext } from '../../contexts/PasswordContext';
 
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useRef, useEffect, useState, useContext } from 'react';
 import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
 
 
@@ -17,7 +17,7 @@ function ConfidentialAnnouncements({ ipfs }) {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
     const aesKey = useContext(PasswordContext);
-    
+    const supportedStorageSystem = useRef(["IPFS", "Arweave", "Swarm"]);
 
     async function decryptAccounts(data) {
         const dataDecrypted = await window.crypto.subtle.decrypt(
@@ -63,7 +63,7 @@ function ConfidentialAnnouncements({ ipfs }) {
             <Container>
                 <Row>
                     <Col lg="5">
-                        <ConfidentialAdvisoryForm accounts={accounts} ipfs={ipfs} />
+                        <ConfidentialAdvisoryForm accounts={accounts} ipfs={ipfs} supportedStorageSystems={supportedStorageSystem.current} />
                     </Col>
                 </Row>
             </Container>
