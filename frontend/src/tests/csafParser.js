@@ -2,14 +2,13 @@ const assert = require("assert");
 const { describe, beforeEach } = require("mocha");
 const fs = require('fs');
 
-const Status = require("../models/Status");
-const Version = require("../models/Version");
-const Product = require("../models/Product");
-const Vendor = require("../models/Vendor");
-const SecurityAdvisory = require("../models/SecurityAdvisory");
-const { equal } = require("assert");
-const RemediationStrategy = require("../models/RemediationStrategy");
-const Vulnerability = require("../models/Vulnerability");
+const Status = require("../models/advisory/Status.js");
+const Version = require("../models/advisory/Version.js");
+const Product = require("../models/advisory/Product");
+const Vendor = require("../models/advisory/Vendor");
+const SecurityAdvisory = require("../models/advisory/SecurityAdvisory");
+const RemediationStrategy = require("../models/advisory/RemediationStrategy");
+const Vulnerability = require("../models/advisory/Vulnerability");
 
 
 describe("CSAF Parser", function () {

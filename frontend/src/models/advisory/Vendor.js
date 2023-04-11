@@ -1,4 +1,4 @@
-import Product from "./Product";
+var Product = require("./Product");
 
 /**
  * Represents a Vendor.
@@ -41,4 +41,4 @@ class Vendor {
     }
 }
 
-export default Vendor;
+module.exports = Vendor;
