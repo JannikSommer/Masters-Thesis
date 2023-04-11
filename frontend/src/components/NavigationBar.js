@@ -17,28 +17,28 @@ function NavigationBar() {
                             <Nav.Link>Vulnerabilities</Nav.Link>
                         </LinkContainer>
                         <NavDropdown title="Announcement">
-                            <NavDropdown.Item>
+                            <NavDropdown.ItemText> 
                                 <LinkContainer to="/announcement">
                                     <Nav.Link>Public</Nav.Link>
                                 </LinkContainer>
-                            </NavDropdown.Item>
-                            <NavDropdown.Item>
+                            </NavDropdown.ItemText>
+                            <NavDropdown.ItemText>
                                 <LinkContainer to="/confidentialAnnouncement">
                                     <Nav.Link>Confidential</Nav.Link>
                                 </LinkContainer>
-                            </NavDropdown.Item>
+                            </NavDropdown.ItemText>
                         </NavDropdown>
                         <NavDropdown title="Settings">
-                            <NavDropdown.Item>
+                            <NavDropdown.ItemText>
                                 <LinkContainer to="/settings">
                                     <Nav.Link>General</Nav.Link>
                                 </LinkContainer>
-                            </NavDropdown.Item>
-                            <NavDropdown.Item>
+                            </NavDropdown.ItemText>
+                            <NavDropdown.ItemText>
                                 <LinkContainer to="/confidentialSettings">
                                     <Nav.Link>Confidential</Nav.Link>
                                 </LinkContainer>
-                            </NavDropdown.Item>
+                            </NavDropdown.ItemText>
                         </NavDropdown>
 
                         <LinkContainer to="/accounts">
