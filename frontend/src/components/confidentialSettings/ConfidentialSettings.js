@@ -12,13 +12,29 @@ import { PasswordContext } from '../../contexts/PasswordContext';
 
 import React, { useEffect, useState, useContext } from 'react';
 import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
+import ContractManagement from './ContractManagement';
+import Contracts from '../../localStorage/Contracts';
 
 
-function ConfidentialSettings({ ipfs }) {
+function ConfidentialSettings() {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
+    const [contracts, setContracts] = useState([]);
+    
     const aesKey = useContext(PasswordContext);
     
+
+    const addContract = (address, name) => {
+        const newContracts = Contracts.addContract(contracts, address, name);
+        Contracts.save(newContracts);
+        setContracts(newContracts);
+    }
+
+    const removeContract = (address) => {
+        const newContracts = Contracts.removeContract(contracts, address)
+        Contracts.save(newContracts);
+        setContracts(newContracts);
+    }
 
     async function decryptAccounts(data) {
         const dataDecrypted = await window.crypto.subtle.decrypt(
@@ -43,6 +59,7 @@ function ConfidentialSettings({ ipfs }) {
 
     useEffect(() => {
         if(aesKey !== null) loadAccounts(); 
+        setContracts(Contracts.load());
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [aesKey]);
 
@@ -59,8 +76,7 @@ function ConfidentialSettings({ ipfs }) {
             Here you can make new confidential announcements intended for specific asset owners. 
             <br />
             <hr />
-            <Container>
-            </Container>
+            <ContractManagement contracts={contracts} addContract={addContract} removeContract={removeContract}/>
             <Container>
                 <Row>
                     <Col lg="5">

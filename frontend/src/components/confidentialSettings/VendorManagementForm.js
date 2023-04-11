@@ -6,7 +6,7 @@ import Col from 'react-bootstrap/Col';
 
 import { useRef, useState } from 'react';
 
-import { LS_KEY_PWL, PRIVATE_CONTRACT_ABI } from '../../config';
+import { PRIVATE_CONTRACT_ABI } from '../../config';
 import Web3 from 'web3';
 
 import AcceptModal from '../announcement/AcceptModal';
@@ -16,7 +16,6 @@ import SuccessModal from '../announcement/SuccessModal';
 
 function VendorManagementForm({accounts}) {
     const selectedAccount = useRef();
-    const localWhitelist = useRef(null);
     const [address, setAddress] = useState("");
     const [vendorAddress, setVendorAddress] = useState("");
     const [vendorName, setVendorName] = useState("");
@@ -47,45 +46,6 @@ function VendorManagementForm({accounts}) {
         selectedAccount.current = JSON.parse(value);
     }
 
-    const loadWhitelist = () => {
-        console.log(localWhitelist);
-        const whitelistJSON = localStorage.getItem(LS_KEY_PWL);
-        console.log(whitelistJSON);
-        if(whitelistJSON === null) {
-            localWhitelist.current = [];
-            console.log(localWhitelist);
-            return;
-        };
-        localWhitelist.current = JSON.parse(whitelistJSON);
-        console.log(localWhitelist);
-    }
-
-    const saveWhitelist = () => {
-        localStorage.setItem(
-            LS_KEY_PWL,
-            JSON.stringify(localWhitelist.current)
-        );
-    }
-
-    const addToWhitelist = () => {
-        const vendor = {
-            "address": vendorAddress,
-        };
-        if(vendorName !== "") vendor["name"] = vendorName;
-
-        localWhitelist.current.push(vendor);
-        saveWhitelist();
-    }
-
-    const removeFromWhitelist = () => {
-        const newWhitelist = localWhitelist.current.filter((vendor) => {
-            return vendor["address"] !== vendorAddress;
-        });
-
-        localWhitelist.current = newWhitelist;
-        saveWhitelist();
-    }
-
     /**
      * Creates a transaction calling a method on the 'Private' smart contract.
      * @param {String} method The method to call encoded as ABI bytecode.
@@ -112,10 +72,6 @@ function VendorManagementForm({accounts}) {
         });
     }
 
-    useState(() => {
-        loadWhitelist();
-    });
-
     /**
      * Tries to remove an Ethereum wallet address to the whitelist of the 'Private' smart contract.
      */
@@ -129,7 +85,6 @@ function VendorManagementForm({accounts}) {
             contractTransaction(
                 contract.methods.removeVendor(vendorAddress).encodeABI()
             );
-            removeFromWhitelist();
         } catch (err) {
             setError(err);
             setShowError(true);
@@ -149,7 +104,6 @@ function VendorManagementForm({accounts}) {
             contractTransaction(
                 contract.methods.addVendor(vendorAddress).encodeABI()
             );
-            addToWhitelist();
         } catch (err) {
             setError(err);
             setShowError(true);
