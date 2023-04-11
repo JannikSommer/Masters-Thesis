@@ -6,7 +6,7 @@ import Col from 'react-bootstrap/Col';
 
 import { useRef, useState } from 'react';
 
-import { PRIVATE_CONTRACT_ABI } from '../../config';
+import { LS_KEY_PWL, PRIVATE_CONTRACT_ABI } from '../../config';
 import Web3 from 'web3';
 
 import AcceptModal from '../announcement/AcceptModal';
@@ -16,8 +16,10 @@ import SuccessModal from '../announcement/SuccessModal';
 
 function VendorManagementForm({accounts}) {
     const selectedAccount = useRef();
+    const localWhitelist = useRef(null);
     const [address, setAddress] = useState("");
     const [vendorAddress, setVendorAddress] = useState("");
+    const [vendorName, setVendorName] = useState("");
     const [accept, setAccept] = useState(false);
     const [transaction, setTransaction] = useState("");
     const [error, setError] = useState("");
@@ -43,6 +45,45 @@ function VendorManagementForm({accounts}) {
             return; 
         }
         selectedAccount.current = JSON.parse(value);
+    }
+
+    const loadWhitelist = () => {
+        console.log(localWhitelist);
+        const whitelistJSON = localStorage.getItem(LS_KEY_PWL);
+        console.log(whitelistJSON);
+        if(whitelistJSON === null) {
+            localWhitelist.current = [];
+            console.log(localWhitelist);
+            return;
+        };
+        localWhitelist.current = JSON.parse(whitelistJSON);
+        console.log(localWhitelist);
+    }
+
+    const saveWhitelist = () => {
+        localStorage.setItem(
+            LS_KEY_PWL,
+            JSON.stringify(localWhitelist.current)
+        );
+    }
+
+    const addToWhitelist = () => {
+        const vendor = {
+            "address": vendorAddress,
+        };
+        if(vendorName !== "") vendor["name"] = vendorName;
+
+        localWhitelist.current.push(vendor);
+        saveWhitelist();
+    }
+
+    const removeFromWhitelist = () => {
+        const newWhitelist = localWhitelist.current.filter((vendor) => {
+            return vendor["address"] !== vendorAddress;
+        });
+
+        localWhitelist.current = newWhitelist;
+        saveWhitelist();
     }
 
     /**
@@ -71,6 +112,10 @@ function VendorManagementForm({accounts}) {
         });
     }
 
+    useState(() => {
+        loadWhitelist();
+    });
+
     /**
      * Tries to remove an Ethereum wallet address to the whitelist of the 'Private' smart contract.
      */
@@ -84,6 +129,7 @@ function VendorManagementForm({accounts}) {
             contractTransaction(
                 contract.methods.removeVendor(vendorAddress).encodeABI()
             );
+            removeFromWhitelist();
         } catch (err) {
             setError(err);
             setShowError(true);
@@ -103,6 +149,7 @@ function VendorManagementForm({accounts}) {
             contractTransaction(
                 contract.methods.addVendor(vendorAddress).encodeABI()
             );
+            addToWhitelist();
         } catch (err) {
             setError(err);
             setShowError(true);
@@ -139,6 +186,13 @@ function VendorManagementForm({accounts}) {
                     <FloatingLabel className='mb-3' controlId='manageVendorAddressLabel' label="Vendor Address">
                         <Form.Control value={vendorAddress} onChange={(e) => setVendorAddress(e.target.value)}></Form.Control>
                         <Form.Text className='text-muted'>The address of the vendor to add/remove from the whitelist</Form.Text>
+                    </FloatingLabel>
+                </Form.Group>
+
+                <Form.Group className='mb-3' controlId='manageVendorName'>
+                    <FloatingLabel className='mb-3' controlId='manageVendorNameLabel' label="Vendor Name (optional)">
+                        <Form.Control value={vendorName} onChange={(e) => setVendorName(e.target.value)}></Form.Control>
+                        <Form.Text className='text-muted'>A name or note to identify the address</Form.Text>
                     </FloatingLabel>
                 </Form.Group>
 
