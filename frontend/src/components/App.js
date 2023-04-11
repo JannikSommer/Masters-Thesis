@@ -24,7 +24,6 @@ function App() {
     const web3 = useRef(new Web3(Web3.givenProvider || 'ws://localhost:7545')); // set here to persist from page to page
     const clearSubscriptions = () => { web3.current.eth.clearSubscriptions(); }
 
-
     async function loadIpfs() {
         var ipfsClient = create({
             host: "127.0.0.1",

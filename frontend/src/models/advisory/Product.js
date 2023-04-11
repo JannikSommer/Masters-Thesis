@@ -1,4 +1,4 @@
-var Version = require("../models/Version");
+import Version from "./Version";
 
 /**
  * Represents a specific product line.
@@ -41,4 +41,4 @@ class Product { //? Should this be called "ProductLine"?
     }
 }
 
-module.exports = Product;
+export default Product;
