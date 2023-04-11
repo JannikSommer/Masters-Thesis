@@ -12,9 +12,11 @@ import { CONTACT_ABI, CONTACT_ADDRESS, LS_KEY_DEP, LS_KEY_WL } from '../../confi
 import RefreshConfirmation from './RefreshConfirmation.js';
 import VulnerabilityAccordion from './VulnerabilityAccordion.js';
 
-/** Component of the /vulnerabilities page.
+/** 
+ * Component of the /vulnerabilities page.
  * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
- * @returns The content of the vulnerabilities page.  */
+ * @returns The content of the vulnerabilities page.  
+ * */
 function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, web3Ref, clearSubscriptions }) {
     let dependencies = useRef([]);
     let whitelist = useRef([]);
@@ -31,6 +33,10 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
         updateVulnerabilitiesRef(newVulnerabilities);
     }
 
+    /**
+     * Subscribe to the NewSecurityAdvisory and related UpdatedSecurityAdvisory events.
+     * @returns {Promise} Promise that resolves to the subscription object.
+     */
     async function subscribeToNewAdvisories() {
         let contract = new web3Ref.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         return contract.events.NewSecurityAdvisory({
@@ -53,6 +59,11 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
         });
     }
 
+    /**
+     * 
+     * @param {string} advisoryIdentifier 
+     * @returns {Promise} Promise that resolves to the subscription object.
+     */
     async function subscribeToUpdates(advisoryIdentifier) {
         let contract = new web3Ref.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         return contract.events.UpdatedSecurityAdvisory({

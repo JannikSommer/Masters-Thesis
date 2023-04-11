@@ -5,6 +5,7 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import { useRef, useState } from 'react';
 
 import { PRIVATE_CONTRACT_ABI } from '../../config';
+import { SUPPORTED_STORAGE_PRIVATE } from '../../storage/config';
 import Web3 from 'web3';
 import AES from '../../models/cryptography/AES';
 import RSA from '../../models/cryptography/RSA';
@@ -14,7 +15,7 @@ import AcceptModal from '../announcement/AcceptModal';
 import ErrorModal from '../announcement/ErrorModal';
 import SuccessModal from '../announcement/SuccessModal';
 
-function ConfidentialAdvisoryForm({accounts, ipfs, supportedStorageSystems}) {
+function ConfidentialAdvisoryForm({accounts, ipfs}) {
     const selectedAccount = useRef();
     const [address, setAddress] = useState("");
     const [file, setFile] = useState("");
@@ -142,7 +143,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs, supportedStorageSystems}) {
             let fileLocation; 
             switch (storageSystem) {
                 case "IPFS":
-                    fileLocation = await uploadFileIpfs(file);
+                    fileLocation = await uploadFileIpfs(ciphertext);
                     break;
                 case "Arweave":
                     throw new Error("Arweave not supported yet.");
@@ -154,7 +155,6 @@ function ConfidentialAdvisoryForm({accounts, ipfs, supportedStorageSystems}) {
 
             contractTransaction(fileLocation, fileHash, wrappedKey, iv);
         } catch (err) {
-            console.log(err);
             setError(err);
             setShowError(true);
         }
@@ -193,7 +193,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs, supportedStorageSystems}) {
                 <Form.Group className='mb-3' controlId='privateStorageSystem'>
                     <Form.Select onChange={(e) => setStorageSystem(e.currentTarget.value)}>
                         <option>Select an storage system</option>
-                        {supportedStorageSystems.map((system, index) => 
+                        {SUPPORTED_STORAGE_PRIVATE.map((system, index) => 
                             <option key={index} value={system}>{system}</option>
                         )}
                     </Form.Select>

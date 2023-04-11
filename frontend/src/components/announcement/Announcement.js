@@ -10,7 +10,7 @@ import Utilities from '../../models/cryptography/Utilities';
 
 import { PasswordContext } from '../../contexts/PasswordContext';
 
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
 
 
@@ -18,7 +18,6 @@ function Announcement({ipfs}) {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
     const aesKey = useContext(PasswordContext);
-    const supportedStorageSystem = useRef(["IPFS", "Arweave"]);
 
     async function decryptAccounts(data) {
         const dataDecrypted = await window.crypto.subtle.decrypt(
@@ -62,7 +61,7 @@ function Announcement({ipfs}) {
             <Container>
                 <Row>
                     <Col lg="5">
-                        <NewAdvisoryForm accounts={accounts} ipfs={ipfs} supportedStorageSystems={supportedStorageSystem.current}/>
+                        <NewAdvisoryForm accounts={accounts} ipfs={ipfs}/>
                     </Col>
                     <Col>
                         <div style={{height: '40%', 
@@ -73,7 +72,7 @@ function Announcement({ipfs}) {
                         </div>
                     </Col>
                     <Col lg="5">
-                        <UpdateAdvisoryForm accounts={accounts} ipfs={ipfs} supportedStorageSystems={supportedStorageSystem.current}/>
+                        <UpdateAdvisoryForm accounts={accounts} ipfs={ipfs}/>
                     </Col>
                 </Row>
             </Container>

@@ -7,10 +7,12 @@ import ErrorModal from './ErrorModal';
 import SuccessModal from './SuccessModal';
 
 import { VENDOR_CONTRACT_ABI } from '../../config';
+import { SUPPORTED_STORAGE_PUBLIC } from '../../storage/config';
 import { useRef, useState } from 'react';
+import { uploadToIpfs } from '../../storage/IpfsUpload';
 import Web3 from 'web3';
 
-function UpdateAdvisoryForm({ accounts, ipfs, supportedStorageSystems }) {
+function UpdateAdvisoryForm({ accounts, ipfs }) {
     const selectedAccount = useRef();
     const productIds = useRef([]);
     const [address, setAddress] = useState("");
@@ -44,12 +46,7 @@ function UpdateAdvisoryForm({ accounts, ipfs, supportedStorageSystems }) {
         fileReader.readAsText(chosenFile);
         fileReader.onloadend = () => {setFile(fileReader.result);};
     }
-
-    const uploadFileIpfs = async (data) => {
-        const { cid } = await ipfs.add(data);
-        return cid.toString();
-    }
-
+    
     const parseCSAF = async () => {
         productIds.current = []; // reset before parsing
         let csaf = await JSON.parse(file);
@@ -82,7 +79,7 @@ function UpdateAdvisoryForm({ accounts, ipfs, supportedStorageSystems }) {
             let fileLocation;
             switch (storageSystem) {
                 case "IPFS":
-                    fileLocation = await uploadFileIpfs(file);
+                    fileLocation = await uploadToIpfs(ipfs, file);
                     break; // continue with announcement
                 case "Arweave":
                     throw new Error("Arweave not yet supported.");
@@ -157,7 +154,7 @@ function UpdateAdvisoryForm({ accounts, ipfs, supportedStorageSystems }) {
             <Form.Group className='mb-3' controlId='newStorageSystem'>
                     <Form.Select onChange={(e) => setStorageSystem(e.currentTarget.value)}>
                         <option>Select an storage system</option>
-                        {supportedStorageSystems.map((system, index) => 
+                        {SUPPORTED_STORAGE_PUBLIC.map((system, index) => 
                             <option key={index} value={system}>{system}</option>
                         )}
                     </Form.Select>
