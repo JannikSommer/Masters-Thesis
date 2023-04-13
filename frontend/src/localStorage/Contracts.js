@@ -48,6 +48,21 @@ class Contracts {
             return x["address"] !== address;
         });
     }
+
+    static updateKey(contracts, address, key) {
+        const contract = {
+            "address": address,
+        }
+        
+        const existing = contracts.indexOf(contract);
+        console.log(existing);
+        if(existing !== -1) {
+            return [...contracts][existing]["privateKey"] = key;
+        } else {
+            contract["privateKey"] = key;
+            return contracts.concat([contract]);
+        }
+    }
 }
 
 export default Contracts;

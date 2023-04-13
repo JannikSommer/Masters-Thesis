@@ -36,6 +36,12 @@ function ConfidentialSettings() {
         setContracts(newContracts);
     }
 
+    const updatePrivateKey = (address, key) => {
+        const newContracts = Contracts.updateKey(contracts, address, key);
+        Contracts.save(newContracts);
+        setContracts(newContracts);
+    }
+
     async function decryptAccounts(data) {
         const dataDecrypted = await window.crypto.subtle.decrypt(
             {
@@ -91,7 +97,7 @@ function ConfidentialSettings() {
                         </div>
                     </Col>
                     <Col lg="5">
-                        <UpdateKeyForm accounts={accounts}/>
+                        <UpdateKeyForm accounts={accounts} updateContractKey={updatePrivateKey}/>
                     </Col>
                 </Row>
             </Container>

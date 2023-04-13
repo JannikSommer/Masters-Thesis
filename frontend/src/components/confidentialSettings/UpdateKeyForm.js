@@ -16,7 +16,7 @@ import SuccessModal from '../announcement/SuccessModal';
 import Utilities from '../../models/cryptography/Utilities';
 
 
-function UpdateKeyForm({accounts}) {
+function UpdateKeyForm({accounts, contracts, updateContractKey}) {
     const selectedAccount = useRef();
     const [address, setAddress] = useState("");
     const [publicKey, setPublicKey] = useState("");
@@ -90,6 +90,8 @@ function UpdateKeyForm({accounts}) {
                     setShowError(true);
                 });
             });
+
+            updateContractKey(address, privateKey);
         } catch (err) {
             setError(err);
             setShowError(true);
