@@ -1,4 +1,4 @@
-var Version = require("../models/Version");
+var Version = require("./Version");
 
 /**
  * Represents a specific product line.

@@ -17,7 +17,6 @@ function ConfidentialAnnouncements({ ipfs }) {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
     const aesKey = useContext(PasswordContext);
-    
 
     async function decryptAccounts(data) {
         const dataDecrypted = await window.crypto.subtle.decrypt(
@@ -63,7 +62,7 @@ function ConfidentialAnnouncements({ ipfs }) {
             <Container>
                 <Row>
                     <Col lg="5">
-                        <ConfidentialAdvisoryForm accounts={accounts} ipfs={ipfs} />
+                        <ConfidentialAdvisoryForm accounts={accounts} ipfs={ipfs}/>
                     </Col>
                 </Row>
             </Container>

@@ -1,4 +1,4 @@
-var Product = require("../models/Product");
+var Product = require("./Product");
 
 /**
  * Represents a Vendor.

@@ -12,12 +12,17 @@ import { CONTACT_ABI, CONTACT_ADDRESS, LS_KEY_DEP, LS_KEY_WL } from '../../confi
 import RefreshConfirmation from './RefreshConfirmation.js';
 import VulnerabilityAccordion from './VulnerabilityAccordion.js';
 
-/** Component of the /vulnerabilities page.
+/** 
+ * Component of the /vulnerabilities page.
  * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
- * @returns The content of the vulnerabilities page.  */
+ * @returns The content of the vulnerabilities page.  
+ * */
 function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, web3Ref, clearSubscriptions }) {
-    let dependencies = useRef([]);
-    let whitelist = useRef([]);
+    const dependencies = useRef([]);
+    const whitelist = useRef([]);
+
+    // Used to force a rerender of the component after the dependencies and whitelist have been loaded.
+    const [rerender, setRerender] = useState(false);
 
     // Used to control the modal for refresh confirmation
     const [showModal, setShowModal] = useState(false);
@@ -31,6 +36,10 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
         updateVulnerabilitiesRef(newVulnerabilities);
     }
 
+    /**
+     * Subscribe to the NewSecurityAdvisory and related UpdatedSecurityAdvisory events.
+     * @returns {Promise} Promise that resolves to the subscription object.
+     */
     async function subscribeToNewAdvisories() {
         let contract = new web3Ref.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         return contract.events.NewSecurityAdvisory({
@@ -53,6 +62,11 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
         });
     }
 
+    /**
+     * Subscribe to the UpdatedSecurityAdvisory event with a given advisory identifier.
+     * @param {string} advisoryIdentifier from the NewSecurityAdvisory event.
+     * @returns {Promise} Promise that resolves to the subscription object.
+     */
     async function subscribeToUpdates(advisoryIdentifier) {
         let contract = new web3Ref.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
         return contract.events.UpdatedSecurityAdvisory({
@@ -78,9 +92,11 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
         });
     }
 
-    /** Filters vulnerabilities to only show relevant vulnerabilities. 
+    /** 
+     * Filters vulnerabilities to only show relevant vulnerabilities. 
      * @param {[]} vulnerabilities List of vulnerability objects.
-     * @returns List of object with matching vulnerabilities that matches whitelist and dependencies. */
+     * @returns List of object with matching vulnerabilities that matches whitelist and dependencies. 
+     * */
     async function filterVulnerabilities(vulnerabilities) {
         let matches = [];
         for (const vulnerability of vulnerabilities) {
@@ -94,7 +110,9 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
         return matches;
     }
 
-    /** Clear and re-assign subscriptions. */
+    /** 
+     * Clear and re-assign subscriptions. 
+     * */
     async function refreshVulnerabilities() {
         vulnerabilities.splice(0, vulnerabilities.length);
         updateVulnerabilities([])
@@ -104,17 +122,20 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
     }
 
     useEffect(() => {
-        const lsDep = localStorage.getItem(LS_KEY_DEP);
-        if(lsDep === null) return;
-        for (const dep of JSON.parse(lsDep)) {
-            dependencies.current.push(dep.identifier);
+        async function loadFromLocalStorage() {
+            const lsDep = localStorage.getItem(LS_KEY_DEP);
+            if(lsDep === null) return;
+            for await (const dep of JSON.parse(lsDep)) {
+                dependencies.current.push(dep.identifier);
+            }
+            whitelist.current = await JSON.parse(localStorage.getItem(LS_KEY_WL));
+            setRerender(!rerender); // force rerender to update dependencies and whitelist
         }
         if (vulnerabilities.length === 0) {
             clearSubscriptions();
             subscribeToNewAdvisories();
         }
-        
-        whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
+        loadFromLocalStorage();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ipfs])
 

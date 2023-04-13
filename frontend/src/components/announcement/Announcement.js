@@ -18,7 +18,6 @@ function Announcement({ipfs}) {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
     const aesKey = useContext(PasswordContext);
-    
 
     async function decryptAccounts(data) {
         const dataDecrypted = await window.crypto.subtle.decrypt(
