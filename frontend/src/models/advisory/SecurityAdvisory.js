@@ -157,6 +157,32 @@ class SecurityAdvisory {
         return result;
     }
 
+    getAllProductInformation() {
+        let result = [];
+
+        this.vendors.forEach(vendor => {
+            vendor.products.forEach(product => {
+                product.versions.forEach(version => {
+                    this.vulnerabilities.forEach(vulnerability => {
+                        let vulnInfo = vulnerability.getProductInformation(version.identifier);
+                        if(!vulnInfo) return;
+
+                        result.push({
+                            fullName: version.fullName,
+                            version: version.version,
+                            identifier: version.identifier,
+                            status: vulnInfo.status,
+                            cvss: vulnInfo.cvss,
+                            remediations: vulnInfo.remediations
+                        });
+                    });
+                });
+            });
+        });
+
+        return result;
+    }
+
 }
 
 module.exports = SecurityAdvisory;

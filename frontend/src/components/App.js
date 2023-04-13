@@ -48,7 +48,8 @@ function App() {
                     <PasswordContext.Provider value={cryptoKey}>
                         <PasswordModal state={showPwModal} setPasswordContext={(key) => setCryptoKey(key)} dismiss={() => setShowPwModal(false)} done={() => setShowPwModal(false)} ></PasswordModal>
                         <Routes>
-                            <Route exact path='/' Component={() => <Vulnerabilities 
+                            <Route exact path='/' Component={() => 
+                                <Vulnerabilities 
                                     ipfs={ipfs} 
                                     vulnerabilitiesRef={vulnerabilities.current} 
                                     updateVulnerabilitiesRef={updateVulnerabilities}
