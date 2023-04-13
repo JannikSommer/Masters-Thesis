@@ -67,7 +67,6 @@ function ConfidentialSettings() {
             loadAccounts(); 
             Contracts.load(aesKey).then((con) => {
                 if(con !== null) setContracts(con);
-                console.log(con);
             });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,10 +86,12 @@ function ConfidentialSettings() {
             <br />
             <hr />
             <ContractManagement contracts={contracts} addContract={addContract} removeContract={removeContract}/>
+            <br />
+            <hr />
             <Container>
                 <Row>
                     <Col lg="5">
-                        <VendorManagementForm accounts={accounts}/>
+                        <VendorManagementForm accounts={accounts} contracts={contracts}/>
                     </Col>
                     <Col>
                         <div style={{height: '40%', 
@@ -101,7 +102,7 @@ function ConfidentialSettings() {
                         </div>
                     </Col>
                     <Col lg="5">
-                        <UpdateKeyForm accounts={accounts} updateContractKey={updatePrivateKey}/>
+                        <UpdateKeyForm accounts={accounts} contracts={contracts} updateContractKey={updatePrivateKey}/>
                     </Col>
                 </Row>
             </Container>

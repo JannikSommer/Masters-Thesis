@@ -14,9 +14,9 @@ import ErrorModal from '../announcement/ErrorModal';
 import SuccessModal from '../announcement/SuccessModal';
 
 
-function VendorManagementForm({accounts}) {
+function VendorManagementForm({accounts, contracts}) {
     const selectedAccount = useRef();
-    const [address, setAddress] = useState("");
+    const selectedAddress = useRef("");
     const [vendorAddress, setVendorAddress] = useState("");
     const [vendorName, setVendorName] = useState("");
     const [accept, setAccept] = useState(false);
@@ -36,7 +36,6 @@ function VendorManagementForm({accounts}) {
     const dismissError = () => setShowError(false);
 
     const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-    const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
 
     const selectAccount = (value) => {
         if (value === "Select an account") {
@@ -46,6 +45,10 @@ function VendorManagementForm({accounts}) {
         selectedAccount.current = JSON.parse(value);
     }
 
+    const selectContract = (value) => {
+        selectedAddress.current = value;
+    }
+
     /**
      * Creates a transaction calling a method on the 'Private' smart contract.
      * @param {String} method The method to call encoded as ABI bytecode.
@@ -53,7 +56,7 @@ function VendorManagementForm({accounts}) {
     const contractTransaction = (method) => {
         let config = {
             from: selectedAccount.current.wallet,
-            to: address,
+            to: selectedAddress.current,
             gas: 6721975,   
             data: method
         }
@@ -82,6 +85,7 @@ function VendorManagementForm({accounts}) {
         dismissWarningRemove();
 
         try {
+            const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, selectedAddress.current);
             contractTransaction(
                 contract.methods.removeVendor(vendorAddress).encodeABI()
             );
@@ -101,6 +105,7 @@ function VendorManagementForm({accounts}) {
         dismissWarningAdd();
 
         try {  
+            const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, selectedAddress.current);
             contractTransaction(
                 contract.methods.addVendor(vendorAddress).encodeABI()
             );
@@ -130,10 +135,13 @@ function VendorManagementForm({accounts}) {
                 </Form.Group>
 
                 <Form.Group className='mb-3' controlId='manageVendorPrivateContract'>
-                    <FloatingLabel className='mb-3' controlId='manageVendorPrivateContractLabel' label="Smart contract address">
-                        <Form.Control value={address} onChange={(e) => setAddress(e.target.value)}></Form.Control>
-                        <Form.Text className='text-muted'>Address of confidential smart contract</Form.Text>
-                    </FloatingLabel>
+                    <Form.Select onChange={(e) => selectContract(e.currentTarget.value)}>
+                        <option>Select a contract</option>
+                        {contracts.map((contract, index) => 
+                            <option key={index} value={contract["address"]}>{contract["address"]}</option>
+                        )}
+                    </Form.Select>
+                    <Form.Text className='text-muted'>Select account for the transaction</Form.Text>
                 </Form.Group>
 
                 <Form.Group className='mb-3' controlId='manageVendorAddress'>

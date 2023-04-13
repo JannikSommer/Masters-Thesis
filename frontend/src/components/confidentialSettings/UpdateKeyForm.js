@@ -18,7 +18,7 @@ import Utilities from '../../models/cryptography/Utilities';
 
 function UpdateKeyForm({accounts, contracts, updateContractKey}) {
     const selectedAccount = useRef();
-    const [address, setAddress] = useState("");
+    const selectedAddress = useRef("");
     const [publicKey, setPublicKey] = useState("");
     const [privateKey, setPrivateKey] = useState("");
     const [accept, setAccept] = useState(false);
@@ -35,7 +35,7 @@ function UpdateKeyForm({accounts, contracts, updateContractKey}) {
     const dismissError = () => setShowError(false);
 
     var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-    const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
+    const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, selectedAddress.current);
 
     const selectAccount = (value) => {
         if (value === "Select an account") {
@@ -43,6 +43,10 @@ function UpdateKeyForm({accounts, contracts, updateContractKey}) {
             return; 
         }
         selectedAccount.current = JSON.parse(value);
+    }
+
+    const selectContract = (value) => {
+        selectedAddress.current = value;
     }
 
     /**
@@ -74,7 +78,7 @@ function UpdateKeyForm({accounts, contracts, updateContractKey}) {
 
             const config = {
                 from: selectedAccount.current.wallet,
-                to: address,
+                to: selectedAddress.current,
                 gas: 6721975,
                 data: contract.methods.setPublicKey(publicKeyHex).encodeABI()
             }
@@ -91,7 +95,7 @@ function UpdateKeyForm({accounts, contracts, updateContractKey}) {
                 });
             });
 
-            updateContractKey(address, privateKey);
+            updateContractKey(selectedAddress.current, privateKey);
         } catch (err) {
             setError(err);
             setShowError(true);
@@ -117,10 +121,13 @@ function UpdateKeyForm({accounts, contracts, updateContractKey}) {
                 </Form.Group>
 
                 <Form.Group className='mb-3' controlId='updateKeyPrivateContract'>
-                    <FloatingLabel className='mb-3' controlId='updateKeyPrivateContractLabel' label="Smart contract address">
-                        <Form.Control value={address} onChange={(e) => setAddress(e.target.value)}></Form.Control>
-                        <Form.Text className='text-muted'>Address of smart contract on which to update the public key</Form.Text>
-                    </FloatingLabel>
+                    <Form.Select onChange={(e) => selectContract(e.currentTarget.value)}>
+                        <option>Select a contract</option>
+                        {contracts.map((contract, index) => 
+                            <option key={index} alue={contract["address"]}>{contract["address"]}</option>
+                        )}
+                    </Form.Select>
+                    <Form.Text className='text-muted'>Select account for the transaction</Form.Text>
                 </Form.Group>
 
                 <Form.Group className='mb-3' controlId='publicKeyPrivateContract'>
@@ -132,7 +139,7 @@ function UpdateKeyForm({accounts, contracts, updateContractKey}) {
 
                 <Form.Group className='mb-3' controlId='privateKeyPrivateContract'>
                     <FloatingLabel className='mb-3' controlId='privateKeyPrivateContractLabel' label="RSA-OAEP private key">
-                        <Form.Control as="textarea" rows={5} value={privateKey} disabled></Form.Control>
+                        <Form.Control as="textarea" rows={5} value={privateKey} onChange={(e) => setPrivateKey(e.target.value)}></Form.Control>
                         <Form.Text className='text-muted'>The private key for decrypting messages</Form.Text>
                     </FloatingLabel>
                 </Form.Group>
