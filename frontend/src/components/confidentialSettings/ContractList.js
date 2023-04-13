@@ -2,7 +2,6 @@ import Button from 'react-bootstrap/esm/Button';
 import Table from 'react-bootstrap/Table'
 
 function ContractList({contracts, remove}) {
-
     return (
         <Table striped bordered>
             <thead>

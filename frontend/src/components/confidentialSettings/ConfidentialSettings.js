@@ -23,22 +23,21 @@ function ConfidentialSettings() {
     
     const aesKey = useContext(PasswordContext);
     
-
-    const addContract = (address, name) => {
+    const addContract = async (address, name) => {
         const newContracts = Contracts.addContract(contracts, address, name);
-        Contracts.save(newContracts);
+        await Contracts.save(newContracts, aesKey);
         setContracts(newContracts);
     }
 
-    const removeContract = (address) => {
+    const removeContract = async (address) => {
         const newContracts = Contracts.removeContract(contracts, address)
-        Contracts.save(newContracts);
+        await Contracts.save(newContracts, aesKey);
         setContracts(newContracts);
     }
 
-    const updatePrivateKey = (address, key) => {
+    const updatePrivateKey = async (address, key) => {
         const newContracts = Contracts.updateKey(contracts, address, key);
-        Contracts.save(newContracts);
+        await Contracts.save(newContracts, aesKey);
         setContracts(newContracts);
     }
 
@@ -64,9 +63,13 @@ function ConfidentialSettings() {
     };
 
     useEffect(() => {
-        if(aesKey !== null) loadAccounts(); 
-        const con = Contracts.load();
-        if(con !== null) setContracts(con);
+        if(aesKey !== null) {
+            loadAccounts(); 
+            Contracts.load(aesKey).then((con) => {
+                if(con !== null) setContracts(con);
+                console.log(con);
+            });
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [aesKey]);
 
