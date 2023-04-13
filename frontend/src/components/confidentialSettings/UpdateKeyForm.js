@@ -46,6 +46,7 @@ function UpdateKeyForm({accounts, contracts, updateContractKey}) {
     }
 
     const selectContract = (value) => {
+        if (value === "Select a contract") return;
         selectedAddress.current = value;
     }
 
@@ -72,6 +73,9 @@ function UpdateKeyForm({accounts, contracts, updateContractKey}) {
             return;
         };
         dismissWarning();
+
+        if(publicKey === "" || privateKey === "") return;
+
         try {  
             const publickeyByteArray = new Uint8Array(Utilities.base64ToArrayBuffer(publicKey));
             const publicKeyHex = web3.utils.bytesToHex(publickeyByteArray)
@@ -88,14 +92,15 @@ function UpdateKeyForm({accounts, contracts, updateContractKey}) {
                 sentTx.on("receipt", receipt => {
                     setTransaction(receipt);
                     setShowTransaction(true);
+                    updateContractKey(selectedAddress.current, privateKey);
+                    setPublicKey("");
+                    setPrivateKey("");
                 });
                 sentTx.on("error", err => {
                     setError(err);
                     setShowError(true);
                 });
             });
-
-            updateContractKey(selectedAddress.current, privateKey);
         } catch (err) {
             setError(err);
             setShowError(true);

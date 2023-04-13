@@ -10,6 +10,7 @@ function NewContractForm({ addContract}) {
     const [contractName, setContractName] = useState("");
     
     async function saveContract() {
+        if(contractAddress === "") return;
         addContract(
             contractAddress,
             contractName

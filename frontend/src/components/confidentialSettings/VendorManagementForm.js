@@ -84,6 +84,8 @@ function VendorManagementForm({accounts, contracts}) {
         };
         dismissWarningRemove();
 
+        if(vendorAddress === "") return;
+        
         try {
             const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, selectedAddress.current);
             contractTransaction(
@@ -104,11 +106,16 @@ function VendorManagementForm({accounts, contracts}) {
         };
         dismissWarningAdd();
 
+        if(vendorAddress === "") return;
+
         try {  
             const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, selectedAddress.current);
             contractTransaction(
                 contract.methods.addVendor(vendorAddress).encodeABI()
             );
+            
+            setVendorAddress("");
+            setVendorName("");
         } catch (err) {
             setError(err);
             setShowError(true);
