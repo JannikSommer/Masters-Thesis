@@ -7,7 +7,7 @@ class Contracts {
      */
     static load() {
         const contractsJSON = localStorage.getItem(LS_KEY_CON);
-        if(contractsJSON === null) return;
+        if(contractsJSON === null) return null;
         return JSON.parse(contractsJSON);
     }
     

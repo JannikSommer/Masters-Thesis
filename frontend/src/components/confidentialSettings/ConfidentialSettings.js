@@ -65,8 +65,9 @@ function ConfidentialSettings() {
 
     useEffect(() => {
         if(aesKey !== null) loadAccounts(); 
-        setContracts(Contracts.load());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        const con = Contracts.load();
+        if(con !== null) setContracts(con);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [aesKey]);
 
     return (
