@@ -14,6 +14,7 @@ import Contracts from '../../localStorage/Contracts.js';
 import RefreshConfirmation from './RefreshConfirmation.js';
 import VulnerabilityAccordion from './VulnerabilityAccordion.js';
 
+
 /** 
  * Component of the /vulnerabilities page.
  * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
@@ -35,7 +36,7 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
     const modalShow = () => setShowModal(true);
 
     // Vulnerability data hook
-    const [vulnerabilities, setVulnerabilities] = useState(vulnerabilitiesRef);
+    const [vulnerabilities, setVulnerabilities] = useState([]);
     const updateVulnerabilities = (newVulnerabilities) => {
         setVulnerabilities([...newVulnerabilities].reverse());
         updateVulnerabilitiesRef(newVulnerabilities);
@@ -48,8 +49,10 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
 
     async function subscribe() {
         await subscribeToNewAdvisories();
-        await subscribeToPrivateAnnouncements("0xe2b7f65C80C9942ef2dF415CF89C729D022A3040");
-    }
+        for await (const contract of privateWhitelist.current) {
+            await subscribeToPrivateAnnouncements(contract.address);
+        }
+    }   
 
     /**
      * Subscribe to the NewSecurityAdvisory and related UpdatedSecurityAdvisory events.
@@ -171,21 +174,34 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
         }
         if (vulnerabilities.length === 0) {
             clearSubscriptions();
-            subscribe();
-            //subscribeToPrivateAnnouncements("0xe2b7f65C80C9942ef2dF415CF89C729D022A3040");
+            subscribeToNewAdvisories();
         }
         loadFromLocalStorage();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ipfs])
 
     useEffect(() => {
-        if(aesKey !== null) {
+        if (aesKey !== null) {
             Contracts.load(aesKey).then((con) => {
                 privateWhitelist.current = con;
+                for (const contract of con) {
+                    subscribeToPrivateAnnouncements(contract.address);
+                }
             });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [aesKey]);
+
+    useEffect(() => {
+        async function init() {
+            if (vulnerabilitiesRef.length === 0) {
+                await clearSubscriptions();
+                await subscribeToNewAdvisories();
+            }
+        }
+        init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [vulnerabilitiesRef]);
 
     return (
         <>
