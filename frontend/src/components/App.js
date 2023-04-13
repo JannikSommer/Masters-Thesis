@@ -15,6 +15,7 @@ import PasswordModal from "./PasswordModal";
 
 function App() {
     const [ipfs, setIpfs] = useState();
+    const [loading, setLoading] = useState(true);
     const [cryptoKey, setCryptoKey] = useState(null);
     const [showPwModal, setShowPwModal] = useState(true);
 
@@ -22,7 +23,7 @@ function App() {
     const updateVulnerabilities = (updatedVulnerabilities) => { vulnerabilities.current = [...updatedVulnerabilities].reverse(); }
 
     const web3 = useRef(new Web3(Web3.givenProvider || 'ws://localhost:7545')); // set here to persist from page to page
-    const clearSubscriptions = () => { web3.current.eth.clearSubscriptions(); }
+    const clearSubscriptions = async () => { web3.current.eth.clearSubscriptions(); }
 
     async function loadIpfs() {
         var ipfsClient = create({
@@ -34,21 +35,24 @@ function App() {
     }
     
     useEffect(() => {
-        loadIpfs();
-    }, []);
+        setLoading(true);
+        if (ipfs === undefined)
+            loadIpfs();
+        setLoading(false);
+    }, [ipfs, loading]);
 
     return (
         <div>
             <Container>
-                {ipfs === undefined
+                {loading
                     ? <Spinner animation="border" role="status" style={{ width: "4rem", height: "4rem", position: "absolute", top: "20%", left: "50%" }}>
                         <span className="visually-hidden">Loading...</span>
                     </Spinner>
-                    :
-                    <PasswordContext.Provider value={cryptoKey}>
+                    : <PasswordContext.Provider value={cryptoKey}>
                         <PasswordModal state={showPwModal} setPasswordContext={(key) => setCryptoKey(key)} dismiss={() => setShowPwModal(false)} done={() => setShowPwModal(false)} ></PasswordModal>
                         <Routes>
-                            <Route exact path='/' Component={() => <Vulnerabilities 
+                            <Route exact path='/' Component={() => 
+                                <Vulnerabilities 
                                     ipfs={ipfs} 
                                     vulnerabilitiesRef={vulnerabilities.current} 
                                     updateVulnerabilitiesRef={updateVulnerabilities}

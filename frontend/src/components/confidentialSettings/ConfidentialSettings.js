@@ -12,13 +12,34 @@ import { PasswordContext } from '../../contexts/PasswordContext';
 
 import React, { useEffect, useState, useContext } from 'react';
 import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
+import ContractManagement from './ContractManagement';
+import Contracts from '../../localStorage/Contracts';
 
 
-function ConfidentialSettings({ ipfs }) {
+function ConfidentialSettings() {
     const [show, setShow] = useState(true);
     const [accounts, setAccounts] = useState([]);
+    const [contracts, setContracts] = useState([]);
+    
     const aesKey = useContext(PasswordContext);
     
+    const addContract = async (address, name) => {
+        const newContracts = Contracts.addContract(contracts, address, name);
+        await Contracts.save(newContracts, aesKey);
+        setContracts(newContracts);
+    }
+
+    const removeContract = async (address) => {
+        const newContracts = Contracts.removeContract(contracts, address)
+        await Contracts.save(newContracts, aesKey);
+        setContracts(newContracts);
+    }
+
+    const updatePrivateKey = async (address, key) => {
+        const newContracts = Contracts.updateKey(contracts, address, key);
+        await Contracts.save(newContracts, aesKey);
+        setContracts(newContracts);
+    }
 
     async function decryptAccounts(data) {
         const dataDecrypted = await window.crypto.subtle.decrypt(
@@ -42,8 +63,13 @@ function ConfidentialSettings({ ipfs }) {
     };
 
     useEffect(() => {
-        if(aesKey !== null) loadAccounts(); 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        if(aesKey !== null) {
+            loadAccounts(); 
+            Contracts.load(aesKey).then((con) => {
+                if(con !== null) setContracts(con);
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [aesKey]);
 
     return (
@@ -59,12 +85,13 @@ function ConfidentialSettings({ ipfs }) {
             Here you can make new confidential announcements intended for specific asset owners. 
             <br />
             <hr />
-            <Container>
-            </Container>
+            <ContractManagement contracts={contracts} addContract={addContract} removeContract={removeContract}/>
+            <br />
+            <hr />
             <Container>
                 <Row>
                     <Col lg="5">
-                        <VendorManagementForm accounts={accounts}/>
+                        <VendorManagementForm accounts={accounts} contracts={contracts}/>
                     </Col>
                     <Col>
                         <div style={{height: '40%', 
@@ -75,7 +102,7 @@ function ConfidentialSettings({ ipfs }) {
                         </div>
                     </Col>
                     <Col lg="5">
-                        <UpdateKeyForm accounts={accounts}/>
+                        <UpdateKeyForm accounts={accounts} contracts={contracts} updateContractKey={updatePrivateKey}/>
                     </Col>
                 </Row>
             </Container>
