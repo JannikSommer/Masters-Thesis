@@ -10,7 +10,7 @@ import Web3 from 'web3';
 import AES from '../../models/cryptography/AES';
 import RSA from '../../models/cryptography/RSA';
 import Utilities from '../../models/cryptography/Utilities';
-import { web3Gateway } from '../../models/web3/web3Gateway';
+import Web3Gateway from '../../models/web3/web3Gateway';
 
 import AcceptModal from '../announcement/AcceptModal';
 import ErrorModal from '../announcement/ErrorModal';
@@ -119,8 +119,8 @@ function ConfidentialAdvisoryForm({accounts, ipfs}) {
                 default:
                     throw new Error("No storage system selected.");
             }
-
-            const result = await web3Gateway.announcePrivateSecurityAdvisory(
+            const web3 = new Web3Gateway();
+            const result = await web3.announcePrivateSecurityAdvisory(
                 {address: selectedAccount.current.wallet, key: selectedAccount.current.key},
                 {address: address},
                 {fileLocation: fileLocation, fileHash: fileHash, wrappedKey: wrappedKey, iv: iv}

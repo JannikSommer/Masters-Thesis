@@ -7,7 +7,7 @@ import Container from 'react-bootstrap/Container';
 // libraries
 import { PasswordContext } from '../../contexts/PasswordContext';
 import { useEffect, useRef, useState, useContext } from 'react';
-import { CONTACT_ABI, CONTACT_ADDRESS, PRIVATE_CONTRACT_ABI, LS_KEY_DEP, LS_KEY_WL } from '../../config.js';
+import { LS_KEY_DEP, LS_KEY_WL } from '../../config.js';
 import Contracts from '../../localStorage/Contracts.js';
 
 // components
@@ -19,7 +19,7 @@ import VulnerabilityAccordion from './VulnerabilityAccordion.js';
  * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
  * @returns The content of the vulnerabilities page.  
  * */
-function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, web3Ref, clearSubscriptions }) {
+function Vulnerabilities({ ipfs, web3Gateway }) {
     const dependencies = useRef([]);
     const whitelist = useRef([]);
     const privateWhitelist = useRef([]);
@@ -36,10 +36,9 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
 
     // Vulnerability data hook
     const [vulnerabilities, setVulnerabilities] = useState([]);
-    const updateVulnerabilities = (newVulnerabilities) => {
+    const updateVulnerabilities = async (newVulnerabilities) => {
         setVulnerabilities([...newVulnerabilities].reverse());
-        updateVulnerabilitiesRef(newVulnerabilities);
-    }
+   }
     const addPrivateVulnerability = (vulnerability) => { 
         let temp = vulnerabilities;
         temp.push(vulnerability);
@@ -47,85 +46,65 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
     }
 
     async function subscribe() {
-        await subscribeToNewAdvisories();
+        await web3Gateway.subscribeNewSecurityAdvisories(newCallback);
         for await (const contract of privateWhitelist.current) {
-            await subscribeToPrivateAnnouncements(contract.address);
+            await web3Gateway.subscribeToPrivateSecurityAdvisories(privateCallback, contract.address);
         }
     }
 
-    /**
-     * Subscribe to the NewSecurityAdvisory and related UpdatedSecurityAdvisory events.
-     * @returns {Promise} Promise that resolves to the subscription object.
-     */
-    async function subscribeToNewAdvisories() {
-        let contract = new web3Ref.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
-        return contract.events.NewSecurityAdvisory({
-            fromBlock: 0
-        }, async function (error, event) {
-            if (error)
-                throw error; 
-            let newVulnerability = [{
-                type: "new",
-                event: event, 
-                cid: event.returnValues.documentLocation,
-                tx: await web3Ref.eth.getTransaction(event.transactionHash), 
-                block: await web3Ref.eth.getBlock(event.blockNumber),
-                advisory: {} // will be set later
-            }]; 
-            let temp = vulnerabilities;
-            temp.push(newVulnerability);
-            updateVulnerabilities(await filterVulnerabilities(temp));
-            await subscribeToUpdates(event.returnValues.advisoryIdentifier);
-        });
+    async function newCallback(error, event) {
+        if (error)
+            throw error;
+        const newEvent = [{
+            type: "new",
+            event: event, 
+            cid: event.returnValues.documentLocation,
+            tx: await web3Gateway.web3.eth.getTransaction(event.transactionHash), 
+            block: await web3Gateway.web3.eth.getBlock(event.blockNumber),
+            advisory: {} // will be set later
+        }];
+        let temp = vulnerabilities;
+        temp.push(newEvent);
+        await updateVulnerabilities(await filterVulnerabilities(temp));
+        await web3Gateway.subscribeToSecurityAdvisoryUpdates(updateCallback, event.returnValues.advisoryIdentifier);
     }
 
-    /**
-     * Subscribe to the UpdatedSecurityAdvisory event with a given advisory identifier.
-     * @param {string} advisoryIdentifier from the NewSecurityAdvisory event.
-     * @returns {Promise} Promise that resolves to the subscription object.
-     */
-    async function subscribeToUpdates(advisoryIdentifier) {
-        let contract = new web3Ref.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
-        return contract.events.UpdatedSecurityAdvisory({
-            // eslint-disable-next-line
-            topics: [ , web3Ref.utils.soliditySha3({type: 'string', value: advisoryIdentifier})],
-            fromBlock: 0
-        }, async function (error, event) {
-            if (error) 
-                throw error;
-            for (const vulnerability of vulnerabilities) {
-                if (advisoryIdentifier === vulnerability[0].event.returnValues.advisoryIdentifier) {
+    async function updateCallback(error, event) {
+        if (error) 
+            throw error;
+        for (const vulnerability of vulnerabilities) {
+            if (vulnerability.type === "new") {
+                const hex = await web3Gateway.web3.utils.soliditySha3({
+                    type: 'string',
+                    value: vulnerability[0].event.returnValues.advisoryIdentifier
+                });
+                if (event.returnValues.advisoryIdentifier === hex) {
                     vulnerability.push({
                         type: "update",
                         event: event,
                         cid: event.returnValues.documentLocation,
-                        tx: await web3Ref.eth.getTransaction(event.transactionHash), 
-                        block: await web3Ref.eth.getBlock(event.blockNumber), 
+                        tx: await web3Gateway.web3.eth.getTransaction(event.transactionHash), 
+                        block: await web3Gateway.web3.eth.getBlock(event.blockNumber), 
                         advisory: {} // will be set later
                     });
                 }
             }
-            updateVulnerabilities(await filterVulnerabilities(vulnerabilities));
-        });
+        }
+        updateVulnerabilities(await filterVulnerabilities(vulnerabilities));
     }
 
-    async function subscribeToPrivateAnnouncements(address) {
-        let contract = new web3Ref.eth.Contract(PRIVATE_CONTRACT_ABI, address);
-        return contract.events.Announcement({
-            fromBlock: 0
-        }, async function (error, event) {
-            if (error)
-                throw error;
-            let vulnerability = [{
-                type: "private",
-                event: event,
-                cid: event.returnValues.location,
-                tx: await web3Ref.eth.getTransaction(event.transactionHash), 
-                block: await web3Ref.eth.getBlock(event.blockNumber), 
-                advisory: {} // will be set later
-            }];
-            addPrivateVulnerability(vulnerability);
-        });
+    async function privateCallback(error, event) {
+        if (error)
+            throw error;
+        let vulnerability = [{
+            type: "private",
+            event: event,
+            cid: event.returnValues.location,
+            tx: await web3Gateway.web3.eth.getTransaction(event.transactionHash), 
+            block: await web3Gateway.web3.eth.getBlock(event.blockNumber), 
+            advisory: {} // will be set later
+        }];
+        addPrivateVulnerability(vulnerability);
     }
 
     /** 
@@ -155,8 +134,7 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
      * */
     async function refreshVulnerabilities() {
         vulnerabilities.splice(0, vulnerabilities.length);
-        updateVulnerabilities([])
-        clearSubscriptions();
+        web3Gateway.clearSubscriptions();
         await subscribe();
         modalClose();
     }
@@ -172,35 +150,22 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
             setRerender(!rerender); // force rerender to update dependencies and whitelist
         }
         if (vulnerabilities.length === 0) {
-            clearSubscriptions();
-            subscribeToNewAdvisories();
+            web3Gateway.clearSubscriptions();
         }
         loadFromLocalStorage();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ipfs])
+    }, [ipfs]);
 
     useEffect(() => {
         if (aesKey !== null) {
             Contracts.load(aesKey).then((con) => {
                 privateWhitelist.current = con;
-                for (const contract of con) {
-                    subscribeToPrivateAnnouncements(contract.address);
-                }
+                subscribe();
             });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [aesKey]);
 
-    useEffect(() => {
-        async function init() {
-            if (vulnerabilitiesRef.length === 0) {
-                await clearSubscriptions();
-                await subscribeToNewAdvisories();
-            }
-        }
-        init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [vulnerabilitiesRef]);
 
     return (
         <>

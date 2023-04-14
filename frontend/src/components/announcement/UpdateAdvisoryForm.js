@@ -9,7 +9,7 @@ import SuccessModal from './SuccessModal';
 import { SUPPORTED_STORAGE_PUBLIC } from '../../storage/config';
 import { useRef, useState } from 'react';
 import { uploadToIpfs } from '../../storage/IpfsUpload';
-import { web3Gateway } from '../../models/web3/web3Gateway';
+import Web3Gateway from '../../models/web3/web3Gateway';
 
 function UpdateAdvisoryForm({ accounts, ipfs }) {
     const selectedAccount = useRef();
@@ -87,7 +87,8 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
             }
             await parseCSAF();
 
-            const result = await web3Gateway.announcePublicSecurityAdvisoryUpdate(
+            const web3 = new Web3Gateway();
+            const result = await web3.announcePublicSecurityAdvisoryUpdate(
                 {
                     address: selectedAccount.current.address,
                     key: selectedAccount.current.key,

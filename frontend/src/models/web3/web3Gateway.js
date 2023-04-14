@@ -2,42 +2,47 @@ import Web3 from "web3";
 
 import { CONTACT_ABI, CONTACT_ADDRESS, VENDOR_CONTRACT_ABI, PRIVATE_CONTRACT_ABI } from "../../config.js";
 
-export class web3Gateway {
+class Web3Gateway {
 
     /**
-     * @type {Web3} Static web3 instance for the application.
+     * @type {*} Static web3 instance for the application.
      */
-    static web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+    web3;
 
     /**
-     * @type {Web3.eth.Contract}  Contract object of the Announcement Service.
+     * @type {*}  Contract object of the Announcement Service.
      */
-    static announcementService = new this.web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+    announcementService;
 
     /**
      * @type {[Object]} Array of event subscriptions.
      */
-    static subscriptions = [];
+    subscriptions = [];
 
     /**
      * @type {[Object]} Array of new security advisory events.
      */
-    static newSecurityAdvisoryEvents = [];
+    newSecurityAdvisoryEvents = [];
 
     /**
      * @type {[Object]} Array of updated security advisory events.
      */
-    static updatedSecurityAdvisoryEvents = [];
+    updatedSecurityAdvisoryEvents = [];
 
     /**
      * @type {[Object]} Array of private security advisory events.
      */
-    static privateSecurityAdvisoryEvents = [];
+    privateSecurityAdvisoryEvents = [];
+
+    constructor() {
+        this.web3 = new Web3(Web3.givenProvider || 'ws://localhost:7545');
+        this.announcementService = new this.web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+    }
 
     /**
      * Clear all subscriptions made to announcement service and private contracts.
      */
-    static async clearSubscriptions() {
+    async clearSubscriptions() {
         this.web3.eth.clearSubscriptions();
         this.subscriptions = []; //perhaps need to be popped instead
         this.newSecurityAdvisoryEvents = [];
@@ -47,73 +52,35 @@ export class web3Gateway {
 
     /**
      * Subscribe to new security advisory events on the Announcement Service. 
-     */
-    static async subscribeNewSecurityAdvisories() {
-        const sub = this.announcementService.events.NewSecurityAdvisory({
-            fromBlock: 0
-        }, async function (error, event) {
-            if (error)
-                throw error;
-            const newEvent = {
-                type: "new",
-                event: event, 
-                cid: event.returnValues.documentLocation,
-                tx: await this.web3.eth.getTransaction(event.transactionHash), 
-                block: await this.web3eth.getBlock(event.blockNumber),
-                advisory: {} // will be set later
-            };
-            this.newSecurityAdvisoryEvents.push(newEvent);
-            await this.subscribeToSecurityAdvisoryUpdates(event.returnValues.advisoryIdentifier);
-        });
-        this.subscriptions.push(sub);
+     * @param {function} Callback function for when events are found. 
+     */ 
+    async subscribeNewSecurityAdvisories(callback) {
+        this.subscriptions.push(this.announcementService.events.NewSecurityAdvisory(
+            {fromBlock: 0}, 
+            callback)
+        );
     }
 
     /**
      * Subscribe to updated security advisory events on the Announcement Service.
      * @param {*} advisoryIdentifier Identifier from the NewSecurityAdvisory event to subscribe to updates for.
      */
-    static async subscribeToSecurityAdvisoryUpdates(advisoryIdentifier) {
-        const sub = this.announcementService.events.UpdatedSecurityAdvisory({
+    async subscribeToSecurityAdvisoryUpdates(callback, advisoryIdentifier) {
+        this.subscriptions.push(this.announcementService.events.UpdatedSecurityAdvisory({
             // eslint-disable-next-line
             topics: [ , this.web3.utils.soliditySha3({type: 'string', value: advisoryIdentifier})],
             fromBlock: 0
-        }, async function (error, event) {
-            if (error) 
-                throw error;
-            const newEvent = {
-                type: "update",
-                event: event,
-                cid: event.returnValues.documentLocation,
-                tx: await this.web3.eth.getTransaction(event.transactionHash),
-                block: await this.web3.eth.getBlock(event.blockNumber),
-                advisory: {} // will be set later
-            };
-            this.updatedSecurityAdvisoryEvents.push(newEvent);
-        });
-        this.subscriptions.push(sub);
+        }, callback));
     }
 
     /** 
      * Subscribe to private security advisory events on a private contract.
      */
-    static async subscribeToPrivateSecurityAdvisories(address) {
+    async subscribeToPrivateSecurityAdvisories(callback, address) {
         let contract = new this.web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
-        const sub = contract.events.Announcement({
+        this.subscriptions.push(contract.events.Announcement({
             fromBlock: 0
-        }, async function (error, event) {
-            if (error)
-                throw error;
-            const newEvent = {
-                type: "private",
-                event: event,
-                cid: event.returnValues.location,
-                tx: await this.web3.eth.getTransaction(event.transactionHash), 
-                block: await this.web3.eth.getBlock(event.blockNumber), 
-                advisory: {} // will be set later
-            };
-            this.privateSecurityAdvisoryEvents.push(newEvent);
-        });
-        this.subscriptions.push(sub);
+        }, callback));
     }
 
     /**
@@ -123,7 +90,7 @@ export class web3Gateway {
      * @param {Object} payload Data to be sent in the transaction.
      * @param {number} gas Gas limit for the transaction (default: 6721975).
      */
-    static async announcePublicSecurityAdvisory(sender, recipient, payload, gas = 6721975) {
+    async announcePublicSecurityAdvisory(sender, recipient, payload, gas = 6721975) {
         const contract = new this.web3.eth.Contract(VENDOR_CONTRACT_ABI, recipient.address);
         const config = {
             from: sender.address,
@@ -154,7 +121,7 @@ export class web3Gateway {
      * @param {Object} payload Data to be sent in the transaction.
      * @param {number} gas Gas limit for the transaction (default: 6721975).
      */
-    static async announcePublicSecurityAdvisoryUpdate(sender, recipient, payload, gas = 6721975) { 
+    async announcePublicSecurityAdvisoryUpdate(sender, recipient, payload, gas = 6721975) { 
         const contract = new this.web3.eth.Contract(VENDOR_CONTRACT_ABI, recipient.address);
         const config = {   
             from: sender.address,
@@ -187,7 +154,7 @@ export class web3Gateway {
      * @param {Object} payload Data to be sent in the transaction.
      * @param {number} gas Gas limit for the transaction (default: 6721975).
      */
-    static async announcePrivateSecurityAdvisory(sender, recipient, payload, gas = 6721975) {
+    async announcePrivateSecurityAdvisory(sender, recipient, payload, gas = 6721975) {
         const contract = new this.web3.eth.Contract(PRIVATE_CONTRACT_ABI, recipient.address);
         const config = {
             from: sender.address,
@@ -211,7 +178,5 @@ export class web3Gateway {
             });
         });
     }
-
-
-
 }
+export default Web3Gateway;

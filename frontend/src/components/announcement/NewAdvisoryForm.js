@@ -6,7 +6,7 @@ import { useRef, useState } from 'react';
 
 import { SUPPORTED_STORAGE_PUBLIC } from '../../storage/config';
 import { uploadToIpfs } from '../../storage/IpfsUpload';
-import { web3Gateway } from '../../models/web3/web3Gateway';
+import Web3Gateway from '../../models/web3/web3Gateway';
 
 import AcceptModal from './AcceptModal';
 import ErrorModal from './ErrorModal';
@@ -90,8 +90,8 @@ function NewAdvisoryForm({ accounts, ipfs }) {
                     throw new Error("No storage system selected.");
             }
             await parseCSAF();
-
-            let res = await web3Gateway.announcePublicSecurityAdvisory(
+            const web3 = new Web3Gateway();
+            let res = await web3.announcePublicSecurityAdvisory(
                 {
                     address: selectedAccount.current.wallet, 
                     key: selectedAccount.current.key
