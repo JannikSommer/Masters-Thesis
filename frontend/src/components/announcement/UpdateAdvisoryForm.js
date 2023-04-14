@@ -6,11 +6,10 @@ import AcceptModal from './AcceptModal';
 import ErrorModal from './ErrorModal';
 import SuccessModal from './SuccessModal';
 
-import { VENDOR_CONTRACT_ABI } from '../../config';
 import { SUPPORTED_STORAGE_PUBLIC } from '../../storage/config';
 import { useRef, useState } from 'react';
 import { uploadToIpfs } from '../../storage/IpfsUpload';
-import Web3 from 'web3';
+import { web3Gateway } from '../../models/web3/web3Gateway';
 
 function UpdateAdvisoryForm({ accounts, ipfs }) {
     const selectedAccount = useRef();
@@ -88,33 +87,21 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
             }
             await parseCSAF();
 
-            var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
-            const contract = new web3.eth.Contract(VENDOR_CONTRACT_ABI, address);
-
-            web3.eth.accounts.signTransaction({
-                from: selectedAccount.current.wallet,
-                to: address,
-                gas: 6721975,
-                data: contract.methods.announceUpdatedAdvisory(
-                    advisoryId, 
-                    vulnerabilityIds, 
-                    productIds.current.join(","), 
-                    storageSystem.toLowerCase().concat("/", fileLocation))
-                    .encodeABI()
-            }, selectedAccount.current.key).then((signedTx) => {
-                const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
-                sentTx.on("receipt", receipt => {
-                    setTransaction(receipt);
-                    setShowTransaction(true);
-                });
-                sentTx.on("error", err => {
-                    setError(err);
-                    setShowError(true);
-                });
-            }).catch((err) => {
-                setError(err);
-                setShowError(true);
-            })
+            const result = await web3Gateway.announcePublicSecurityAdvisoryUpdate(
+                {
+                    address: selectedAccount.current.address,
+                    key: selectedAccount.current.key,
+                },
+                {address: address},
+                {
+                    advisoryId: advisoryId,
+                    vulnerabilityIds: vulnerabilityIds,
+                    productIds: productIds.current.join(","),
+                    fileLocation: storageSystem.toLowerCase().concat("/", fileLocation),
+                }
+            );
+            setTransaction(result);
+            setShowTransaction(true);
         } catch (err) {
             setError(err);
             setShowError(true);

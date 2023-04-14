@@ -14,7 +14,6 @@ import Contracts from '../../localStorage/Contracts.js';
 import RefreshConfirmation from './RefreshConfirmation.js';
 import VulnerabilityAccordion from './VulnerabilityAccordion.js';
 
-
 /** 
  * Component of the /vulnerabilities page.
  * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
@@ -52,7 +51,7 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
         for await (const contract of privateWhitelist.current) {
             await subscribeToPrivateAnnouncements(contract.address);
         }
-    }   
+    }
 
     /**
      * Subscribe to the NewSecurityAdvisory and related UpdatedSecurityAdvisory events.

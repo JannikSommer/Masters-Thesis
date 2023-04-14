@@ -10,6 +10,7 @@ import Web3 from 'web3';
 import AES from '../../models/cryptography/AES';
 import RSA from '../../models/cryptography/RSA';
 import Utilities from '../../models/cryptography/Utilities';
+import { web3Gateway } from '../../models/web3/web3Gateway';
 
 import AcceptModal from '../announcement/AcceptModal';
 import ErrorModal from '../announcement/ErrorModal';
@@ -90,40 +91,6 @@ function ConfidentialAdvisoryForm({accounts, ipfs}) {
     }
 
     /**
-     * Creates a transaction announcing a confidential advisory on the 'Private' smart contract.
-     * @param {String} fileLocation The IPFS CID.
-     * @param {ArrayBuffer} fileHash The SHA-256 hash of the uploaded file.
-     * @param {ArrayBuffer} wrappedKey The wrapped AES key.
-     * @param {Uint8Array} iv The initialization vector used in the AES encryption.
-     */
-    const contractTransaction = (fileLocation, fileHash, wrappedKey, iv) => {
-        const config = {
-            from: selectedAccount.current.wallet,
-            to: address,
-            gas: 6721975,   
-            data: contract.methods.announce(
-                fileLocation,
-                web3.utils.bytesToHex(new Uint8Array(fileHash)),
-                web3.utils.bytesToHex(new Uint8Array(wrappedKey)),
-                web3.utils.bytesToHex(iv)
-            ).encodeABI()
-        }
-
-        web3.eth.accounts.signTransaction(config, selectedAccount.current.key)
-        .then((signedTx) => {
-            const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
-            sentTx.on("receipt", receipt => {
-                setTransaction(receipt);
-                setShowTransaction(true);
-            });
-            sentTx.on("error", err => {
-                setError(err);
-                setShowError(true);
-            });
-        })
-    }
-
-    /**
      * Tries to encrypt, upload and announce a confidential security advisory to the 'Private' smart contract.
      */
     const announce = async () => {
@@ -153,7 +120,13 @@ function ConfidentialAdvisoryForm({accounts, ipfs}) {
                     throw new Error("No storage system selected.");
             }
 
-            contractTransaction(fileLocation, fileHash, wrappedKey, iv);
+            const result = await web3Gateway.announcePrivateSecurityAdvisory(
+                {address: selectedAccount.current.wallet, key: selectedAccount.current.key},
+                {address: address},
+                {fileLocation: fileLocation, fileHash: fileHash, wrappedKey: wrappedKey, iv: iv}
+            )
+            setTransaction(result);
+            setShowTransaction(true);
         } catch (err) {
             setError(err);
             setShowError(true);
