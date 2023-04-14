@@ -43,7 +43,7 @@ function App() {
 
     return (
         <div>
-            <Container>
+            <Container className="mb-5 pb-5">
                 {loading
                     ? <Spinner animation="border" role="status" style={{ width: "4rem", height: "4rem", position: "absolute", top: "20%", left: "50%" }}>
                         <span className="visually-hidden">Loading...</span>
