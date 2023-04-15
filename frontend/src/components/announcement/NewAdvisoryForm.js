@@ -90,8 +90,7 @@ function NewAdvisoryForm({ accounts, ipfs }) {
                     throw new Error("No storage system selected.");
             }
             await parseCSAF();
-            const web3 = new Web3Gateway();
-            let res = await web3.announcePublicSecurityAdvisory(
+            let res = await new Web3Gateway().announcePublicSecurityAdvisory(
                 {
                     address: selectedAccount.current.wallet, 
                     key: selectedAccount.current.key

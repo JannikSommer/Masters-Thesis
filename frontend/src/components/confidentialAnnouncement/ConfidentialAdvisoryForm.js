@@ -119,8 +119,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs}) {
                 default:
                     throw new Error("No storage system selected.");
             }
-            const web3 = new Web3Gateway();
-            const result = await web3.announcePrivateSecurityAdvisory(
+            const result = await new Web3Gateway().announcePrivateSecurityAdvisory(
                 {address: selectedAccount.current.wallet, key: selectedAccount.current.key},
                 {address: address},
                 {fileLocation: fileLocation, fileHash: fileHash, wrappedKey: wrappedKey, iv: iv}

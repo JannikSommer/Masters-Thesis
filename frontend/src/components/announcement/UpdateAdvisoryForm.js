@@ -87,8 +87,7 @@ function UpdateAdvisoryForm({ accounts, ipfs }) {
             }
             await parseCSAF();
 
-            const web3 = new Web3Gateway();
-            const result = await web3.announcePublicSecurityAdvisoryUpdate(
+            const result = await new Web3Gateway().announcePublicSecurityAdvisoryUpdate(
                 {
                     address: selectedAccount.current.address,
                     key: selectedAccount.current.key,

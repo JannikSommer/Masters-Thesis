@@ -38,13 +38,13 @@ class Web3Gateway {
         this.web3 = new Web3(Web3.givenProvider || 'ws://localhost:7545');
         this.announcementService = new this.web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
     }
-
+    
     /**
      * Clear all subscriptions made to announcement service and private contracts.
      */
     async clearSubscriptions() {
         this.web3.eth.clearSubscriptions();
-        this.subscriptions = []; //perhaps need to be popped instead
+        this.subscriptions = []; // perhaps need to be popped instead
         this.newSecurityAdvisoryEvents = [];
         this.updatedSecurityAdvisoryEvents = [];
         this.privateSecurityAdvisoryEvents = [];
@@ -63,14 +63,15 @@ class Web3Gateway {
 
     /**
      * Subscribe to updated security advisory events on the Announcement Service.
-     * @param {*} advisoryIdentifier Identifier from the NewSecurityAdvisory event to subscribe to updates for.
+     * @param {string} advisoryIdentifier Identifier from the NewSecurityAdvisory event to subscribe to updates for.
      */
     async subscribeToSecurityAdvisoryUpdates(callback, advisoryIdentifier) {
         this.subscriptions.push(this.announcementService.events.UpdatedSecurityAdvisory({
             // eslint-disable-next-line
             topics: [ , this.web3.utils.soliditySha3({type: 'string', value: advisoryIdentifier})],
-            fromBlock: 0
-        }, callback));
+            fromBlock: 0},
+            callback)
+        );
     }
 
     /** 
