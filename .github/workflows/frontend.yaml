@@ -27,8 +27,5 @@ jobs:
     - name: Install Ganache CLI 
       run: npm install -g ganache
 
-    - name: Start Ganache
-      run: npm run ganache #the script is setup in package.json
-
     - name: Run Tests
       run: npm test --prefix ./frontend 
