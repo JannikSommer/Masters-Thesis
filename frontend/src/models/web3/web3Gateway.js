@@ -1,7 +1,6 @@
 const Web3 = require('web3');
 
 const { CONTACT_ABI, CONTACT_ADDRESS, VENDOR_CONTRACT_ABI, PRIVATE_CONTRACT_ABI } = require("../../config.js");
-//import { CONTACT_ABI, CONTACT_ADDRESS, VENDOR_CONTRACT_ABI, PRIVATE_CONTRACT_ABI } from "../../config.js";
 
 class Web3Gateway {
 
@@ -35,8 +34,12 @@ class Web3Gateway {
      */
     privateSecurityAdvisoryEvents = [];
 
-    constructor() {
-        this.web3 = new Web3(Web3.givenProvider || 'ws://localhost:7545');
+    constructor(web3 = undefined) {
+        if (web3) 
+            this.web3 = web3;
+        else 
+            this.web3 = new Web3(Web3.givenProvider || 'ws://localhost:7545');
+        
         this.announcementService = new this.web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
     }
     
@@ -161,7 +164,7 @@ class Web3Gateway {
         const config = {
             from: sender.address,
             to: recipient.address,
-            gas: 6721975,   
+            gas: gas,   
             data: contract.methods.announce(
                     payload.fileLocation,
                     this.web3.utils.bytesToHex(new Uint8Array(payload.fileHash)),
@@ -176,6 +179,58 @@ class Web3Gateway {
             });
             tx.on('error', (error) => {
                 console.log(error);
+                throw error;
+            });
+        });
+    }
+
+    /**
+     * Adds a vendor to the whitelist of a private contract.
+     * @param {Object} sender Sender object of the transaction.
+     * @param {Object} recipient Recipient object of the transaction (should be a private contract)
+     * @param {Object} toWhitelistAddress Address to be whitelisted.
+     * @param {number} gas Gas limit for the transaction (default: 6721975).
+     */
+    async whitelistVendor(sender, recipient, toWhitelistAddress, gas = 6721975) {
+        const contract = new this.web3.eth.Contract(PRIVATE_CONTRACT_ABI, recipient.address);
+        let config = {
+            from: sender.address,
+            to: recipient.address,
+            gas: gas,
+            data: contract.methods.addVendor(toWhitelistAddress).encodeABI()
+        }
+        this.web3.eth.accounts.signTransaction(config, sender.key).then((signedTx) => {
+            const sentTx = this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+            sentTx.on("receipt", receipt => {
+                return receipt;
+            });
+            sentTx.on("error", error => {
+                throw error;
+            });
+        });
+    }
+
+    /**
+     * Removed a vendor from the whitelist of a private contract.
+     * @param {Object} sender Sender object of the transaction.
+     * @param {Object} recipient Recipient object of the transaction (should be a private contract)
+     * @param {Object} toRemoveAddress Address to be removed from the whitelist.
+     * @param {number} gas Gas limit for the transaction (default: 6721975).
+     */
+    async removeVendorFromWhitelist(sender, recipient, toRemoveAddress, gas = 6721975) {
+        const contract = new this.web3.eth.Contract(PRIVATE_CONTRACT_ABI, recipient.address);
+        let config = {
+            from: sender.address,
+            to: recipient.address,
+            gas: gas,
+            data: contract.methods.removeVendor(toRemoveAddress).encodeABI()
+        }
+        this.web3.eth.accounts.signTransaction(config, sender.key).then((signedTx) => {
+            const sentTx = this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+            sentTx.on("receipt", receipt => {
+                return receipt;
+            });
+            sentTx.on("error", error => {
                 throw error;
             });
         });
