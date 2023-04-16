@@ -26,5 +26,11 @@ jobs:
     - name: Install Dependencies
       run: npm install --prefix ./frontend 
     
+    - name: Install Ganache CLI 
+      run: npm install -g ganache
+
+    - name: Start Ganache
+      run: ganache --detach --server.port=7545 --wallet.accounts="0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63","0X56BC75E2D63100000"
+
     - name: Run Tests
       run: npm test --prefix ./frontend 

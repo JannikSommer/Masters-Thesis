@@ -1,12 +1,12 @@
 // localstorage keys
-export const LS_KEY_DEP = "SENTINEL-settings-dependencies";
-export const LS_KEY_WL = "SENTINEL-settings-whitelist";
-export const LS_KEY_ACC = "SENTINEL-settings-accounts";
-export const LS_KEY_PWD = "SENTINEL-password-data";
-export const LS_KEY_CON = "SENTINEL-settings-contracts";
+exports.LS_KEY_DEP = "SENTINEL-settings-dependencies";
+exports.LS_KEY_WL = "SENTINEL-settings-whitelist";
+exports.LS_KEY_ACC = "SENTINEL-settings-accounts";
+exports.LS_KEY_PWD = "SENTINEL-password-data";
+exports.LS_KEY_CON = "SENTINEL-settings-contracts";
 
-export const CONTACT_ADDRESS = "0xdb3c81C5cEFfed3aFfaAaE99d4dC19e88507B1b5";
-export const CONTACT_ABI = [
+exports.CONTACT_ADDRESS = "0xdb3c81C5cEFfed3aFfaAaE99d4dC19e88507B1b5";
+exports.CONTACT_ABI = [
   {
     "anonymous": false,
     "inputs": [
@@ -126,7 +126,7 @@ export const CONTACT_ABI = [
     "type": "function"
   }
 ];
-export const VENDOR_CONTRACT_ABI = [
+exports.VENDOR_CONTRACT_ABI = [
   {
     "inputs": [
       {
@@ -313,7 +313,7 @@ export const VENDOR_CONTRACT_ABI = [
     "type": "function"
   }
 ];
-export const PRIVATE_CONTRACT_ABI = [
+exports.PRIVATE_CONTRACT_ABI = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",

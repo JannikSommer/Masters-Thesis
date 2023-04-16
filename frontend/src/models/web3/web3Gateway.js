@@ -1,6 +1,7 @@
-import Web3 from "web3";
+const Web3 = require('web3');
 
-import { CONTACT_ABI, CONTACT_ADDRESS, VENDOR_CONTRACT_ABI, PRIVATE_CONTRACT_ABI } from "../../config.js";
+const { CONTACT_ABI, CONTACT_ADDRESS, VENDOR_CONTRACT_ABI, PRIVATE_CONTRACT_ABI } = require("../../config.js");
+//import { CONTACT_ABI, CONTACT_ADDRESS, VENDOR_CONTRACT_ABI, PRIVATE_CONTRACT_ABI } from "../../config.js";
 
 class Web3Gateway {
 
@@ -180,4 +181,4 @@ class Web3Gateway {
         });
     }
 }
-export default Web3Gateway;
+module.exports = Web3Gateway;
