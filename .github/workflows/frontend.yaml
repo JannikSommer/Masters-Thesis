@@ -4,8 +4,6 @@
 name: Frontend Tests
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
 
 jobs:
@@ -26,5 +24,8 @@ jobs:
     - name: Install Dependencies
       run: npm install --prefix ./frontend 
     
+    - name: Install Ganache CLI 
+      run: npm install -g ganache
+
     - name: Run Tests
       run: npm test --prefix ./frontend 
