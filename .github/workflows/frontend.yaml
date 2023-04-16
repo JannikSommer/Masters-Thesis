@@ -4,8 +4,6 @@
 name: Frontend Tests
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
 
 jobs:
