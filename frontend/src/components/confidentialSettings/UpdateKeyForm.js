@@ -15,7 +15,6 @@ import ErrorModal from '../announcement/ErrorModal';
 import SuccessModal from '../announcement/SuccessModal';
 import Utilities from '../../models/cryptography/Utilities';
 
-
 function UpdateKeyForm({accounts, contracts, updateContractKey}) {
     const selectedAccount = useRef();
     const selectedAddress = useRef("");

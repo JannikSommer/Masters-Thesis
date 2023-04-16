@@ -5,32 +5,38 @@ const { CONTACT_ABI, CONTACT_ADDRESS, VENDOR_CONTRACT_ABI, PRIVATE_CONTRACT_ABI 
 class Web3Gateway {
 
     /**
-     * @type {*} Static web3 instance for the application.
+     * Web3 instance for the application.
+     * @type {Web3} 
      */
     web3;
 
     /**
-     * @type {*}  Contract object of the Announcement Service.
+     * Contract object of the Announcement Service.
+     * @type {Web3.eth.Contract}  
      */
     announcementService;
 
     /**
-     * @type {[Object]} Array of event subscriptions.
+     * Array of event subscriptions.
+     * @type {event[]} Web3 event objects.
      */
     subscriptions = [];
 
     /**
-     * @type {[Object]} Array of new security advisory events.
+     * Array of new security advisory events.
+     * @type {event[]} Web3 event objects.
      */
     newSecurityAdvisoryEvents = [];
 
     /**
-     * @type {[Object]} Array of updated security advisory events.
+     * Array of updated security advisory events.
+     * @type {event[]} Web3 event objects.
      */
     updatedSecurityAdvisoryEvents = [];
 
     /**
-     * @type {[Object]} Array of private security advisory events.
+     * Array of private security advisory events.
+     * @type {event[]} Web3 event objects.
      */
     privateSecurityAdvisoryEvents = [];
 
@@ -56,7 +62,7 @@ class Web3Gateway {
 
     /**
      * Subscribe to new security advisory events on the Announcement Service. 
-     * @param {function} Callback function for when events are found. 
+     * @param {requestCallback} callback function for when events are found. 
      */ 
     async subscribeNewSecurityAdvisories(callback) {
         this.subscriptions.push(this.announcementService.events.NewSecurityAdvisory(
@@ -67,6 +73,7 @@ class Web3Gateway {
 
     /**
      * Subscribe to updated security advisory events on the Announcement Service.
+     * @param {requestCallback} callback function for when events are found.
      * @param {string} advisoryIdentifier Identifier from the NewSecurityAdvisory event to subscribe to updates for.
      */
     async subscribeToSecurityAdvisoryUpdates(callback, advisoryIdentifier) {
@@ -80,6 +87,8 @@ class Web3Gateway {
 
     /** 
      * Subscribe to private security advisory events on a private contract.
+     * @param {requestCallback} callback function for when events are found.
+     * @param {string} address Address of the private contract to subscribe to.
      */
     async subscribeToPrivateSecurityAdvisories(callback, address) {
         let contract = new this.web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
@@ -91,9 +100,15 @@ class Web3Gateway {
     /**
      * Make a transaction to a vendor smart contract to announce a new security advisory.
      * @param {Object} sender Sender object of the transaction.
-     * @param {Object} recipient Recipient object of the transaction (should be a vendor contract)
+     * @param {string} sender.address Address of the sender.
+     * @param {string} sender.key Private key of the sender.
+     * @param {Object} recipient Recipient object of the transaction.
+     * @param {string} recipient.address Address of the recipient.
      * @param {Object} payload Data to be sent in the transaction.
-     * @param {number} gas Gas limit for the transaction (default: 6721975).
+     * @param {number} payload.vulnerabilityCount Number of vulnerabilities in the advisory.
+     * @param {string} payload.productIds String of product IDs affected by the advisory.
+     * @param {string} payload.fileLocation Location of the advisory file.
+     * @param {number} [gas=6721975] Gas limit for the transaction (default: 6721975).
      */
     async announcePublicSecurityAdvisory(sender, recipient, payload, gas = 6721975) {
         const contract = new this.web3.eth.Contract(VENDOR_CONTRACT_ABI, recipient.address);
@@ -107,24 +122,29 @@ class Web3Gateway {
                     payload.fileLocation)
                 .encodeABI()
         }
-        this.web3.eth.accounts.signTransaction(config, sender.key).then((signedTx) => {
-            const tx = this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
-            tx.on('receipt', (receipt) => {
-                return receipt;
-            });
-            tx.on('error', (error) => {
-                console.log(error);
-                throw error;
-            });
-        });
+        const signedTx = await this.web3.eth.accounts.signTransaction(config, sender.key);
+        try {
+            const tx = await this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+            return tx;
+        }
+        catch (error) {
+            throw error;
+        }
     }
 
     /**
      * Make a transaction to a vendor smart contract to announce an update to a security advisory.
      * @param {Object} sender Sender object of the transaction.
-     * @param {Object} recipient Recipient object of the transaction (should be a vendor contract)
+     * @param {string} sender.address Address of the sender.
+     * @param {string} sender.key Private key of the sender.
+     * @param {Object} recipient Recipient object of the transaction.
+     * @param {string} recipient.address Address of the recipient.
      * @param {Object} payload Data to be sent in the transaction.
-     * @param {number} gas Gas limit for the transaction (default: 6721975).
+     * @param {string} payload.advisoryId Identifier of the advisory to be updated.
+     * @param {string} payload.vulnerabilityIds String of vulnerability IDs to be updated.
+     * @param {string} payload.productIds String of product IDs to be updated.
+     * @param {string} payload.fileLocation Location of the advisory file.
+     * @param {number} [gas=6721975] Gas limit for the transaction (default: 6721975).
      */
     async announcePublicSecurityAdvisoryUpdate(sender, recipient, payload, gas = 6721975) { 
         const contract = new this.web3.eth.Contract(VENDOR_CONTRACT_ABI, recipient.address);
@@ -139,25 +159,31 @@ class Web3Gateway {
                     payload.fileLocation)
                 .encodeABI()
         }
-        this.web3.eth.accounts.signTransaction(config, sender.key).then((signedTx) => {
-            const tx = this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
-            tx.on('receipt', (receipt) => {
-                return receipt;
-            });
-            tx.on('error', (error) => {
-                console.log(error);
-                throw error;
-            });
-        });
+        const signedTx = await this.web3.eth.accounts.signTransaction(config, sender.key);
+        try {
+            const tx = await this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+            return tx;
+        }
+        catch (error) {
+            throw error;
+        }
     }
 
     /**
      * Make a transaction to a "private" contract to announce a confidential security advisory.
      * All Web3 related functions are handled in this function by the static web3 instance.
      * @param {Object} sender Sender object of the transaction.
-     * @param {Object} recipient Recipient object of the transaction (should be a vendor contract)
+     * @param {string} sender.address Address of the sender.
+     * @param {string} sender.key Private key of the sender.
+     * @param {Object} recipient Recipient object of the transaction.
+     * @param {string} recipient.address Address of the recipient.
      * @param {Object} payload Data to be sent in the transaction.
-     * @param {number} gas Gas limit for the transaction (default: 6721975).
+     * @param {string} payload.fileLocation Location of the advisory file.
+     * @param {Uint8Array} payload.fileHash Hash of the advisory file.
+     * @param {Uint8Array} payload.wrappedKey Wrapped key for the advisory file.
+     * @param {Uint8Array} payload.iv Initialization vector for the advisory file.
+     * @param {number} [gas=6721975] Gas limit for the transaction (default: 6721975).
+     * @returns {Promise} Promise object representing the transaction.
      */
     async announcePrivateSecurityAdvisory(sender, recipient, payload, gas = 6721975) {
         const contract = new this.web3.eth.Contract(PRIVATE_CONTRACT_ABI, recipient.address);
@@ -172,24 +198,25 @@ class Web3Gateway {
                     this.web3.utils.bytesToHex(payload.iv))
                 .encodeABI()
         }
-        this.web3.eth.accounts.signTransaction(config, sender.key).then((signedTx) => {
-            const tx = this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
-            tx.on('receipt', (receipt) => {
-                return receipt;
-            });
-            tx.on('error', (error) => {
-                console.log(error);
-                throw error;
-            });
-        });
+        const signedTx = await this.web3.eth.accounts.signTransaction(config, sender.key);
+        try {
+            const tx = await this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+            return tx;
+        }
+        catch (error) {
+            throw error;
+        }
     }
 
     /**
      * Adds a vendor to the whitelist of a private contract.
      * @param {Object} sender Sender object of the transaction.
-     * @param {Object} recipient Recipient object of the transaction (should be a private contract)
-     * @param {Object} toWhitelistAddress Address to be whitelisted.
-     * @param {number} gas Gas limit for the transaction (default: 6721975).
+     * @param {string} sender.address Address of the sender.
+     * @param {string} sender.key Private key of the sender.
+     * @param {Object} recipient Recipient object of the transaction.
+     * @param {string} recipient.address Address of the recipient.
+     * @param {string} toWhitelistAddress Address to be whitelisted.
+     * @param {number} [gas=6721975] Gas limit for the transaction (default: 6721975).
      */
     async whitelistVendor(sender, recipient, toWhitelistAddress, gas = 6721975) {
         const contract = new this.web3.eth.Contract(PRIVATE_CONTRACT_ABI, recipient.address);
@@ -199,23 +226,25 @@ class Web3Gateway {
             gas: gas,
             data: contract.methods.addVendor(toWhitelistAddress).encodeABI()
         }
-        this.web3.eth.accounts.signTransaction(config, sender.key).then((signedTx) => {
-            const sentTx = this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
-            sentTx.on("receipt", receipt => {
-                return receipt;
-            });
-            sentTx.on("error", error => {
-                throw error;
-            });
-        });
+        const signedTx = await this.web3.eth.accounts.signTransaction(config, sender.key);
+        try {
+            const tx = await this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+            return tx;
+        }
+        catch (error) {
+            throw error;
+        }
     }
 
     /**
      * Removed a vendor from the whitelist of a private contract.
      * @param {Object} sender Sender object of the transaction.
-     * @param {Object} recipient Recipient object of the transaction (should be a private contract)
-     * @param {Object} toRemoveAddress Address to be removed from the whitelist.
-     * @param {number} gas Gas limit for the transaction (default: 6721975).
+     * @param {string} sender.address Address of the sender.
+     * @param {string} sender.key Private key of the sender.
+     * @param {Object} recipient Recipient object of the transaction.
+     * @param {string} recipient.address Address of the recipient.
+     * @param {string} toRemoveAddress Address to be removed from the whitelist.
+     * @param {number} [gas=6721975] Gas limit for the transaction (default: 6721975).
      */
     async removeVendorFromWhitelist(sender, recipient, toRemoveAddress, gas = 6721975) {
         const contract = new this.web3.eth.Contract(PRIVATE_CONTRACT_ABI, recipient.address);
@@ -225,15 +254,14 @@ class Web3Gateway {
             gas: gas,
             data: contract.methods.removeVendor(toRemoveAddress).encodeABI()
         }
-        this.web3.eth.accounts.signTransaction(config, sender.key).then((signedTx) => {
-            const sentTx = this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
-            sentTx.on("receipt", receipt => {
-                return receipt;
-            });
-            sentTx.on("error", error => {
-                throw error;
-            });
-        });
+        const signedTx = await this.web3.eth.accounts.signTransaction(config, sender.key);
+        try {
+            const tx = await this.web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+            return tx;
+        }
+        catch (error) {
+            throw error;
+        }
     }
 }
 module.exports = Web3Gateway;
