@@ -5,7 +5,7 @@ export const LS_KEY_ACC = "SENTINEL-settings-accounts";
 export const LS_KEY_PWD = "SENTINEL-password-data";
 export const LS_KEY_CON = "SENTINEL-settings-contracts";
 
-export const CONTACT_ADDRESS = "0xdb3c81C5cEFfed3aFfaAaE99d4dC19e88507B1b5";
+export const CONTACT_ADDRESS = "0x43293Cf7760383eD1eE13175308d48E899AA2967";
 export const CONTACT_ABI = [
   {
     "anonymous": false,

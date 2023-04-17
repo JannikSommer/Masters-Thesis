@@ -1,5 +1,6 @@
 import { LS_KEY_CON, LS_KEY_PWD } from "../config";
-import Utilities from "../models/cryptography/Utilities";
+import Utilities from "../cryptography/Utilities";
+
 
 class Contracts {
     /**

@@ -6,9 +6,10 @@ import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
 
 import { useState, useEffect } from 'react';
-import { LS_KEY_PWD } from '../config';
 
-import Utilities from '../models/cryptography/Utilities';
+import Utilities from '../cryptography/Utilities';
+import { PasswordData as PasswordDataLS } from '../localStorage/PasswordData';
+import { PasswordEncryption } from '../cryptography/PasswordEncryption';
 
 
 function PasswordModal({state, dismiss, done, setPasswordContext}) {
@@ -25,96 +26,27 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
     /**
      * Retrieves password data from local storage.
      */
-    function getPasswordData() {
-        const lsData = localStorage.getItem(LS_KEY_PWD);
-        if(lsData === null) return;
-
-        setPasswordData(JSON.parse(lsData));
-    }
-
-    /**
-     * Creates a CryptoKey from the specified password input.
-     * @returns {Promise<CryptoKey>}
-     */
-    async function computeKeyMaterial() {
-        const enc = new TextEncoder();
-        return window.crypto.subtle.importKey(
-          "raw",
-          enc.encode(password),
-          "PBKDF2",
-          false,
-          ["deriveBits", "deriveKey"]
-        );
-    }
-
-    /**
-     * Derives an AES-256 key from the provided key material and salt.
-     * @param {Uint8Array} salt 
-     * @returns {Promise<CryptoKey>}
-     */
-    async function deriveAesKey(salt) {
-        const keyMaterial = await computeKeyMaterial();
-        const derivationParams = {
-            name: "PBKDF2",
-            salt: salt,
-            iterations: 100000,
-            hash: "SHA-256"
-        };
-        const aesParams = {
-            name: "AES-GCM", 
-            length: 256
-        }
-
-        return window.crypto.subtle.deriveKey(
-            derivationParams,
-            keyMaterial,
-            aesParams,
-            true,
-            ["decrypt", "encrypt"]           
-        );
-    }
-
-    /**
-     * Computes the SHA-256 hash of the provided cryptokey.
-     * @param {CryptoKey} key 
-     * @returns {Promise<ArrayBuffer>}
-     */
-    async function getKeyHash(key) {
-        const rawKey = await window.crypto.subtle.exportKey("raw", key);
-        return window.crypto.subtle.digest("SHA-256", rawKey);
-    }
-
-    /**
-     * Generates a new cryptokey and saves its hash, salt and iv to local storage.
-     */
-    async function newPassword() {
-        const salt = window.crypto.getRandomValues(new Uint8Array(16))
-        const aesKey = await deriveAesKey(salt);
-        const keyHash = await getKeyHash(aesKey);
-        const iv = window.crypto.getRandomValues(new Uint8Array(16));
-
-        const result = {
-            hash: Utilities.arrayBufferToBase64(keyHash),
-            salt: Utilities.arrayBufferToBase64(salt.buffer),
-            iv: Utilities.arrayBufferToBase64(iv.buffer),
-        };
-        localStorage.setItem(LS_KEY_PWD, JSON.stringify(result));
-        setPasswordData(result);
-        setPasswordContext(aesKey);
+    const getPasswordData = async () => {
+        const pwData = await PasswordDataLS.load();
+        if(pwData === null) return;
+        setPasswordData(pwData);
     }
 
     /**
      * Verifies the provided password.
      */
-    async function confirm() {
+    const confirm = async () => {
         if(passwordData === null) {
-            await newPassword();
+            const { aesKey, keyData } = await PasswordEncryption.createNewPassword(password);
+            PasswordDataLS.save(keyData);
+            setPasswordData(keyData);
+            setPasswordContext(aesKey);
             done();
         };
-
-        const salt = Utilities.base64ToArrayBuffer(passwordData.salt)
-        const aesKey = await deriveAesKey(salt);
-        const keyHash = Utilities.arrayBufferToBase64(await getKeyHash(aesKey));
+        
+        const salt = Utilities.base64ToArrayBuffer(passwordData["salt"])
+        const aesKey = await PasswordEncryption.deriveAesKey(password, salt);
+        const keyHash = Utilities.arrayBufferToBase64(await PasswordEncryption.getKeyHash(aesKey));
 
         if(passwordData.hash !== keyHash) {
             setShowIncorrectPW(true);

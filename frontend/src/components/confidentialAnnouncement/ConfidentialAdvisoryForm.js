@@ -7,9 +7,9 @@ import { useRef, useState } from 'react';
 import { PRIVATE_CONTRACT_ABI } from '../../config';
 import { SUPPORTED_STORAGE_PRIVATE } from '../../storage/config';
 import Web3 from 'web3';
-import AES from '../../models/cryptography/AES';
-import RSA from '../../models/cryptography/RSA';
-import Utilities from '../../models/cryptography/Utilities';
+import AES from '../../cryptography/AES';
+import RSA from '../../cryptography/RSA';
+import Utilities from '../../cryptography/Utilities';
 import { web3Gateway } from '../../models/web3/web3Gateway';
 
 import AcceptModal from '../announcement/AcceptModal';

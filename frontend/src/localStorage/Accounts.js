@@ -1,5 +1,6 @@
 import { LS_KEY_ACC, LS_KEY_PWD } from "../config";
-import Utilities from "../models/cryptography/Utilities";
+import Utilities from '../cryptography/Utilities';
+
 
 export class Accounts {
 

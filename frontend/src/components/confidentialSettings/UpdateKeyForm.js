@@ -8,12 +8,12 @@ import { useRef, useState } from 'react';
 
 import { PRIVATE_CONTRACT_ABI } from '../../config';
 import Web3 from 'web3';
-import RSA from '../../models/cryptography/RSA';
-
+import RSA from '../../cryptography/RSA';
+import Utilities from '../../cryptography/Utilities';
 import AcceptModal from '../announcement/AcceptModal';
 import ErrorModal from '../announcement/ErrorModal';
 import SuccessModal from '../announcement/SuccessModal';
-import Utilities from '../../models/cryptography/Utilities';
+
 
 
 function UpdateKeyForm({accounts, contracts, updateContractKey}) {
