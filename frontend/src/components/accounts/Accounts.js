@@ -2,56 +2,31 @@ import { useContext, useEffect, useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import NewAccountForm from './NewAccountForm';
 import AccountList from './AccountList';
-import Utilities from '../../models/cryptography/Utilities';
 
 
-import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
 import { PasswordContext } from '../../contexts/PasswordContext';
+import { Accounts as AccountsLS } from '../../localStorage/Accounts';
 
 function Accounts() {
     const [accounts, setAccounts] = useState([]);
     const aesKey = useContext(PasswordContext);
-    const aesParams = {
-        name: "AES-GCM",
-        length: 256,
-        iv: Utilities.base64ToArrayBuffer(JSON.parse(localStorage.getItem(LS_KEY_PWD)).iv),
+
+    const saveAccounts = async (newState)  =>{ 
+        const newAcc = [...newState];
+        setAccounts(newAcc);
+        await AccountsLS.Save(newAcc, aesKey);
     }
 
-    async function encryptAccounts(data) {
-        const dataEncoded = new TextEncoder().encode(data);
-        return window.crypto.subtle.encrypt(
-            aesParams,
-            aesKey,
-            dataEncoded
-        );
-    }
-
-    async function saveAccounts(newState) { 
-        setAccounts([...newState]);
-        const encAccounts = await encryptAccounts(JSON.stringify(accounts));
-        localStorage.setItem(LS_KEY_ACC, Utilities.arrayBufferToBase64(encAccounts))
-    }
-
-    async function deleteAccount(index) {
-        accounts.splice(index, 1);
-        saveAccounts(accounts);
+    const deleteAccount = async (index) => {
+        let newAcc = [...accounts];
+        newAcc.splice(index, 1);
+        setAccounts(newAcc);
+        await AccountsLS.Save(newAcc, aesKey);
     };
 
-    async function decryptAccounts(data) {
-        const dataDecrypted = await window.crypto.subtle.decrypt(
-            aesParams, 
-            aesKey,
-            data
-        );
-        return new TextDecoder().decode(dataDecrypted);
-    }
-
-    async function loadAccounts() { 
-        let acc = localStorage.getItem(LS_KEY_ACC); 
-        if (acc !== null) {
-            const decAccounts = await decryptAccounts(Utilities.base64ToArrayBuffer(acc));
-            setAccounts(JSON.parse(decAccounts));
-        }
+    const loadAccounts = async () => { 
+        const acc = await AccountsLS.load(aesKey);
+        if (acc !== null) setAccounts(acc);
     };
 
     useEffect(() => {

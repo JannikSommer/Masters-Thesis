@@ -6,12 +6,11 @@ import Col from 'react-bootstrap/Col'
 import NewAdvisoryForm from './NewAdvisoryForm';
 import UpdateAdvisoryForm from './UpdateAdvisoryForm';
 
-import Utilities from '../../models/cryptography/Utilities';
+import { Accounts } from '../../localStorage/Accounts';
 
 import { PasswordContext } from '../../contexts/PasswordContext';
 
 import React, { useEffect, useState, useContext } from 'react';
-import { LS_KEY_ACC, LS_KEY_PWD } from '../../config';
 
 
 function Announcement({ipfs}) {
@@ -19,25 +18,9 @@ function Announcement({ipfs}) {
     const [accounts, setAccounts] = useState([]);
     const aesKey = useContext(PasswordContext);
 
-    async function decryptAccounts(data) {
-        const dataDecrypted = await window.crypto.subtle.decrypt(
-            {
-                name: "AES-GCM",
-                length: 256,
-                iv: Utilities.base64ToArrayBuffer(JSON.parse(localStorage.getItem(LS_KEY_PWD)).iv),
-            }, 
-            aesKey,
-            data
-        );
-        return new TextDecoder().decode(dataDecrypted);
-    }
-
-    async function loadAccounts() { 
-        let acc = localStorage.getItem(LS_KEY_ACC); 
-        if (acc !== null) {
-            const decAccounts = await decryptAccounts(Utilities.base64ToArrayBuffer(acc));
-            setAccounts(JSON.parse(decAccounts));
-        }
+    const loadAccounts = async () => { 
+        const acc = await Accounts.load(aesKey);
+        if (acc !== null) setAccounts(acc);
     };
 
     useEffect(() => {

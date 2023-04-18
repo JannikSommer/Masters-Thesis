@@ -7,6 +7,7 @@ import { useRef, useState } from 'react';
 import { PRIVATE_CONTRACT_ABI } from '../../config';
 import { SUPPORTED_STORAGE_PRIVATE } from '../../storage/config';
 import Web3 from 'web3';
+
 import AES from '../../models/cryptography/AES';
 import RSA from '../../models/cryptography/RSA';
 import Utilities from '../../models/cryptography/Utilities';
