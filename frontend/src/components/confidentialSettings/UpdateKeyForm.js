@@ -15,7 +15,6 @@ import ErrorModal from '../announcement/ErrorModal';
 import SuccessModal from '../announcement/SuccessModal';
 
 
-
 function UpdateKeyForm({accounts, contracts, updateContractKey}) {
     const selectedAccount = useRef();
     const selectedAddress = useRef("");

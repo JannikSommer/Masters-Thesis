@@ -1,33 +1,30 @@
-// bootstrap
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
+import Spinner from 'react-bootstrap/Spinner';
 
-// libraries
 import { PasswordContext } from '../../contexts/PasswordContext';
 import { useEffect, useRef, useState, useContext } from 'react';
-import { CONTACT_ABI, CONTACT_ADDRESS, PRIVATE_CONTRACT_ABI, LS_KEY_DEP, LS_KEY_WL } from '../../config.js';
+import { LS_KEY_DEP, LS_KEY_WL } from '../../config.js';
 import Contracts from '../../localStorage/Contracts.js';
 
-// components
 import RefreshConfirmation from './RefreshConfirmation.js';
 import VulnerabilityAccordion from './VulnerabilityAccordion.js';
 
-/** 
+/**
  * Component of the /vulnerabilities page.
- * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing. 
- * @returns The content of the vulnerabilities page.  
+ * @param {IPFS} ipfs Prop of a running IPFS node. Must be fully initialized before passing.
+ * @returns The content of the vulnerabilities page.
  * */
-function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, web3Ref, clearSubscriptions }) {
+function Vulnerabilities({ ipfs, web3Gateway }) {
     const dependencies = useRef([]);
     const whitelist = useRef([]);
     const privateWhitelist = useRef([]);
 
     const aesKey = useContext(PasswordContext);
 
-    // Used to force a rerender of the component after the dependencies and whitelist have been loaded.
-    const [rerender, setRerender] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     // Used to control the modal for refresh confirmation
     const [showModal, setShowModal] = useState(false);
@@ -35,103 +32,133 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
     const modalShow = () => setShowModal(true);
 
     // Vulnerability data hook
-    const [vulnerabilities, setVulnerabilities] = useState([]);
-    const updateVulnerabilities = (newVulnerabilities) => {
-        setVulnerabilities([...newVulnerabilities].reverse());
-        updateVulnerabilitiesRef(newVulnerabilities);
-    }
-    const addPrivateVulnerability = (vulnerability) => { 
-        let temp = vulnerabilities;
-        temp.push(vulnerability);
-        updateVulnerabilities(temp);
-    }
+    var [vulnerabilities, setVulnerabilities] = useState([]);
 
+    /**
+     * Update the vulnerabilities hook that displays the vulnerabilities.
+     * The function is called in callback functions for the different events.
+     * @param {*} event New event from the web3 gateway to be added to the vulnerabilities list.
+     */
+    const updateVulnerabilities = (event) => {
+        let temp = vulnerabilities;
+        if (event.type === "new" || event.type === "private") {
+            temp.push([event]);
+        }
+        else if (event.type === "update") {
+            for (let entry of vulnerabilities) {
+                let hexedIdentifier = web3Gateway.web3.utils.soliditySha3(entry[0].event.returnValues.advisoryIdentifier);
+                if (hexedIdentifier === event.event.returnValues.advisoryIdentifier) {
+                    entry.push(event);
+                    break;
+                }
+            }
+        }
+        setVulnerabilities([...temp.sort((a, b) => a[0].block.timestamp - b[0].block.timestamp)].reverse());
+   }
+
+   /**
+    * Set up subscriptions for the different events to display vulnerabilities.
+    */
     async function subscribe() {
-        await subscribeToNewAdvisories();
+        await web3Gateway.subscribeNewSecurityAdvisories(newCallback);
         for await (const contract of privateWhitelist.current) {
-            await subscribeToPrivateAnnouncements(contract.address);
+            await web3Gateway.subscribeToPrivateSecurityAdvisories(privateCallback, contract.address);
         }
     }
 
     /**
-     * Subscribe to the NewSecurityAdvisory and related UpdatedSecurityAdvisory events.
-     * @returns {Promise} Promise that resolves to the subscription object.
+     * Sets up the vulnerabilities list to be displayed on the page.
+     * Data is fetched from the Web3 gateway and then filtered.
+     * @returns {[]} Sorted and filtered list of vulnerabilities.
      */
-    async function subscribeToNewAdvisories() {
-        let contract = new web3Ref.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
-        return contract.events.NewSecurityAdvisory({
-            fromBlock: 0
-        }, async function (error, event) {
-            if (error)
-                throw error; 
-            let newVulnerability = [{
-                type: "new",
-                event: event, 
-                cid: event.returnValues.documentLocation,
-                tx: await web3Ref.eth.getTransaction(event.transactionHash), 
-                block: await web3Ref.eth.getBlock(event.blockNumber),
-                advisory: {} // will be set later
-            }]; 
-            let temp = vulnerabilities;
-            temp.push(newVulnerability);
-            updateVulnerabilities(await filterVulnerabilities(temp));
-            await subscribeToUpdates(event.returnValues.advisoryIdentifier);
-        });
+    async function setUpVulnerabilities() {
+        let result = [];
+        for await (const event of web3Gateway.newSecurityAdvisoryEvents) {
+            let intermediate = [event];
+            for await (const update of web3Gateway.updatedSecurityAdvisoryEvents) {
+                if (update.event.returnValues.advisoryIdentifier === event.event.returnValues.advisoryIdentifier) {
+                    intermediate.push(update);
+                }
+            }
+            result.push(intermediate);
+        }
+        for (const event of web3Gateway.privateSecurityAdvisoryEvents) {
+            result.push([event]);
+        }
+        let filtered = await filterVulnerabilities(result);
+        return filtered.sort((a, b) => a[0].block.timestamp - b[0].block.timestamp);
     }
 
     /**
-     * Subscribe to the UpdatedSecurityAdvisory event with a given advisory identifier.
-     * @param {string} advisoryIdentifier from the NewSecurityAdvisory event.
-     * @returns {Promise} Promise that resolves to the subscription object.
+     * Callback function for new security advisory events.
+     * @param {Object} error Error object from Web3.js.
+     * @param {Object} event Event object from Web3.js.
      */
-    async function subscribeToUpdates(advisoryIdentifier) {
-        let contract = new web3Ref.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
-        return contract.events.UpdatedSecurityAdvisory({
-            // eslint-disable-next-line
-            topics: [ , web3Ref.utils.soliditySha3({type: 'string', value: advisoryIdentifier})],
-            fromBlock: 0
-        }, async function (error, event) {
-            if (error) 
-                throw error;
-            for (const vulnerability of vulnerabilities) {
-                if (advisoryIdentifier === vulnerability[0].event.returnValues.advisoryIdentifier) {
-                    vulnerability.push({
-                        type: "update",
-                        event: event,
-                        cid: event.returnValues.documentLocation,
-                        tx: await web3Ref.eth.getTransaction(event.transactionHash), 
-                        block: await web3Ref.eth.getBlock(event.blockNumber), 
-                        advisory: {} // will be set later
-                    });
-                }
+    async function newCallback(error, event) {
+        if (error)
+            throw error;
+        const newEvent = {
+            type: "new",
+            event: event,
+            cid: event.returnValues.documentLocation,
+            tx: await web3Gateway.web3.eth.getTransaction(event.transactionHash),
+            block: await web3Gateway.web3.eth.getBlock(event.blockNumber),
+            advisory: {} // will be set later
+        };
+        let productIdentifiers = newEvent.event.returnValues.productIdentifiers.split(",");
+        if (productIdentifiers.some(element => {return dependencies.current.includes(element)})) {
+            if (whitelist.current.some(obj => {return newEvent.tx.to === obj.address})){
+                web3Gateway.newSecurityAdvisoryEvents.push(newEvent);
+                updateVulnerabilities(newEvent);
+                web3Gateway.subscribeToSecurityAdvisoryUpdates(updateCallback, event.returnValues.advisoryIdentifier);            
             }
-            updateVulnerabilities(await filterVulnerabilities(vulnerabilities));
-        });
+        }
     }
 
-    async function subscribeToPrivateAnnouncements(address) {
-        let contract = new web3Ref.eth.Contract(PRIVATE_CONTRACT_ABI, address);
-        return contract.events.Announcement({
-            fromBlock: 0
-        }, async function (error, event) {
-            if (error)
-                throw error;
-            let vulnerability = [{
-                type: "private",
-                event: event,
-                cid: event.returnValues.location,
-                tx: await web3Ref.eth.getTransaction(event.transactionHash), 
-                block: await web3Ref.eth.getBlock(event.blockNumber), 
-                advisory: {} // will be set later
-            }];
-            addPrivateVulnerability(vulnerability);
-        });
+    /**
+     * Callback function for update security advisory events.
+     * @param {Object} error Error object from Web3.js.
+     * @param {Object} event Event object from Web3.js.
+     */
+    async function updateCallback(error, event) {
+        if (error)
+            throw error;
+        let updateEvent = {
+            type: "update",
+            event: event,
+            cid: event.returnValues.documentLocation,
+            tx: await web3Gateway.web3.eth.getTransaction(event.transactionHash),
+            block: await web3Gateway.web3.eth.getBlock(event.blockNumber),
+            advisory: {} // will be set later
+        };
+        web3Gateway.updatedSecurityAdvisoryEvents.push(updateEvent);
+        updateVulnerabilities(updateEvent);
     }
 
-    /** 
-     * Filters vulnerabilities to only show relevant vulnerabilities. 
+    /**
+     * Callback function for private security advisory events.
+     * @param {Object} error Error object from Web3.js.
+     * @param {Object} event Event object from Web3.js.
+     */
+    async function privateCallback(error, event) {
+        if (error)
+            throw error;
+        let privateEvent = {
+            type: "private",
+            event: event,
+            cid: event.returnValues.location,
+            tx: await web3Gateway.web3.eth.getTransaction(event.transactionHash),
+            block: await web3Gateway.web3.eth.getBlock(event.blockNumber),
+            advisory: {} // will be set later
+        };
+        web3Gateway.privateSecurityAdvisoryEvents.push(privateEvent);
+        updateVulnerabilities(privateEvent);
+    }
+
+    /**
+     * Filters vulnerabilities to only show relevant vulnerabilities.
      * @param {[]} vulnerabilities List of vulnerability objects.
-     * @returns List of object with matching vulnerabilities that matches whitelist and dependencies. 
+     * @returns List of object with matching vulnerabilities that matches whitelist and dependencies.
      * */
     async function filterVulnerabilities(vulnerabilities) {
         let matches = [];
@@ -150,57 +177,64 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
         return matches;
     }
 
-    /** 
-     * Clear and re-assign subscriptions. 
+    /**
+     * Clear and re-assign subscriptions.
      * */
     async function refreshVulnerabilities() {
+        setLoading(true);
         vulnerabilities.splice(0, vulnerabilities.length);
-        updateVulnerabilities([])
-        clearSubscriptions();
+        web3Gateway.clearSubscriptions();
         await subscribe();
         modalClose();
+        setLoading(false);
     }
 
-    useEffect(() => {
-        async function loadFromLocalStorage() {
-            const lsDep = localStorage.getItem(LS_KEY_DEP);
-            if(lsDep === null) return;
-            for await (const dep of JSON.parse(lsDep)) {
-                dependencies.current.push(dep.identifier);
+    /**
+     * Checks if all dependencies, whitelist and private whitelist are loaded and decides 
+     * whether to subscribe to events or to load already existing events.
+     */
+    async function checkPreloadStatus() {
+        if (dependencies.current.length > 0 && whitelist.current.length > 0 && privateWhitelist.current.length > 0) {
+            if (web3Gateway.subscriptions.length === 0) {
+                subscribe();
             }
-            whitelist.current = await JSON.parse(localStorage.getItem(LS_KEY_WL));
-            setRerender(!rerender); // force rerender to update dependencies and whitelist
+            else {
+                setUpVulnerabilities().then((result) => {
+                    setVulnerabilities(result.reverse());
+                });
+            }
+            setLoading(false);
         }
-        if (vulnerabilities.length === 0) {
-            clearSubscriptions();
-            subscribeToNewAdvisories();
-        }
-        loadFromLocalStorage();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ipfs])
+    }
 
+    /**
+     * Loading dependencies, whitelist and private whitelist from localstorage.
+     */
+    useEffect(() => {
+        const lsDep = localStorage.getItem(LS_KEY_DEP);
+        if (lsDep === null)
+            throw new Error("No dependencies found in local storage.");
+        for (const dep of JSON.parse(lsDep)) {
+            dependencies.current.push(dep.identifier);
+        }
+
+        whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
+        checkPreloadStatus();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ipfs]);
+
+    /**
+     * Loading private whitelist from localstorage after key is loaded.
+     */
     useEffect(() => {
         if (aesKey !== null) {
             Contracts.load(aesKey).then((con) => {
                 privateWhitelist.current = con;
-                for (const contract of con) {
-                    subscribeToPrivateAnnouncements(contract.address);
-                }
+                checkPreloadStatus();
             });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [aesKey]);
-
-    useEffect(() => {
-        async function init() {
-            if (vulnerabilitiesRef.length === 0) {
-                await clearSubscriptions();
-                await subscribeToNewAdvisories();
-            }
-        }
-        init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [vulnerabilitiesRef]);
 
     return (
         <>
@@ -214,14 +248,19 @@ function Vulnerabilities({ ipfs, vulnerabilitiesRef, updateVulnerabilitiesRef, w
                     </Col>
                 </Row>
             </Container>
-            {vulnerabilities.length > 0 
-            ? <VulnerabilityAccordion 
-                vulnerabilities={vulnerabilities} 
-                whitelist={whitelist.current}
-                dependencies={dependencies.current}
-                privateWhitelist={privateWhitelist.current}
-                ipfs={ipfs} /> 
-            : <h4>No matching vulnerabilities found.</h4>}
+            {loading
+            ? <Spinner animation="border" role="status" style={{ width: "8rem", height: "8rem", position: "absolute", top: "40%", left: "47%" }}>
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+            : vulnerabilities.length > 0
+                ? <VulnerabilityAccordion
+                    vulnerabilities={vulnerabilities}
+                    whitelist={whitelist.current}
+                    dependencies={dependencies.current}
+                    privateWhitelist={privateWhitelist.current}
+                    ipfs={ipfs} />
+                : <h4>No matching vulnerabilities found.</h4>
+            }
         </>
     );
 }

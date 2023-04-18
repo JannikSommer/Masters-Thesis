@@ -7,23 +7,18 @@ import Accounts from './accounts/Accounts';
 import Spinner from 'react-bootstrap/Spinner';
 import ConfidentialAnnouncements from './confidentialAnnouncement/ConfidentialAnnouncements';
 import ConfidentialSettings from "./confidentialSettings/ConfidentialSettings";
-import Web3 from 'web3';
 import { useEffect, useRef, useState } from "react";
 import { create } from "ipfs-http-client";
 import { PasswordContext } from "../contexts/PasswordContext";
 import PasswordModal from "./PasswordModal";
+import Web3Gateway from "../models/web3/web3Gateway";
 
 function App() {
     const [ipfs, setIpfs] = useState();
     const [loading, setLoading] = useState(true);
     const [cryptoKey, setCryptoKey] = useState(null);
     const [showPwModal, setShowPwModal] = useState(true);
-
-    const vulnerabilities = useRef([]); // set here to persist from page to page
-    const updateVulnerabilities = (updatedVulnerabilities) => { vulnerabilities.current = [...updatedVulnerabilities].reverse(); }
-
-    const web3 = useRef(new Web3(Web3.givenProvider || 'ws://localhost:7545')); // set here to persist from page to page
-    const clearSubscriptions = async () => { web3.current.eth.clearSubscriptions(); }
+    const web3Gateway = useRef(new Web3Gateway());
 
     async function loadIpfs() {
         var ipfsClient = create({
@@ -43,7 +38,7 @@ function App() {
 
     return (
         <div>
-            <Container>
+            <Container className="mb-5 pb-5">
                 {loading
                     ? <Spinner animation="border" role="status" style={{ width: "4rem", height: "4rem", position: "absolute", top: "20%", left: "50%" }}>
                         <span className="visually-hidden">Loading...</span>
@@ -53,11 +48,8 @@ function App() {
                         <Routes>
                             <Route exact path='/' Component={() => 
                                 <Vulnerabilities 
-                                    ipfs={ipfs} 
-                                    vulnerabilitiesRef={vulnerabilities.current} 
-                                    updateVulnerabilitiesRef={updateVulnerabilities}
-                                    web3Ref={web3.current}
-                                    clearSubscriptions={clearSubscriptions}
+                                    ipfs={ipfs}
+                                    web3Gateway={web3Gateway.current}
                                 />}
                             />
                             <Route path='announcement' Component={() => <Announcement ipfs={ipfs} />} />

@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "bootstrap": "^5.2.3",
     "fs": "^0.0.1-security",
+    "ganache": "^7.8.0",
     "ipfs-http-client": "^60.0.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.2",
@@ -22,7 +23,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "mocha ./src/tests/",
+    "test": "GANACHE=$(ganache --detach --server.host=127.0.0.1 --server.port=7545 --wallet.accounts=\"0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63\",\"0X56BC75E2D63100000\") && mocha ./src/tests/  --timeout 30000 --exit; ganache instances stop $GANACHE",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

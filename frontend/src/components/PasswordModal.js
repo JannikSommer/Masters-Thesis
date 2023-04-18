@@ -82,7 +82,7 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
                         Please enter your Password
                     </Row>
                     <Row>
-                        <Form.Control type="password" value={password} onKeyDown={(e) => handleKeyPress(e)} onChange={(e) => setPassword(e.target.value)} />
+                        <Form.Control autoFocus type="password" value={password} onKeyDown={(e) => handleKeyPress(e)} onChange={(e) => setPassword(e.target.value)} />
                     </Row>
                 </Container>
             </Modal.Body>
