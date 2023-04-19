@@ -1,5 +1,5 @@
 # SENTINEL Project
-The SENTINEL project is a Master's thesis project by @JannikSommer and @Mlund18. The purpose of the project is to automate the dissemmination and discovery of security advisories in a decentralized manner with Web3 technologies. There will be a link to the report, **only if** it will become publically available. 
+The SENTINEL project is a Master's thesis project by @JannikSommer and @mlund98. The purpose of the project is to automate the dissemmination and discovery of security advisories in a decentralized manner with Web3 technologies. There will be a link to the report, **only if** it will become publically available. 
 
 ## Table of Contents
 1. [Repository Structure](#repository-structure)
