@@ -54,7 +54,20 @@ You can optionally run `npm test` to run unit and integration tests to make sure
 
 
 ### Testnet 
-_comming soon..._
+The SENTINEL is testable on the Ethereum testnet and the frontend is uploaded to IPFS to allow a _real-world_ test with no local development environment. 
+
+#### Sepolia Testnet
+The system is deployed on the Sepolia Ethereum testnet. You can find the services/contracts for SENTINEL, which can be called from any contract on the testnet. However, for the purpose of using SENTINEL for the intended purpose it is advised that you use a vendor smart contract. Furthermore, while vendor and private smart contracts have been deployed for the purpose of testing and demonstation, you should create/deploy your own contracts to interact with the system as these contracts are `ownable`. 
+
+- Announcement Service: [`0xbdBc312f3dc75a6D47D7Eaa7E6a4BBFbb07f09fc`](https://sepolia.etherscan.io/address/0xbdbc312f3dc75a6d47d7eaa7e6a4bbfbb07f09fc)
+- Identifier Issuer Service: [`0x577a791f4033F7905b822664ff0E1a74dbe5EF70`](https://sepolia.etherscan.io/address/0x577a791f4033f7905b822664ff0e1a74dbe5ef70)
+- _vendor and private to come..._
+
+Deployment scripts to help you deploy your own contracts can be found `./testnet` at a later point. 
+
+#### Fronted on IPFS
+
+_coming soon..._
 
 
 ## Truffle
