@@ -25,7 +25,7 @@ There are multiple ways that you can run and play with the system. Of course you
 You can run SENTINEL locally with a local Etherum blockchain and starting the frontend locally also. IPFS is free to use, so this guide will still make use of the real IPFS network. 
 
 #### Local Ethereum network
-Download the Ganache CLI or desktop app and start a new network. Make sure that the network software is available at http://localhost:7454 or change the necessary files in the frontend such that it can connect to the simulated network. 
+Download the Ganache CLI or desktop app and start a new network. Make sure that the network software is available at http://localhost:7545 or change the necessary files in the frontend such that it can connect to the simulated network. 
 
 You can deploy the smart contracts to the network with `truffle migrate` if you are using Truffle. This will execute the script in `./migrations/2_deplpy_migrations.js`. 
 
@@ -50,7 +50,7 @@ Find the address of the Announcement Service in Ganache and replace the current 
 
 Navigate to the frontend folder and run `npm install` to install the necessary dependencies and `npm start` to start the frontend code. 
 
-You can optionally run `npm test` to run unit and integration tests to make sure the code works. If you choose to do so, stop your Ganache instance beforehand if it is running on port 7454 as it will conflict with a temporary instance created by the test script. 
+You can optionally run `npm test` to run unit and integration tests to make sure the code works. If you choose to do so, stop your Ganache instance beforehand if it is running on port 7545 as it will conflict with a temporary instance created by the test script. 
 
 
 ### Testnet 
