@@ -2,6 +2,21 @@ import Web3 from "web3";
 import fs from "fs";
 import { exit } from "process";
 
+if (process.argv[2] == "--help" || process.argv[2] == "-h") {
+    console.log("Usage: node deployments.js [local|testnet] [private key] [alchemy api key]");
+    exit(0);
+}
+
+if (process.argv.length < 3) {
+    console.log("Please specify either 'local' or 'testnet' as the first argument.");
+    exit(1);
+}
+
+if (process.argv[2] == "testnet" && process.argv.length < 5) {
+    console.log("Please specify a private key for a valid address and an Alchemy API key for the testnet.");
+    exit(1);
+}
+
 const AS_BYTECODE = JSON.parse(fs.readFileSync("../../build/contracts/AnnouncementService.json")).bytecode;
 const AS_ABI = JSON.parse(fs.readFileSync("../../build/contracts/AnnouncementService.json")).abi;
 
@@ -16,20 +31,22 @@ const PRIVATE_CONTRACT_ABI = JSON.parse(fs.readFileSync("../../build/contracts/P
 
 let web3;
 let account;
-
-if (process.argv[2] == "local") {
-    web3 = new Web3("ws://127.0.0.1:7545");
-    account = web3.eth.accounts.privateKeyToAccount(process.argv[2]);
-    web3.eth.accounts.wallet.add(account);
-} else if (process.argv[2] == "testnet") {
-    web3 = new Web3("https://rpc.sepolia.org/");
-    account = web3.eth.accounts.privateKeyToAccount(process.argv[2]);
-    web3.eth.accounts.wallet.add(account);
-} else {
-    console.log("Please specify either 'local' or 'testnet' as the first argument.");
+try {
+    if (process.argv[2] == "local") {
+        console.log("Using local blockchain (Ganache)...");
+        web3 = new Web3("ws://127.0.0.1:7545");
+        account = web3.eth.accounts.privateKeyToAccount(process.argv[3]);
+        web3.eth.accounts.wallet.add(account);
+    } else if (process.argv[2] == "testnet") {
+        console.log("Using testnet (Sopelia)...");
+        web3 = new Web3('wss://eth-sepolia.g.alchemy.com/v2/' + process.argv[4]);
+        account = web3.eth.accounts.privateKeyToAccount(process.argv[3]);
+        web3.eth.accounts.wallet.add(account);
+    }
+} catch (e) {
+    console.log("Error: " + e);
     exit(1);
 }
-
 
 let results = [];
 
@@ -55,8 +72,6 @@ results.push({
     estimate: await new web3.eth.Contract(PRIVATE_CONTRACT_ABI).deploy({data: PRIVATE_BYTECODE}).estimateGas({from: account.address})
 });
 
-
 console.log(results);
-
 
 exit(0);

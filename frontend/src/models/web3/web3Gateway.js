@@ -1,7 +1,7 @@
 import Web3 from 'web3';
+import { ALCHEMY_API_KEY } from "../../secrets.js";
 
 const { CONTACT_ABI, CONTACT_ADDRESS, VENDOR_CONTRACT_ABI, PRIVATE_CONTRACT_ABI } = require("../../config.js");
-import { ALCHEMY_API_KEY } from "../../config.js";
 
 export default class Web3Gateway {
     /**

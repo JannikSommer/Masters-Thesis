@@ -2,7 +2,22 @@ import Web3 from "web3";
 import fs from "fs";
 import { exit } from "process";
 
-var ITERATIONS = 10;
+if (process.argv[2] == "--help" || process.argv[2] == "-h") {
+    console.log("Usage: node deployments.js [iterations] [local|testnet] [private key] [alchemy api key]");
+    exit(0);
+}
+
+if (process.argv.length < 4) {
+    console.log("Please specify either 'local' or 'testnet' as the first argument.");
+    exit(1);
+}
+
+if (process.argv[4] == "testnet" && process.argv.length < 5) {
+    console.log("Please specify a private key for a valid address and an Alchemy API key for the testnet.");
+    exit(1);
+}
+
+const ITERATIONS = process.argv[3];
 
 const AS_ABI = JSON.parse(fs.readFileSync("../../build/contracts/AnnouncementService.json")).abi;
 const AS_BYTECODE = JSON.parse(fs.readFileSync("../../build/contracts/AnnouncementService.json")).bytecode;
@@ -18,17 +33,18 @@ const PRIVATE_BYTECODE = JSON.parse(fs.readFileSync("../../build/contracts/Priva
 
 let web3;
 let account;
-
-if (process.argv[2] == "local") {
-    web3 = new Web3("ws://127.0.0.1:7545");
-    account = web3.eth.accounts.privateKeyToAccount(LOCAL_PKEY);
-    web3.eth.accounts.wallet.add(account);
-} else if (process.argv[2] == "testnet") {
-    web3 = new Web3("https://rpc.sepolia.org/");
-    account = web3.eth.accounts.privateKeyToAccount(TESTNET_PKEY);
-    web3.eth.accounts.wallet.add(account);
-} else {
-    console.log("Please specify either 'local' or 'testnet' as the first argument.");
+try {
+    if (process.argv[2] == "local") {
+        web3 = new Web3("ws://127.0.0.1:7545");
+        account = web3.eth.accounts.privateKeyToAccount(process.argv[4]);
+        web3.eth.accounts.wallet.add(account);
+    } else if (process.argv[2] == "testnet") {
+        web3 = new Web3('wss://eth-sepolia.g.alchemy.com/v2/' + process.argv[5]);
+        account = web3.eth.accounts.privateKeyToAccount(process.argv[4]);
+        web3.eth.accounts.wallet.add(account);
+    }
+} catch (e) {
+    console.log("Error: " + e);
     exit(1);
 }
 
