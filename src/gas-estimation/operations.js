@@ -4,14 +4,6 @@ import { exit } from "process";
 
 var ITERATIONS = 10;
 
-const LOCAL_PKEY = "106a32d4cb3ae49d4143bfeef4a479c35cda24c9e9369c92cdb2ff308a58c1c1";
-const TESTNET_PKEY = "0x31d99969f4c23df077cc47fdf0ec2a6bbd8bef2ddd84829c39de315e6d4af83b" 
-
-const accounts = [ 
-    { address: "0x84Ed2d4aF7C11E637Beab9F08677937B7994c07E", pkey: "0x31d99969f4c23df077cc47fdf0ec2a6bbd8bef2ddd84829c39de315e6d4af83b" },
-    { address: "0x5866C88E53EC65878858C7BA7F498Bb0D9Fc9669", pkey: "0x8c2de6db172f00e1d21411af66e909ee242fd2dee1f95f16d00864cd195c8c72" }
-];
-
 const AS_ABI = JSON.parse(fs.readFileSync("../../build/contracts/AnnouncementService.json")).abi;
 const AS_BYTECODE = JSON.parse(fs.readFileSync("../../build/contracts/AnnouncementService.json")).bytecode;
 
