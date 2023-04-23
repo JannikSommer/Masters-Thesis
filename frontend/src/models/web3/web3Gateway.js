@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 
 const { CONTACT_ABI, CONTACT_ADDRESS, VENDOR_CONTRACT_ABI, PRIVATE_CONTRACT_ABI } = require("../../config.js");
+import { ALCHEMY_API_KEY } from "../../config.js";
 
 export default class Web3Gateway {
     /**
@@ -43,7 +44,7 @@ export default class Web3Gateway {
         if (web3) 
             this.web3 = web3;
         else 
-            this.web3 = new Web3(Web3.givenProvider || 'wss://eth-sepolia.g.alchemy.com/v2/-gglm-HbXb83ggOC52iPZHUC8W0Orcro');
+            this.web3 = new Web3(Web3.givenProvider || 'wss://eth-sepolia.g.alchemy.com/v2/' + ALCHEMY_API_KEY);
         
         this.announcementService = new this.web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
     }
