@@ -7,7 +7,7 @@ import Col from 'react-bootstrap/Col';
 import { useRef, useState } from 'react';
 
 import { PRIVATE_CONTRACT_ABI } from '../../config';
-import Web3 from 'web3';
+import Web3Gateway from '../../models/web3/web3Gateway';
 
 import AcceptModal from '../announcement/AcceptModal';
 import ErrorModal from '../announcement/ErrorModal';
@@ -35,7 +35,7 @@ function VendorManagementForm({accounts, contracts}) {
     const [showError, setShowError] = useState(false);
     const dismissError = () => setShowError(false);
 
-    const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+    const web3 = new Web3Gateway().web3;
 
     const selectAccount = (value) => {
         if (value === "Select an account") {

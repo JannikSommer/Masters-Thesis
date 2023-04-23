@@ -1,6 +1,6 @@
 import Utilities from "./Utilities";
 
-class AES {
+export default class AES {
     aesOptions = {
         name: 'AES-GCM',
         length: 128,
@@ -60,5 +60,3 @@ class AES {
         return Utilities.decode(encoded);
     }
 }
-
-export default AES
