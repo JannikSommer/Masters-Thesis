@@ -67,7 +67,7 @@ The system is deployed on the [Sepolia](https://sepolia.dev) Ethereum testnet. Y
 Deployment scripts to help you deploy your own contracts can be found `./testnet` at a later point. 
 
 #### Fronted on IPFS
-The frontend is accessible on IPFS from [this link](https://ipfs.io/ipfs/QmR32KPPaM9sjTb3pUuPNApbjGoT8tkBWH9MqyMgcL48Rf) or by opening the CID `QmR32KPPaM9sjTb3pUuPNApbjGoT8tkBWH9MqyMgcL48Rf` on any other IPFS gateway. 
+The frontend is accessible on IPFS by opening the CID `QmR32KPPaM9sjTb3pUuPNApbjGoT8tkBWH9MqyMgcL48Rf` on any IPFS gateway. However, it is highly advised that you use a local gateway to cover security concerns. 
 
 It is recommended that you use the same gateway all the time, as each website will (proably) require their own setup in localstorage. If you are concerned about the security of using another gateway, you can use the one that comes with IPFS Desktopn or IPFS CLI. 
 
