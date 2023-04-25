@@ -16,12 +16,19 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
 
     const [password, setPassword] = useState("");
     const [passwordData, setPasswordData] = useState(null);
-    const [showIncorrectPW, setShowIncorrectPW] = useState(false);
-
+    const [showErrorMessage, setShowErrorMessage] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     useEffect(() => {
         getPasswordData();
-      }, []);
+      },
+      []
+    );
+
+    const showAlert = (message) => {
+        setErrorMessage(message);
+        setShowErrorMessage(true);
+    }
 
     /**
      * Retrieves password data from local storage.
@@ -37,6 +44,10 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
      */
     const confirm = async () => {
         if(passwordData === null) {
+            if(password.length < 8) {
+                showAlert("Password must be at least 8 characters long.");
+                return;
+            }
             const { aesKey, keyData } = await PasswordEncryption.createNewPassword(password);
             PasswordDataLS.save(keyData);
             setPasswordData(keyData);
@@ -49,7 +60,7 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
         const keyHash = Utilities.arrayBufferToBase64(await PasswordEncryption.getKeyHash(aesKey));
 
         if(passwordData.hash !== keyHash) {
-            setShowIncorrectPW(true);
+            showAlert("Incorrect Password!");
             return;
         }
 
@@ -73,9 +84,9 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
             <Modal.Body>
                 <Container>
                     <Row>
-                        {showIncorrectPW ?
-                        <Alert variant="danger" onClose={() => setShowIncorrectPW(false)}>
-                            Incorrect Password!
+                        {showErrorMessage ?
+                        <Alert variant="danger" onClose={() => setShowErrorMessage(false)}>
+                            {errorMessage}
                         </Alert>
                         : <></>
                         }

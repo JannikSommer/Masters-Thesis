@@ -1,4 +1,5 @@
-import { LS_KEY_ACC, LS_KEY_PWD } from "../config";
+import { LS_KEY_ACC } from "../config";
+import AES from "../cryptography/AES";
 import Utilities from '../cryptography/Utilities';
 
 
@@ -10,22 +11,16 @@ export class Accounts {
      * @returns {Promise<any[]> | Promise<null>} An array of accounts. Returns null if none are found.
      */
     static async load(aesKey) {
-        const accountsB64 = localStorage.getItem(LS_KEY_ACC); 
-        if (accountsB64 === null) return null;
+        const aes = new AES(256);
+        const accountsString = localStorage.getItem(LS_KEY_ACC); 
+        if (accountsString === null) return null;
 
-        const accountsBytes = Utilities.base64ToArrayBuffer(accountsB64);
-        const accountsDecrypted = await window.crypto.subtle.decrypt(
-            {
-                name: "AES-GCM",
-                length: 256,
-                iv: Utilities.base64ToArrayBuffer(JSON.parse(localStorage.getItem(LS_KEY_PWD)).iv),
-            },
-            aesKey,
-            accountsBytes
-        );
+        const accountsJson = JSON.parse(accountsString);
 
-        const accountsDecoded = Utilities.decode(accountsDecrypted)
-        return JSON.parse(accountsDecoded);
+        const accountsBytes = Utilities.base64ToArrayBuffer(accountsJson.data);
+        const ivBytes = Utilities.base64ToArrayBuffer(accountsJson.iv);
+        const accountsDecrypted = await aes.decrypt(accountsBytes, aesKey, ivBytes);
+        return JSON.parse(accountsDecrypted);
     }
 
     /**
@@ -34,19 +29,18 @@ export class Accounts {
      * @param {CryptoKey} aesKey A valid AES cryptokey.
      */
     static async Save(accounts, aesKey) {
+        const aes = new AES(256);
         const accountsJSON = JSON.stringify(accounts);
-        const accountsEncoded = Utilities.encode(accountsJSON);
-        const accountsEncrypted = await window.crypto.subtle.encrypt(
+        const { ciphertext, iv } = await aes.encrypt(accountsJSON, aesKey)
+        const accountsString = JSON.stringify(
             {
-                name: "AES-GCM",
-                length: 256,
-                iv: Utilities.base64ToArrayBuffer(JSON.parse(localStorage.getItem(LS_KEY_PWD)).iv),
-            },
-            aesKey,
-            accountsEncoded
-        )
-        
-        const accountsB64 = Utilities.arrayBufferToBase64(accountsEncrypted);
-        localStorage.setItem(LS_KEY_ACC, accountsB64);
+                data: Utilities.arrayBufferToBase64(ciphertext),
+                iv: Utilities.arrayBufferToBase64(iv),
+            }
+        );
+        localStorage.setItem(
+            LS_KEY_ACC, 
+            accountsString
+        );
     }
 }

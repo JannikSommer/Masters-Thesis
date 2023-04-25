@@ -102,7 +102,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs}) {
         try {
             const fileHash = await computeHash();
 
-            const aes = new AES();
+            const aes = new AES(128);
             const aesKey = await aes.generateKey();
             const { ciphertext, iv } = await aes.encrypt(file, aesKey);
             

@@ -1,4 +1,5 @@
-import { LS_KEY_CON, LS_KEY_PWD } from "../config";
+import { LS_KEY_CON } from "../config";
+import AES from "../cryptography/AES";
 import Utilities from "../cryptography/Utilities";
 
 
@@ -9,22 +10,16 @@ class Contracts {
      * @returns {[]} A list of contracts. Returns null if nothing is found.
      */
     static async load(aesKey) {
-        const contractsBase64 = localStorage.getItem(LS_KEY_CON);
-        if(contractsBase64 === null) return null;
-        const contractsEncrypted = Utilities.base64ToArrayBuffer(contractsBase64);
+        const aes = new AES(256);
+        const contractsString = localStorage.getItem(LS_KEY_CON);
+        if(contractsString === null) return null;
 
-        const contractsDecrypted = await window.crypto.subtle.decrypt(
-            {
-                name: "AES-GCM",
-                length: 256,
-                iv: Utilities.base64ToArrayBuffer(JSON.parse(localStorage.getItem(LS_KEY_PWD)).iv),
-            }, 
-            aesKey,
-            contractsEncrypted
-        );
-        const decoded = Utilities.decode(contractsDecrypted)
-        const parsed = JSON.parse(decoded);
-        return parsed;
+        const contractsJson = JSON.parse(contractsString);
+        const contractsBytes = Utilities.base64ToArrayBuffer(contractsJson.data);
+        const ivBytes = Utilities.base64ToArrayBuffer(contractsJson.iv);
+        const contractsDecrypted = await aes.decrypt(contractsBytes, aesKey, ivBytes);
+
+        return JSON.parse(contractsDecrypted);
     }
     
     /**
@@ -33,20 +28,18 @@ class Contracts {
      * @param {CryptoKey} aesKey A valid AES cryptokey.
      */
     static async save(contracts, aesKey) {
-        const contractsEncoded = Utilities.encode(JSON.stringify(contracts));
-        const contractsEncrypted = await window.crypto.subtle.encrypt(
+        const aes = new AES(256);
+        const contractsJson = JSON.stringify(contracts);
+        const { ciphertext, iv } = await aes.encrypt(contractsJson, aesKey);
+        const contractsString = JSON.stringify(
             {
-                name: "AES-GCM",
-                length: 256,
-                iv: Utilities.base64ToArrayBuffer(JSON.parse(localStorage.getItem(LS_KEY_PWD)).iv),
-            },
-            aesKey,
-            contractsEncoded
+                data: Utilities.arrayBufferToBase64(ciphertext),
+                iv: Utilities.arrayBufferToBase64(iv),
+            }
         );
-
         localStorage.setItem(
             LS_KEY_CON,
-            Utilities.arrayBufferToBase64(contractsEncrypted)
+            contractsString
         );
     }
     
