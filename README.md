@@ -1,5 +1,5 @@
 # SENTINEL Project
-The SENTINEL project is a Master's thesis project by @JannikSommer and @Mlund18. The purpose of the project is to automate the dissemmination and discovery of security advisories in a decentralized manner with Web3 technologies. There will be a link to the report, **only if** it will become publically available. 
+The SENTINEL project is a Master's thesis project by [@JannikSommer](https://github.com/JannikSommer) and [@mlund98](https://github.com/mlund98). The purpose of the project is to automate the dissemmination and discovery of security advisories in a decentralized manner with Web3 technologies. There will be a link to the report, **only if** it will become publically available. 
 
 ## Table of Contents
 1. [Repository Structure](#repository-structure)
@@ -25,7 +25,7 @@ There are multiple ways that you can run and play with the system. Of course you
 You can run SENTINEL locally with a local Etherum blockchain and starting the frontend locally also. IPFS is free to use, so this guide will still make use of the real IPFS network. 
 
 #### Local Ethereum network
-Download the Ganache CLI or desktop app and start a new network. Make sure that the network software is available at http://localhost:7454 or change the necessary files in the frontend such that it can connect to the simulated network. 
+Download the Ganache CLI or desktop app and start a new network. Make sure that the network software is available at http://localhost:7545 or change the necessary files in the frontend such that it can connect to the simulated network. 
 
 You can deploy the smart contracts to the network with `truffle migrate` if you are using Truffle. This will execute the script in `./migrations/2_deplpy_migrations.js`. 
 
@@ -50,11 +50,26 @@ Find the address of the Announcement Service in Ganache and replace the current 
 
 Navigate to the frontend folder and run `npm install` to install the necessary dependencies and `npm start` to start the frontend code. 
 
-You can optionally run `npm test` to run unit and integration tests to make sure the code works. If you choose to do so, stop your Ganache instance beforehand if it is running on port 7454 as it will conflict with a temporary instance created by the test script. 
+You can optionally run `npm test` to run unit and integration tests to make sure the code works. If you choose to do so, stop your Ganache instance beforehand if it is running on port 7545 as it will conflict with a temporary instance created by the test script. 
 
 
 ### Testnet 
-_comming soon..._
+The SENTINEL is testable on the Ethereum testnet and the frontend is uploaded to IPFS to allow a _real-world_ test with no local development environment. 
+
+#### Sepolia Testnet
+The system is deployed on the [Sepolia](https://sepolia.dev) Ethereum testnet. You can find the services/contracts for SENTINEL, which can be called from any contract on the testnet. However, for the purpose of using SENTINEL for the intended purpose it is advised that you use a vendor smart contract. Furthermore, while vendor and private smart contracts have been deployed for the purpose of testing and demonstation, you should create/deploy your own contracts to interact with the system as these contracts are `ownable`. 
+
+- Announcement Service: [`0xbdBc312f3dc75a6D47D7Eaa7E6a4BBFbb07f09fc`](https://sepolia.etherscan.io/address/0xbdbc312f3dc75a6d47d7eaa7e6a4bbfbb07f09fc)
+- Identifier Issuer Service: [`0x577a791f4033F7905b822664ff0E1a74dbe5EF70`](https://sepolia.etherscan.io/address/0x577a791f4033f7905b822664ff0e1a74dbe5ef70)
+- Vendor: [`0x84Ed2d4aF7C11E637Beab9F08677937B7994c07E`](https://sepolia.etherscan.io/address/0xbdbc312f3dc75a6d47d7eaa7e6a4bbfbb07f09fc)
+- _private to come..._
+
+Deployment scripts to help you deploy your own contracts can be found `./testnet` at a later point. 
+
+#### Fronted on IPFS
+The frontend is accessible on IPFS by opening the CID `QmR32KPPaM9sjTb3pUuPNApbjGoT8tkBWH9MqyMgcL48Rf` on any IPFS gateway. However, it is highly advised that you use a local gateway to cover security concerns. 
+
+It is recommended that you use the same gateway all the time, as each website will (proably) require their own setup in localstorage. If you are concerned about the security of using another gateway, you can use the one that comes with IPFS Desktopn or IPFS CLI. 
 
 
 ## Truffle

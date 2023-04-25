@@ -194,7 +194,7 @@ function Vulnerabilities({ ipfs, web3Gateway }) {
      * whether to subscribe to events or to load already existing events.
      */
     async function checkPreloadStatus() {
-        if (dependencies.current.length > 0 && whitelist.current.length > 0 && privateWhitelist.current.length > 0) {
+        if (dependencies.current.length > 0 && (whitelist.current.length > 0 || privateWhitelist.current.length > 0)) {
             if (web3Gateway.subscriptions.length === 0) {
                 subscribe();
             }
@@ -207,19 +207,38 @@ function Vulnerabilities({ ipfs, web3Gateway }) {
         }
     }
 
+    function loadPrivateContracts() {
+        if (aesKey !== null) {
+            Contracts.load(aesKey).then((con) => {
+                if(con !== null) {
+                    privateWhitelist.current = con;
+                    checkPreloadStatus();
+                }
+            });
+        }
+    }
+
     /**
      * Loading dependencies, whitelist and private whitelist from localstorage.
      */
     useEffect(() => {
         const lsDep = localStorage.getItem(LS_KEY_DEP);
-        if (lsDep === null)
-            throw new Error("No dependencies found in local storage.");
+        if (lsDep === null) {
+            console.log("No dependencies found in local storage.");
+            return;
+        }
         for (const dep of JSON.parse(lsDep)) {
             dependencies.current.push(dep.identifier);
         }
 
-        whitelist.current = JSON.parse(localStorage.getItem(LS_KEY_WL));
-        checkPreloadStatus();
+        const wl = JSON.parse(localStorage.getItem(LS_KEY_WL));
+        if(wl !== null) {
+            whitelist.current = wl;
+            checkPreloadStatus();
+        }
+        
+        loadPrivateContracts()
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ipfs]);
 
@@ -227,12 +246,7 @@ function Vulnerabilities({ ipfs, web3Gateway }) {
      * Loading private whitelist from localstorage after key is loaded.
      */
     useEffect(() => {
-        if (aesKey !== null) {
-            Contracts.load(aesKey).then((con) => {
-                privateWhitelist.current = con;
-                checkPreloadStatus();
-            });
-        }
+        loadPrivateContracts();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [aesKey]);
 

@@ -4,7 +4,7 @@ export class PasswordData {
 
     /**
      * Saves password data to localStorage.
-     * @param {{hash: String, salt: String, iv: String}} passwordData 
+     * @param {{hash: String, salt: String}} passwordData 
      */
     static async save(passwordData) {
         localStorage.setItem(LS_KEY_PWD, JSON.stringify(passwordData));
@@ -12,7 +12,7 @@ export class PasswordData {
 
     /**
      * Load password data from local storage.
-     * @returns {{hash: String, salt: String, iv: String}}
+     * @returns {{hash: String, salt: String}}
      */
     static async load() {
         return JSON.parse(localStorage.getItem(LS_KEY_PWD));

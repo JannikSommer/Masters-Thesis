@@ -5,18 +5,16 @@ export default class PasswordEncryption {
     /**
      * Computes an AES-GCM key and associated data from a password string.
      * @param {String} password A password in string format.
-     * @returns {Promise<{aesKey: CryptoKey, keyData: {hash: String, salt: String, iv: String}}>}
+     * @returns {Promise<{aesKey: CryptoKey, keyData: {hash: String, salt: String}}>}
      */
         static async createNewPassword(password) {
             const salt = window.crypto.getRandomValues(new Uint8Array(16))
             const aesKey = await this.deriveAesKey(password, salt);
             const keyHash = await this.getKeyHash(aesKey);
-            const iv = window.crypto.getRandomValues(new Uint8Array(12));
     
             const keyData = {
                 "hash": Utilities.arrayBufferToBase64(keyHash),
                 "salt": Utilities.arrayBufferToBase64(salt.buffer),
-                "iv": Utilities.arrayBufferToBase64(iv.buffer),
             };
             return { aesKey, keyData };
         }
@@ -37,7 +35,7 @@ export default class PasswordEncryption {
             const derivationParams = {
                 name: "PBKDF2",
                 salt: salt,
-                iterations: 100000,
+                iterations: 600000,
                 hash: "SHA-256"
             }
     
