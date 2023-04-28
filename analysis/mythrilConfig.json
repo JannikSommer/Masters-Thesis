@@ -1,0 +1,6 @@
+{
+    "remappings": [
+        "@openzeppelin/contracts/access/=node_modules/@openzeppelin/contracts/access/",
+        "@openzeppelin/contracts/utils/=node_modules/@openzeppelin/contracts/utils/"
+    ]
+}
