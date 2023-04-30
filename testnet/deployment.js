@@ -40,8 +40,8 @@ if (process.argv[2] == "3" && process.argv.length < 6) {
 
 const toDeploy = process.argv[2];
 
-const ALCHEMY_API_KEY = "";
-const PRIVATE_KEY = "";
+const ALCHEMY_API_KEY = process.argv[4];
+const PRIVATE_KEY = process.argv[3];
 
 const AS_BYTECODE = JSON.parse(fs.readFileSync("../build/contracts/AnnouncementService.json")).bytecode;
 const AS_ABI = JSON.parse(fs.readFileSync("../build/contracts/AnnouncementService.json")).abi;

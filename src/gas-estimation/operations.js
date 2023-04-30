@@ -3,21 +3,21 @@ import fs from "fs";
 import { exit } from "process";
 
 if (process.argv[2] == "--help" || process.argv[2] == "-h") {
-    console.log("Usage: node deployments.js [iterations] [local|testnet] [private key] [alchemy api key]");
+    console.log("Usage: node deployments.js [local|testnet] [private key] [alchemy api key]");
     exit(0);
 }
 
-if (process.argv.length < 4) {
+if (process.argv.length < 3) {
     console.log("Please specify either 'local' or 'testnet' as the first argument.");
     exit(1);
 }
 
-if (process.argv[4] == "testnet" && process.argv.length < 5) {
+if (process.argv[2] == "testnet" && process.argv.length < 4) {
     console.log("Please specify a private key for a valid address and an Alchemy API key for the testnet.");
     exit(1);
 }
 
-const ITERATIONS = process.argv[3];
+const ITERATIONS = 10;
 
 const AS_ABI = JSON.parse(fs.readFileSync("../../build/contracts/AnnouncementService.json")).abi;
 const AS_BYTECODE = JSON.parse(fs.readFileSync("../../build/contracts/AnnouncementService.json")).bytecode;
@@ -36,11 +36,11 @@ let account;
 try {
     if (process.argv[2] == "local") {
         web3 = new Web3("ws://127.0.0.1:7545");
-        account = web3.eth.accounts.privateKeyToAccount(process.argv[4]);
+        account = web3.eth.accounts.privateKeyToAccount(process.argv[3]);
         web3.eth.accounts.wallet.add(account);
     } else if (process.argv[2] == "testnet") {
-        web3 = new Web3('wss://eth-sepolia.g.alchemy.com/v2/' + process.argv[5]);
-        account = web3.eth.accounts.privateKeyToAccount(process.argv[4]);
+        web3 = new Web3('wss://eth-sepolia.g.alchemy.com/v2/' + process.argv[4]);
+        account = web3.eth.accounts.privateKeyToAccount(process.argv[3]);
         web3.eth.accounts.wallet.add(account);
     }
 } catch (e) {
@@ -66,7 +66,7 @@ console.log("Starting " + ITERATIONS + " iterations for each operation...");
 results.push(await estimate("new-announcement", 
     vendor.methods.announceNewAdvisory(
         1,
-        "CSAFPID-0001,CSAFPID-0002,CSAFPID-0003,CSAFPID-0004,CSAFPID-0005,CSAFPID-0006", 
+        "CSAFPID-0001,CSAFPID-0002,CSAFPID-0003,CSAFPID-0004,CSAFPID-0005,CSAFPID-0006",
         "ipfs/QmPQuXq1JuipvhLKdDz84eSM3tLbESjDAKeAHNzScjZz7Y")
     )
 );
@@ -82,8 +82,8 @@ results.push(await estimate("update-announcement",
 );
 
 // updatePublicKey
-let key = "MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAlzhbd0R5XmAFRQua4AWd5zCwLRaxOYaVgz6ADnJTx4CnvdF6AwnJwyvcJJ7ryz";
-results.push(await estimate("set-public-key", privateContract.methods.setPublicKey(new Uint8Array(key))));
+let key = "MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA3bL3tVT7arVVj2ZGl8cAPvDisChrLhIw84fGbESfjYz6UQ95MwuFjwJrcEYoSkKa5Mm7MfzdFo+xVl/PKUpvf8i2BKpq+uo+QqfhqIxZALXDvLVPbqx50z/VecuioSJM8a+l6rarZjpMf8TVofOokQzVvRQhMMyQvhmSV4Hsub7PvfQ4gyNHZ3pvua41ehHLplA95XHNDZMrDPjqXfEZeGfaXIocSTtS6F7axYF9/2BzH+c2OqFNOQvJaJtjfxiSTV7NgWcaU4dBhhy7QeqoW4t7lqfzmGtPHgdJ8gT3v1fyQtr5g7QS9WwExwQFgYGMIi2q5X1IsNir73eaXUVlnA5+Ik72kuFPe+r9EF3dxcu0CGBx4qTRp6fCQe5cjnPM1vD1ocCh7+w0hdef3dRPA3mgVYDX6oDPQZ09WmCZkR41QzDk8tT2ed5meSn514y1o8wXVigNXwV26Q4urzsUHae4CsO8EaTrmECoQQZuIu42CT/Sguj6NMIW/EZfIp8hAgMBAAE=";
+results.push(await estimate("set-public-key", privateContract.methods.setPublicKey(new Uint8Array(Buffer.from(key, "base64")))));
 
 await privateContract.methods.addVendor(account.address).send({from: account.address, gas: 5000000});
 
