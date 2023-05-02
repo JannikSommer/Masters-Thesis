@@ -1,5 +1,5 @@
 #!/bin/sh
 mkdir -p analysis/slitherResults
-slither . --ignore-compile --checklist > analysis/slitherResults/checklist.md
-slither . --ignore-compile
-slither . --ignore-compile --print human-summary
+slither . --ignore-compile --filter-paths openzeppelin --checklist > analysis/slitherResults/checklist.md
+slither . --ignore-compile --filter-paths openzeppelin 
+slither . --ignore-compile --filter-paths openzeppelin  --print human-summary
