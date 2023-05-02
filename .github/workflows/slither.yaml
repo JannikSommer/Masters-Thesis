@@ -1,0 +1,28 @@
+name: Slither Analysis
+
+on: pull_request
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup NodeJS 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+    
+      - name: Install Truffle
+        run: npm install truffle@5.7.6 -g # cannot use truffle@latest due to https://github.com/sc-forks/solidity-coverage/issues/696
+    
+      - name: Install Dependencies
+        run: npm install  
+
+      - name: Truffle Compile
+        run: truffle compile
+      
+      - name: Run Slither Analysis
+        uses: crytic/slither-action@v0.3.0
+        with:
+          slither-args: '--ignore-compile --filter-paths openzeppelin'
