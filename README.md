@@ -22,10 +22,10 @@ The frontend code can be found in the `/frontend` folder. The frontend is create
 ## Quickstart 
 There are multiple ways that you can run and play with the system. Of course you are welcome to deploy the smart contracts to the Ethereum mainnet if you so desire, however, as the system is only experimental and is not in a finished state, we do not advise that. Instead, use one of the following setups. 
 
-*Please note that none of the setup currently available are for production purposes!*
+**Please note that none of the setup currently available are for production purposes!**
 
 ### Docker
-You can run a complete setup of SENTINEL with the docker-compose file in this directory. The docker-compose file will spin up an IPFS node, both execution and validation clients for the Sepolia testnet, and the frontend. To get started run `docker-compose up -d` and wait for the Ethereum node to sync with the testnet. However, it should be noted that this setup is *NOT* considered production!
+You can run a complete setup of SENTINEL with the docker-compose file in this directory. The docker-compose file will spin up an IPFS node, both execution and validation clients for the Sepolia testnet, and the frontend. To get started run `docker-compose up -d` and wait for the Ethereum node to sync with the testnet. However, it should be noted that this setup is **NOT** considered production!
 
 > The testnet blockchain is potentially very long, meaning that you could store a lot of data after a full sync of the blockchain. Therefore, you should make sure that you have enough system resources to store it. 
 
