@@ -6,7 +6,6 @@ import { useRef, useState } from 'react';
 
 import { PRIVATE_CONTRACT_ABI } from '../../config';
 import { SUPPORTED_STORAGE_PRIVATE } from '../../storage/config';
-import Web3 from 'web3';
 
 import AES from '../../cryptography/AES';
 import RSA from '../../cryptography/RSA';
@@ -35,7 +34,7 @@ function ConfidentialAdvisoryForm({accounts, ipfs}) {
     const [showError, setShowError] = useState(false);
     const dismissError = () => setShowError(false);
 
-    const web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+    const web3 = new Web3Gateway().web3;
     const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, address);
 
 

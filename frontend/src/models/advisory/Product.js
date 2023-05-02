@@ -1,9 +1,9 @@
-var Version = require("./Version");
+import Version from "./Version";
 
 /**
  * Represents a specific product line.
  */
-class Product { //? Should this be called "ProductLine"?
+export default class Product { //? Should this be called "ProductLine"?
     /**
      * The name of the product line.
      * @type {String}
@@ -40,5 +40,3 @@ class Product { //? Should this be called "ProductLine"?
         });
     }
 }
-
-module.exports = Product;

@@ -13,7 +13,7 @@ import { PasswordContext } from "../contexts/PasswordContext";
 import PasswordModal from "./PasswordModal";
 import Web3Gateway from "../models/web3/web3Gateway";
 
-function App() {
+export default function App() {
     const [ipfs, setIpfs] = useState();
     const [loading, setLoading] = useState(true);
     const [cryptoKey, setCryptoKey] = useState(null);
@@ -64,4 +64,3 @@ function App() {
         </div>
     )
 }
-export default App;

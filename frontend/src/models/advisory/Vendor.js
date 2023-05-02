@@ -1,9 +1,9 @@
-var Product = require("./Product");
+import Product from "./Product";
 
 /**
  * Represents a Vendor.
  */
-class Vendor {
+export default class Vendor {
     /**
      * The name of the vendor.
      * @type {String}
@@ -41,4 +41,3 @@ class Vendor {
     }
 }
 
-module.exports = Vendor;
