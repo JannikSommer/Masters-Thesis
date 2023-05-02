@@ -8,7 +8,7 @@ export class Accounts {
     /**
      * Loads accounts from local storage.
      * @param {CryptoKey} aesKey A valid AES crryptokey.
-     * @returns {Promise<any[]> | Promise<null>} An array of accounts. Returns null if none are found.
+     * @returns {Promise<Array<{name: string, wallet: string, key: string}>> | Promise<null>} An array of accounts. Returns null if none are found.
      */
     static async load(aesKey) {
         const aes = new AES(256);
@@ -25,7 +25,7 @@ export class Accounts {
 
     /**
      * Saves accounts to local storage.
-     * @param {any[]} accounts An array of accounts.
+     * @param {Array<{name: string, wallet: string, key: string}>} accounts An array of accounts.
      * @param {CryptoKey} aesKey A valid AES cryptokey.
      */
     static async Save(accounts, aesKey) {
