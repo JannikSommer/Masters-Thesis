@@ -22,14 +22,18 @@ The frontend code can be found in the `/frontend` folder. The frontend is create
 ## Quickstart 
 There are multiple ways that you can run and play with the system. Of course you are welcome to deploy the smart contracts to the Ethereum mainnet if you so desire, however, as the system is only experimental and is not in a finished state, we do not advise that. Instead, use one of the following setups. 
 
-### Docker
-You can run a complete setup of SENTINEL with the docker-compose file in this directory. The docker-compose file will spin up an IPFS node, both execution and validation clients for the Sepolia testnet, and the frontend. To get started run `docker-compose up -d` and wait for the Ethereum node to sync with the testnet. 
+*Please note that none of the setup currently available are for production purposes!*
 
-> A script to either use the Sepolia network or a Ganache instance is currently under consideration. 
+### Docker
+You can run a complete setup of SENTINEL with the docker-compose file in this directory. The docker-compose file will spin up an IPFS node, both execution and validation clients for the Sepolia testnet, and the frontend. To get started run `docker-compose up -d` and wait for the Ethereum node to sync with the testnet. However, it should be noted that this setup is *NOT* considered production!
+
+> The testnet blockchain is potentially very long, meaning that you could store a lot of data after a full sync of the blockchain. Therefore, you should make sure that you have enough system resources to store it. 
+
 
 The frontend is run from a locally build Docker image. You can find the Dockerfile in `./frontend/Dockerfile`. The execution client is [Geth (go-ethereum)](https://geth.ethereum.org) which will be used to look for transaction with from the frontend. The validation client (mandatory from The Merge) is [Lighthouse](https://github.com/sigp/lighthouse). The IPFS node is the official [Kubo](https://github.com/ipfs/kubo). 
 
-> The testnet blockchain is potentially very long, meaning that you could store a lot of data after a full sync of the blockchain. Therefore, you should make sure that you have enough system resources to store it. 
+
+> A script to either use the Sepolia network or a Ganache instance is currently under consideration. 
 
 
 ### Local Environment
