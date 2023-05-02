@@ -6,7 +6,7 @@ exports.LS_KEY_PWD = "SENTINEL-password-data";
 exports.LS_KEY_CON = "SENTINEL-settings-contracts";
 
 
-exports.CONTACT_ADDRESS = "0xdb3c81C5cEFfed3aFfaAaE99d4dC19e88507B1b5";
+exports.CONTACT_ADDRESS = "0xbdBc312f3dc75a6D47D7Eaa7E6a4BBFbb07f09fc";
 exports.CONTACT_ABI = [
   {
     "anonymous": false,

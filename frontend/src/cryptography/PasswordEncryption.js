@@ -1,6 +1,6 @@
 import Utilities from './Utilities';
 
-export class PasswordEncryption {
+export default class PasswordEncryption {
     
     /**
      * Computes an AES-GCM key and associated data from a password string.

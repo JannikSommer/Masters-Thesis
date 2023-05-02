@@ -1,10 +1,10 @@
-const Vendor = require("./Vendor");
-const Vulnerability = require("./Vulnerability");
+import Vendor from "./Vendor";
+import Vulnerability from "./Vulnerability";
 
 /**
  * Represents a security advisory detailing a vulnerability.
  */
-class SecurityAdvisory {
+export default class SecurityAdvisory {
     /**
      * Title of the security advisory.
      * @type {String}
@@ -184,5 +184,3 @@ class SecurityAdvisory {
     }
 
 }
-
-module.exports = SecurityAdvisory;
