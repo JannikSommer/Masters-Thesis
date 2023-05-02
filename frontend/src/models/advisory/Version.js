@@ -1,7 +1,7 @@
 /**
  * Represents a specific version of a product line.
  */
-class Version {
+export default class Version {
     /**
      * The full name of the product. Often includes vendor, architecture, version.
      * @type {String}
@@ -48,5 +48,3 @@ class Version {
         this.version = productVersion["name"];
     }
 }
-
-module.exports = Version;

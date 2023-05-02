@@ -5,9 +5,9 @@ import Row from 'react-bootstrap/esm/Row';
 import Col from 'react-bootstrap/Col';
 
 import { useRef, useState } from 'react';
+import Web3Gateway from '../../models/web3/web3Gateway';
 
 import { PRIVATE_CONTRACT_ABI } from '../../config';
-import Web3 from 'web3';
 import RSA from '../../cryptography/RSA';
 import Utilities from '../../cryptography/Utilities';
 import AcceptModal from '../announcement/AcceptModal';
@@ -33,7 +33,7 @@ function UpdateKeyForm({accounts, contracts, updateContractKey}) {
     const [showError, setShowError] = useState(false);
     const dismissError = () => setShowError(false);
 
-    var web3 = new Web3(Web3.givenProvider || 'http://localhost:7545');
+    const web3 = new Web3Gateway().web3;
     const contract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI, selectedAddress.current);
 
     const selectAccount = (value) => {

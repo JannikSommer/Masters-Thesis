@@ -62,7 +62,7 @@ The system is deployed on the [Sepolia](https://sepolia.dev) Ethereum testnet. Y
 - Announcement Service: [`0xbdBc312f3dc75a6D47D7Eaa7E6a4BBFbb07f09fc`](https://sepolia.etherscan.io/address/0xbdbc312f3dc75a6d47d7eaa7e6a4bbfbb07f09fc)
 - Identifier Issuer Service: [`0x577a791f4033F7905b822664ff0E1a74dbe5EF70`](https://sepolia.etherscan.io/address/0x577a791f4033f7905b822664ff0e1a74dbe5ef70)
 - Vendor: [`0xF472cebcd32953E165eD35B51708a796EEA76A34`](https://sepolia.etherscan.io/address/0xF472cebcd32953E165eD35B51708a796EEA76A34)
-- _private to come..._
+- Private: [`0xFfb2234E55D1D238fE8b80Ef6e4f435AC89c375d`](https://sepolia.etherscan.io/address/0xFfb2234E55D1D238fE8b80Ef6e4f435AC89c375d)
 
 Deployment scripts to help you deploy your own contracts can be found `./testnet` at a later point. 
 

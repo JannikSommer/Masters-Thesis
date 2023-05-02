@@ -7,5 +7,4 @@ const Status = Object.freeze({
     KnownNotAffected: "known_not_affected", 
     UnderInvestigation: "under_investigation", 
 });
-
-module.exports = Status;
+export default Status;
