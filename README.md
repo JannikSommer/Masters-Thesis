@@ -79,6 +79,8 @@ The system is deployed on the [Sepolia](https://sepolia.dev) Ethereum testnet. Y
 - Vendor: [`0xF472cebcd32953E165eD35B51708a796EEA76A34`](https://sepolia.etherscan.io/address/0xF472cebcd32953E165eD35B51708a796EEA76A34)
 - Private: [`0xFfb2234E55D1D238fE8b80Ef6e4f435AC89c375d`](https://sepolia.etherscan.io/address/0xFfb2234E55D1D238fE8b80Ef6e4f435AC89c375d)
 
+**Please note that you must create an Ethereum node that is connected to the Seploia testnet and expose the execution client on ws://localhost:8546 for the frontend to access it! You can learn more about that [on the official Ethereum docs](https://ethereum.org/en/developers/docs/nodes-and-clients/)**
+
 Deployment scripts to help you deploy your own contracts can be found `./testnet` at a later point. 
 
 #### Fronted on IPFS
