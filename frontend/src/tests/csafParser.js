@@ -1,14 +1,14 @@
-const assert = require("assert");
-const { describe, beforeEach } = require("mocha");
-const fs = require('fs');
+import { deepStrictEqual, throws } from "assert";
+import { describe } from "mocha";
+import { readFile } from 'fs';
 
-const Status = require("../models/advisory/Status.js");
-const Version = require("../models/advisory/Version.js");
-const Product = require("../models/advisory/Product");
-const Vendor = require("../models/advisory/Vendor");
-const SecurityAdvisory = require("../models/advisory/SecurityAdvisory");
-const RemediationStrategy = require("../models/advisory/RemediationStrategy");
-const Vulnerability = require("../models/advisory/Vulnerability");
+import Status from "../models/advisory/Status.js";
+import Version from "../models/advisory/Version.js";
+import Product from "../models/advisory/Product";
+import Vendor from "../models/advisory/Vendor";
+import SecurityAdvisory from "../models/advisory/SecurityAdvisory";
+import RemediationStrategy from "../models/advisory/RemediationStrategy";
+import Vulnerability from "../models/advisory/Vulnerability";
 
 
 describe("CSAF Parser", function () {
@@ -16,7 +16,7 @@ describe("CSAF Parser", function () {
     var csafString = null;
 
     before("Load CSAF File", function (done) {
-        fs.readFile("../csaf/bsi.json", "utf8", function (err, data) {
+        readFile("../csaf/bsi.json", "utf8", function (err, data) {
             if (err) throw err;
             csafString = data;
             csafObject = JSON.parse(data);
@@ -31,32 +31,32 @@ describe("CSAF Parser", function () {
 
                 const actual = new Version(productObject);
 
-                assert.deepStrictEqual(actual.fullName, "CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha");
-                assert.deepStrictEqual(actual.identifier, "CSAFPID-0001", "'Version.identifier' was not equal to expected value");
-                assert.deepStrictEqual(actual.version, "1.0.0-alpha", "'Version.version' was not equal to expected value");
+                deepStrictEqual(actual.fullName, "CSAF Tools CVRF-CSAF-Converter 1.0.0-alpha");
+                deepStrictEqual(actual.identifier, "CSAFPID-0001", "'Version.identifier' was not equal to expected value");
+                deepStrictEqual(actual.version, "1.0.0-alpha", "'Version.version' was not equal to expected value");
             });
 
             it("should only accept CSAF 'product_version' types", function () {
                 const wrongProductVersion = csafObject["product_tree"]["branches"][0]; // category = "vendor"
                 const actual = function () {new Version(wrongProductVersion)};
-                assert.throws(actual, Error("'productVersion' is not a CSAF 'product_version' type."));
+                throws(actual, Error("'productVersion' is not a CSAF 'product_version' type."));
             });
 
             it("should not accept objects with branches", function () {
                 const wrongProductVersion = JSON.parse('{"category": "product_version", "name": "1.0.0-alpha", "branches":[{},{}]}');
                 const actual = function () {new Version(wrongProductVersion)};
-                assert.throws(actual, Error("Branching in 'product_version' objects is not currently supported."));
+                throws(actual, Error("Branching in 'product_version' objects is not currently supported."));
             });
 
             it("should not accept objects without a product name", function () {
                 const wrongProductVersion = JSON.parse('{"category": "product_version", "name": "1.0.0-alpha", "product": {"product_id": "product id"}}');
                 const actual = function () {new Version(wrongProductVersion)};
-                assert.throws(actual, Error("'name' property is not included in 'product' object."));
+                throws(actual, Error("'name' property is not included in 'product' object."));
             });
             it("should not accept objects without a product id", function () {
                 const wrongProductVersion = JSON.parse('{"category": "product_version", "name": "1.0.0-alpha", "product": {"name": "product name"}}');
                 const actual = function () {new Version(wrongProductVersion)};
-                assert.throws(actual, Error("'product_id' property is not included in 'product' object"));
+                throws(actual, Error("'product_id' property is not included in 'product' object"));
             });
         })
     });
@@ -68,26 +68,26 @@ describe("CSAF Parser", function () {
 
                 const actual = new Product(productObject);
 
-                assert.deepStrictEqual(actual.name, "CVRF-CSAF-Converter", "'Product.name' was not equal to expected value");
-                assert.deepStrictEqual(actual.versions.length, 6);
+                deepStrictEqual(actual.name, "CVRF-CSAF-Converter", "'Product.name' was not equal to expected value");
+                deepStrictEqual(actual.versions.length, 6);
             });
 
             it("should only accept CSAF 'product_name' types", function () {
                 const wrongProduct = csafObject["product_tree"]["branches"][0]; // category = "vendor"
                 const actual = function () {new Product(wrongProduct)};
-                assert.throws(actual, Error("'product' is not a CSAF 'product_name' type."));
+                throws(actual, Error("'product' is not a CSAF 'product_name' type."));
             });
 
             it("should not accept objects without 'name' property", function () {
                 const wrongProduct = JSON.parse('{ "category": "product_name", "branches":[ {}, {} ] }');
                 const actual = function () {new Product(wrongProduct)};
-                assert.throws(actual, Error("'name' property is not included in 'product'."));
+                throws(actual, Error("'name' property is not included in 'product'."));
             });
 
             it("should not accept objects without branches", function () {
                 const wrongProduct = JSON.parse('{ "category": "product_name", "name": "product name", "product": {} }');
                 const actual = function () {new Product(wrongProduct)};
-                assert.throws(actual, Error("'product' does not contain branches."));
+                throws(actual, Error("'product' does not contain branches."));
             });
         });
     });
@@ -99,26 +99,26 @@ describe("CSAF Parser", function () {
                 
                 const actual = new Vendor(vendorObject);
 
-                assert.deepStrictEqual(actual.name, "CSAF Tools");
-                assert.deepStrictEqual(actual.products.length, 1);
+                deepStrictEqual(actual.name, "CSAF Tools");
+                deepStrictEqual(actual.products.length, 1);
             });
 
             it("should only accept CSAF 'vendor' types", function () {
                 const wrongProduct = csafObject["product_tree"]["branches"][0]["branches"][0]; // category = "vendor"
                 const actual = function () {new Vendor(wrongProduct)};
-                assert.throws(actual, Error("'vendor' is not a CSAF 'vendor' type."));
+                throws(actual, Error("'vendor' is not a CSAF 'vendor' type."));
             });
 
             it("should not accept objects without 'name' property", function () {
                 const wrongProduct = JSON.parse('{ "category": "vendor", "branches":[ {}, {} ] }');
                 const actual = function () {new Vendor(wrongProduct)};
-                assert.throws(actual, Error("'name' property is not included in 'vendor'."));
+                throws(actual, Error("'name' property is not included in 'vendor'."));
             });
 
             it("should not accept objects without branches", function () {
                 const wrongProduct = JSON.parse('{ "category": "vendor", "name": "vendor name", "product": {} }');
                 const actual = function () {new Vendor(wrongProduct)};
-                assert.throws(actual, Error("'vendor' does not contain branches."));
+                throws(actual, Error("'vendor' does not contain branches."));
             });
         });
     });
@@ -130,12 +130,12 @@ describe("CSAF Parser", function () {
 
                 const actual = new RemediationStrategy(remediationObject);
 
-                assert.deepStrictEqual(actual.details, "Update to the latest version of the product. At least version 1.0.0-rc2");
-                assert.deepStrictEqual(actual.productIds.size, 5);
-                assert.deepStrictEqual(actual.productIds.get("CSAFPID-0001"), true);
-                assert.deepStrictEqual(actual.productIds.get("CSAFPID-0005"), true);
-                assert.deepStrictEqual(actual.productIds.get("CSAFPID-0006"), undefined);
-                assert.deepStrictEqual(actual.url, "https://github.com/csaf-tools/CVRF-CSAF-Converter/releases/tag/1.0.0-rc2");
+                deepStrictEqual(actual.details, "Update to the latest version of the product. At least version 1.0.0-rc2");
+                deepStrictEqual(actual.productIds.size, 5);
+                deepStrictEqual(actual.productIds.get("CSAFPID-0001"), true);
+                deepStrictEqual(actual.productIds.get("CSAFPID-0005"), true);
+                deepStrictEqual(actual.productIds.get("CSAFPID-0006"), undefined);
+                deepStrictEqual(actual.url, "https://github.com/csaf-tools/CVRF-CSAF-Converter/releases/tag/1.0.0-rc2");
             });
 
             it("should initialize correctly if no remediation information is included", function () {
@@ -143,9 +143,9 @@ describe("CSAF Parser", function () {
 
                 const actual = new RemediationStrategy(remediationObject);
 
-                assert.deepStrictEqual(actual.details, "");
-                assert.deepStrictEqual(actual.productIds.size, 0);
-                assert.deepStrictEqual(actual.url, "");
+                deepStrictEqual(actual.details, "");
+                deepStrictEqual(actual.productIds.size, 0);
+                deepStrictEqual(actual.url, "");
             })
         });
     });
@@ -157,21 +157,21 @@ describe("CSAF Parser", function () {
 
                 const actual = new Vulnerability(vulnerabilityObject);
 
-                assert.deepStrictEqual(actual.cvss.size, 5);
-                assert.deepStrictEqual(actual.cvss.get("CSAFPID-0001"), 6.1);
-                assert.deepStrictEqual(actual.cvss.get("CSAFPID-0006"), undefined);
+                deepStrictEqual(actual.cvss.size, 5);
+                deepStrictEqual(actual.cvss.get("CSAFPID-0001"), 6.1);
+                deepStrictEqual(actual.cvss.get("CSAFPID-0006"), undefined);
 
-                assert.deepStrictEqual(actual.cwe, "CWE-611");
+                deepStrictEqual(actual.cwe, "CWE-611");
 
-                assert.deepStrictEqual(actual.description.length, 1);
-                assert.deepStrictEqual(actual.description[0], "CSAF Tools CVRF-CSAF-Converter 1.0.0-rc1 resolves XML External Entities (XXE). This leads to the inclusion of arbitrary (local) file content into the generated output document. An attacker can exploit this to disclose information from the system running the converter.");
+                deepStrictEqual(actual.description.length, 1);
+                deepStrictEqual(actual.description[0], "CSAF Tools CVRF-CSAF-Converter 1.0.0-rc1 resolves XML External Entities (XXE). This leads to the inclusion of arbitrary (local) file content into the generated output document. An attacker can exploit this to disclose information from the system running the converter.");
                 
-                assert.deepStrictEqual(actual.productStatus.size, 6);
-                assert.deepStrictEqual(actual.productStatus.get("CSAFPID-0006"), Status.Fixed);
-                assert.deepStrictEqual(actual.productStatus.get("CSAFPID-0001"), Status.KnownAffected);
+                deepStrictEqual(actual.productStatus.size, 6);
+                deepStrictEqual(actual.productStatus.get("CSAFPID-0006"), Status.Fixed);
+                deepStrictEqual(actual.productStatus.get("CSAFPID-0001"), Status.KnownAffected);
 
-                assert.deepStrictEqual(actual.remediations.length, 1);
-                assert.deepStrictEqual(actual.remediations[0].details, "Update to the latest version of the product. At least version 1.0.0-rc2");
+                deepStrictEqual(actual.remediations.length, 1);
+                deepStrictEqual(actual.remediations[0].details, "Update to the latest version of the product. At least version 1.0.0-rc2");
             });
 
             it("should initialize correctly if no vulnerability information is included", function () {
@@ -179,11 +179,11 @@ describe("CSAF Parser", function () {
 
                 const actual = new Vulnerability(vulnerabilityObject);
 
-                assert.deepStrictEqual(actual.cvss, undefined);
-                assert.deepStrictEqual(actual.cwe, "");
-                assert.deepStrictEqual(actual.description, []);
-                assert.deepStrictEqual(actual.productStatus.size, 0);
-                assert.deepStrictEqual(actual.remediations, []);
+                deepStrictEqual(actual.cvss, undefined);
+                deepStrictEqual(actual.cwe, "");
+                deepStrictEqual(actual.description, []);
+                deepStrictEqual(actual.productStatus.size, 0);
+                deepStrictEqual(actual.remediations, []);
             });
         });
     });
@@ -194,12 +194,12 @@ describe("CSAF Parser", function () {
             it("should initialize correctly", function () {
                 const actual = new SecurityAdvisory(csafString);
 
-                assert.deepStrictEqual(actual.description, "No description provided.");
-                assert.deepStrictEqual(actual.severity, "Moderate");
-                assert.deepStrictEqual(actual.title, "CVRF-CSAF-Converter: XML External Entities Vulnerability");
-                assert.deepStrictEqual(actual.vendors.length, 1);
-                assert.deepStrictEqual(actual.vendors[0].name, "CSAF Tools");     
-                assert.deepStrictEqual(actual.vulnerabilities.length, 1);
+                deepStrictEqual(actual.description, "No description provided.");
+                deepStrictEqual(actual.severity, "Moderate");
+                deepStrictEqual(actual.title, "CVRF-CSAF-Converter: XML External Entities Vulnerability");
+                deepStrictEqual(actual.vendors.length, 1);
+                deepStrictEqual(actual.vendors[0].name, "CSAF Tools");     
+                deepStrictEqual(actual.vulnerabilities.length, 1);
             });
 
             it("should initialize correctly if security advisory only contains a 'document' property", function () {
@@ -207,23 +207,23 @@ describe("CSAF Parser", function () {
 
                 const actual = new SecurityAdvisory(smallCSAF);
 
-                assert.deepStrictEqual(actual.description, "No description provided.");
-                assert.deepStrictEqual(actual.severity, "No aggregate severity.");
-                assert.deepStrictEqual(actual.title, "Small advisory");
-                assert.deepStrictEqual(actual.vendors, []);
-                assert.deepStrictEqual(actual.vulnerabilities, []);
+                deepStrictEqual(actual.description, "No description provided.");
+                deepStrictEqual(actual.severity, "No aggregate severity.");
+                deepStrictEqual(actual.title, "Small advisory");
+                deepStrictEqual(actual.vendors, []);
+                deepStrictEqual(actual.vulnerabilities, []);
             });
 
             it("should not accept CSAF documents without a 'document' property", function () {
                 const wrongCSAF = "{}";
                 const actual = function () { new SecurityAdvisory(wrongCSAF); };
-                assert.throws(actual, Error("CSAF documents MUST include a 'document' property."));
+                throws(actual, Error("CSAF documents MUST include a 'document' property."));
             });
 
             it("should not accept CSAF documents without a document title", function () {
                 const wrongCSAF = '{"document": {}}';
                 const actual = function () { new SecurityAdvisory(wrongCSAF); };
-                assert.throws(actual, Error("CSAF documents MUST include a document title."));
+                throws(actual, Error("CSAF documents MUST include a document title."));
             });
         });
     });

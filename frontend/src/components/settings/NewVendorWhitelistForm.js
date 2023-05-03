@@ -2,15 +2,15 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import { useState } from 'react';
-import Web3 from 'web3';
 
 import { VENDOR_CONTRACT_ABI } from '../../config';
+import Web3Gateway from '../../models/web3/web3Gateway';
 
 function NewVendorWhitelistForm({whitelist, saveWhitelist}) {
     const [address, setAddress] = useState("");
 
     async function saveVendor() {
-        let web3 = new Web3(Web3.givenProvider || 'ws://localhost:7545');
+        let web3 = new Web3Gateway().web3;
         let contract = new web3.eth.Contract(VENDOR_CONTRACT_ABI, address);
         let newVendor = {
             name: await contract.methods.vendorName().call(),

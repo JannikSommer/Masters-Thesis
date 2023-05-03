@@ -358,3 +358,6 @@ MigrationBackup/
 # Analysis Results
 analysis/mythrilResults/
 analysis/slitherResults/
+
+# Secret files
+secret.*

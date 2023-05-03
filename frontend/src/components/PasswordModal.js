@@ -8,8 +8,8 @@ import Alert from 'react-bootstrap/Alert';
 import { useState, useEffect } from 'react';
 
 import Utilities from '../cryptography/Utilities';
-import { PasswordData as PasswordDataLS } from '../localStorage/PasswordData';
-import { PasswordEncryption } from '../cryptography/PasswordEncryption';
+import {PasswordData  as PasswordDataLS } from '../localStorage/PasswordData';
+import PasswordEncryption from '../cryptography/PasswordEncryption';
 
 
 function PasswordModal({state, dismiss, done, setPasswordContext}) {

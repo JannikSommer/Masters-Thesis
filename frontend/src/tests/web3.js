@@ -1,30 +1,30 @@
-const assert = require("assert");
-const { describe, beforeEach } = require("mocha");
-const fs = require('fs');
+import { notStrictEqual, equal } from "assert";
+import { describe, beforeEach } from "mocha";
+import { readFileSync } from 'fs';
 
-const Web3 = require('web3');
+import Web3, { givenProvider } from 'web3';
 
-let Web3Gateway = require('../models/web3/web3Gateway');
+import Web3Gateway from '../models/web3/web3Gateway';
 
 const ACCOUNT_PKEY = "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63";
-const AS_BYTECODE = JSON.parse(fs.readFileSync("../build/contracts/AnnouncementService.json")).bytecode;
-const AS_ABI = JSON.parse(fs.readFileSync("../build/contracts/AnnouncementService.json")).abi;
+const AS_BYTECODE = JSON.parse(readFileSync("../build/contracts/AnnouncementService.json")).bytecode;
+const AS_ABI = JSON.parse(readFileSync("../build/contracts/AnnouncementService.json")).abi;
 
-const IIS_BYTECODE = JSON.parse(fs.readFileSync("../build/contracts/IdentifierIssuerService.json")).bytecode;
-const IIS_ABI = JSON.parse(fs.readFileSync("../build/contracts/IdentifierIssuerService.json")).abi;
+const IIS_BYTECODE = JSON.parse(readFileSync("../build/contracts/IdentifierIssuerService.json")).bytecode;
+const IIS_ABI = JSON.parse(readFileSync("../build/contracts/IdentifierIssuerService.json")).abi;
 
-const VENDOR_BYTECODE = JSON.parse(fs.readFileSync("../build/contracts/Vendor.json")).bytecode;
-const VENDOR_CONTRACT_ABI = JSON.parse(fs.readFileSync("../build/contracts/Vendor.json")).abi;
+const VENDOR_BYTECODE = JSON.parse(readFileSync("../build/contracts/Vendor.json")).bytecode;
+const VENDOR_CONTRACT_ABI = JSON.parse(readFileSync("../build/contracts/Vendor.json")).abi;
 
-const PRIVATE_BYTECODE = JSON.parse(fs.readFileSync("../build/contracts/Private.json")).bytecode;
-const PRIVATE_CONTRACT_ABI = JSON.parse(fs.readFileSync("../build/contracts/Private.json")).abi;
+const PRIVATE_BYTECODE = JSON.parse(readFileSync("../build/contracts/Private.json")).bytecode;
+const PRIVATE_CONTRACT_ABI = JSON.parse(readFileSync("../build/contracts/Private.json")).abi;
 
 const delay = ms => new Promise(
     resolve => setTimeout(resolve, ms)
 );
 
 describe("Web3 Gateway test", function() {
-    let web3 = new Web3(Web3.givenProvider || 'ws://127.0.0.1:7545');
+    let web3 = new Web3(givenProvider || 'ws://127.0.0.1:7545');
     const account = web3.eth.accounts.privateKeyToAccount(ACCOUNT_PKEY);
     let announcementService = new web3.eth.Contract(AS_ABI);
     let identifierIssuerService = new web3.eth.Contract(IIS_ABI);
@@ -47,22 +47,22 @@ describe("Web3 Gateway test", function() {
     describe("Test event subscription from gateway", function() {
         it("Should subscribe to new security advisory announcement events", async () => {
             await web3Gateway.subscribeNewSecurityAdvisories(() => {});
-            assert.notStrictEqual(web3Gateway.subscriptions.length, 0);
+            notStrictEqual(web3Gateway.subscriptions.length, 0);
         });
 
         it("Should subscribe to updated security advisory announcement events", async () => {
             await web3Gateway.subscribeToSecurityAdvisoryUpdates(() => {}, "SNTL-A-1-1");
-            assert.notStrictEqual(web3Gateway.subscriptions.length, 0);
+            notStrictEqual(web3Gateway.subscriptions.length, 0);
         });
 
         it("Should subscribe to private security advisory announcement events", async () => {
-            let private = new web3.eth.Contract(PRIVATE_CONTRACT_ABI);
-            await private.deploy({data: PRIVATE_BYTECODE})
+            let privateContract = new web3.eth.Contract(PRIVATE_CONTRACT_ABI);
+            await privateContract.deploy({data: PRIVATE_BYTECODE})
                 .send({from: account.address, gas: 6721975, gasPrice: '20000000000'})
-                    .then((newContractInstance) => { private = newContractInstance;});
+                    .then((newContractInstance) => { privateContract = newContractInstance;});
 
-            await web3Gateway.subscribeToPrivateSecurityAdvisories(() => {}, private.options.address);
-            assert.notStrictEqual(web3Gateway.subscriptions.length, 0);
+            await web3Gateway.subscribeToPrivateSecurityAdvisories(() => {}, privateContract.options.address);
+            notStrictEqual(web3Gateway.subscriptions.length, 0);
         });
     });
 
@@ -88,9 +88,9 @@ describe("Web3 Gateway test", function() {
             await delay(1000); // wait of network to process transaction
 
             let events = await announcementService.getPastEvents('NewSecurityAdvisory', {fromBlock: 0, toBlock: 'latest'});
-            assert.notStrictEqual(events, null);
-            assert.notStrictEqual(events, undefined);
-            assert.notStrictEqual(events, []);
+            notStrictEqual(events, null);
+            notStrictEqual(events, undefined);
+            notStrictEqual(events, []);
         })
 
         it("Should create a transaction for a Updated Security Advisory event", async () => {
@@ -117,19 +117,19 @@ describe("Web3 Gateway test", function() {
             await delay(1000); // wait of network to process transaction
 
             let events = await announcementService.getPastEvents('UpdatedSecurityAdvisory', {fromBlock: 0, toBlock: 'latest'});
-            assert.notStrictEqual(events, null);
-            assert.notStrictEqual(events, undefined);
-            assert.notStrictEqual(events, []);
+            notStrictEqual(events, null);
+            notStrictEqual(events, undefined);
+            notStrictEqual(events, []);
         })
 
         it("Should create a transaction for a Private Security Advisory event", async () => {
-            let private = await new web3.eth.Contract(PRIVATE_CONTRACT_ABI);
-            await private.deploy({data: PRIVATE_BYTECODE})
+            let privateContract = await new web3.eth.Contract(PRIVATE_CONTRACT_ABI);
+            await privateContract.deploy({data: PRIVATE_BYTECODE})
                 .send({from: account.address, gas: 6721975, gasPrice: '20000000000'})
-                    .then((newContractInstance) => { private = newContractInstance;});
+                    .then((newContractInstance) => { privateContract = newContractInstance;});
 
             const sender = {address: account.address, key: ACCOUNT_PKEY};
-            const recipient = {address: private.options.address}; 
+            const recipient = {address: privateContract.options.address}; 
             const payload = {
                 fileLocation: "ipfs/QmX1",
                 fileHash: "fileHash",
@@ -144,21 +144,21 @@ describe("Web3 Gateway test", function() {
 
             await delay(1000); // wait of network to process transaction
 
-            let events = await private.getPastEvents('Announcement', {fromBlock: 0, toBlock: 'latest'});
-            assert.notStrictEqual(events, null);
-            assert.notStrictEqual(events, undefined);
-            assert.notStrictEqual(events, []);
+            let events = await privateContract.getPastEvents('Announcement', {fromBlock: 0, toBlock: 'latest'});
+            notStrictEqual(events, null);
+            notStrictEqual(events, undefined);
+            notStrictEqual(events, []);
         })
     });
 
     describe("Test vendor whitelisting transactions from gateway", function() {
         it("Should whitelist a vendor", async () => {
-            let private = await new web3.eth.Contract(PRIVATE_CONTRACT_ABI);
-            await private.deploy({data: PRIVATE_BYTECODE})
+            let privateContract = await new web3.eth.Contract(PRIVATE_CONTRACT_ABI);
+            await privateContract.deploy({data: PRIVATE_BYTECODE})
                 .send({from: account.address, gas: 6721975, gasPrice: '20000000000'})
-                    .then((newContractInstance) => { private = newContractInstance;});
+                    .then((newContractInstance) => { privateContract = newContractInstance;});
             const sender = {address: account.address, key: ACCOUNT_PKEY};
-            const recipient = {address: private.options.address}; 
+            const recipient = {address: privateContract.options.address}; 
 
             await web3Gateway.whitelistVendor(sender, recipient, account.address);
 
@@ -166,17 +166,17 @@ describe("Web3 Gateway test", function() {
 
             // The vendor whitelist is private and cannot be viewed.
             // The completion of the transaction is the only way to know if it was successful.
-            assert.equal(true, true);
+            equal(true, true);
         });
 
         it("Should remove a vendor from whitelist", async () => {
-            let private = await new web3.eth.Contract(PRIVATE_CONTRACT_ABI);
-            await private.deploy({data: PRIVATE_BYTECODE})
+            let privateContract = await new web3.eth.Contract(PRIVATE_CONTRACT_ABI);
+            await privateContract.deploy({data: PRIVATE_BYTECODE})
                 .send({from: account.address, gas: 6721975, gasPrice: '20000000000'})
-                    .then((newContractInstance) => { private = newContractInstance;});
+                    .then((newContractInstance) => { privateContract = newContractInstance;});
 
             const sender = {address: account.address, key: ACCOUNT_PKEY};
-            const recipient = {address: private.options.address}; 
+            const recipient = {address: privateContract.options.address}; 
 
             await web3Gateway.whitelistVendor(sender, recipient, account.address);
 
@@ -188,7 +188,7 @@ describe("Web3 Gateway test", function() {
 
             // The vendor whitelist is private and cannot be viewed.
             // The completion of the transaction is the only way to know if it was successful.
-            assert.equal(true, true);
+            equal(true, true);
         });
     });
 });

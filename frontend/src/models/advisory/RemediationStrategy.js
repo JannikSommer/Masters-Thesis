@@ -1,7 +1,7 @@
 /**
  * Represents a remediation strategy from a CSAF security advisory.
  */
-class RemediationStrategy {
+export default class RemediationStrategy {
     /**
      * Details the remediation strategy.
      * @type {String}
@@ -48,5 +48,3 @@ class RemediationStrategy {
         return this.details + (this.url !== "" ? "\nURL: " + this.url : "");
     }
 }
-
-module.exports = RemediationStrategy;

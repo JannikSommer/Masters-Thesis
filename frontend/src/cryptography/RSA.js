@@ -1,4 +1,4 @@
-class RSA {
+export default class RSA {
     rsaOptions = {
         name: "RSA-OAEP",
         modulusLength: 3072,
@@ -114,5 +114,3 @@ class RSA {
         );
     }
 }
-
-module.exports = RSA;
