@@ -29,7 +29,7 @@ services:
     container_name: ipfs
     restart: unless-stopped
     volumes:
-      - ./ipfs-docker-config.sh:/container-init.d/ipfs-docker-config.sh
+      - ./dev-ipfs-docker-config.sh:/container-init.d/ipfs-docker-config.sh
       - ipfs_sepolia_path:/data/ipfs
       - ipfs_sepolia_fuse:/ipfs
       - ipns_sepolia_fuse:/ipns
