@@ -25,15 +25,19 @@ There are multiple ways that you can run and play with the system. Of course you
 **Please note that none of the setup currently available are for production purposes!**
 
 ### Docker
-You can run a complete setup of SENTINEL with the docker-compose file in this directory. The docker-compose file will spin up an IPFS node, both execution and validation clients for the Sepolia testnet, and the frontend. To get started run `docker-compose up -d` and wait for the Ethereum node to sync with the testnet. However, it should be noted that this setup is **NOT** considered production!
+You can run a complete setup of SENTINEL with the docker-compose file in this directory. There are three different docker-compose files for different scenarios. 
+
+#### Local Development
+You can use `docker compose -f docker-compose.dev.ganache.yaml -p sentinel_local up -d --build` to run SENTINEL in a local environment with the entire setup for SENTINEL. You can access the frontend via http://localhost in a browser. **Currently there are no smart contract deployed to the local network at startup!**
+
+
+#### Sepolia Development
+You can use `docker compose -f docker-compose.dev.sepolia.yaml -p sentinel_sepolia up -d --build` to run SENTINEL with the Sepolia Ethereum testnet. You can access the frontend via http://localhost in a browser. **You will need to create and manage your own accounts for Sepolia!**
 
 > The testnet blockchain is potentially very long, meaning that you could store a lot of data after a full sync of the blockchain. Therefore, you should make sure that you have enough system resources to store it. 
 
-
-The frontend is run from a locally build Docker image. You can find the Dockerfile in `./frontend/Dockerfile`. The execution client is [Geth (go-ethereum)](https://geth.ethereum.org) which will be used to look for transaction with from the frontend. The validation client (mandatory from The Merge) is [Lighthouse](https://github.com/sigp/lighthouse). The IPFS node is the official [Kubo](https://github.com/ipfs/kubo). 
-
-
-> A script to either use the Sepolia network or a Ganache instance is currently under consideration. 
+#### Production
+You can use `docker compose -p sentinel up -d` to start the production setup. This setup only includes the IPFS node, and the Ethereum execution and validation clients. The frontend should be accessed from IPFS through the local IPFS gateway with `localhost:8080/ipfs/<cid>` in the browser. 
 
 
 ### Local Environment

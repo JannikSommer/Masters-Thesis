@@ -1,24 +1,38 @@
-# This is a sample docker-compose file for running Sentinel on a single machine in a production environment.
-# This does not include the frontend which should be accessed through a local IPFS gateway.
+# This docker-compose is only for developement purposes with the Sepolia testnet.
+# It is not intended to be used in production.
 version: "3.9"
 
 volumes:
-  lighthouse:
-  geth_data:
-  ipfs_path:
-  ipfs_fuse:
-  ipns_fuse:
+  lighthouse_sepolia:
+  geth_sepolia_data:
+  ipfs_sepolia_path:
+  ipfs_sepolia_fuse:
+  ipns_sepolia_fuse:
     
-services: 
+services:
+  frontend: 
+    image: sentinel-sepolia:0.2
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - ipfs
+      - lighthouse
+      - geth
+  
   ipfs:
     image: ipfs/kubo:latest
     container_name: ipfs
     restart: unless-stopped
     volumes:
       - ./ipfs-docker-config.sh:/container-init.d/ipfs-docker-config.sh
-      - ipfs_path:/data/ipfs
-      - ipfs_fuse:/ipfs
-      - ipns_fuse:/ipns
+      - ipfs_sepolia_path:/data/ipfs
+      - ipfs_sepolia_fuse:/ipfs
+      - ipns_sepolia_fuse:/ipns
     environment:
       - IPFS_PATH=/data/ipfs
     ports:
@@ -45,8 +59,9 @@ services:
       - "30303:30303/tcp"
       - "30303:30303/udp"
     volumes:
-      - geth_data:/root
+      - geth_sepolia_data:/root
     command:
+      - --sepolia 
       - --ws
       - --ws.addr=0.0.0.0
       - --http
@@ -64,15 +79,15 @@ services:
       - "9000:9000/udp"
       - "127.0.0.1:5052:5052"
     volumes:
-      - lighthouse:/root/.lighthouse
-      - geth_data:/geth/:ro
+      - lighthouse_sepolia:/root/.lighthouse
+      - geth_sepolia_data:/geth/:ro
     command:
       - lighthouse
-      - --network=mainnet
+      - --network=sepolia
       - beacon
       - --http
       - --http-address=0.0.0.0
       - --execution-endpoint=http://geth:8551 #connect to geth
-      - --execution-jwt=/geth/.ethereum/geth/jwtsecret #load secret from geth
-      - --checkpoint-sync-url=https://beaconstate-mainnet.chainsafe.io #sync with node
+      - --execution-jwt=/geth/.ethereum/sepolia/geth/jwtsecret #load secret from geth
+      - --checkpoint-sync-url=https://beaconstate-sepolia.chainsafe.io #sync with node
       - --disable-deposit-contract-sync #disable staking
