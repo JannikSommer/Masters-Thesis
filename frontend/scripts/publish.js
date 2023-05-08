@@ -1,6 +1,8 @@
 import {create, globSource} from "ipfs-http-client";
 
-const ipfs = await create({host: process.argv[2], port:443, protocol: "https"});
+const IPFS_NODE_ENDPOINT = process.argv[2] + "/ipfs";
+
+const ipfs = await create({protocol: "https", host: IPFS_NODE_ENDPOINT, port:443});
 //const address = "ipfs/k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl";
 
 //options specific to globSource

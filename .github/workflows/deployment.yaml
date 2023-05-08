@@ -1,5 +1,5 @@
 
-name: IPFS deployment
+name: Frontend IPFS deployment
 
 on:
   pull_request:
