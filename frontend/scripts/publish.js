@@ -10,7 +10,7 @@ const globSourceOptions = { recursive: true };
 const addOptions = { pin: true, wrapWithDirectory: true, timeout: 10000 };
 
 var results = [];
-for await (const file of ipfs.addAll(globSource(process.argv[3], globSourceOptions), addOptions)) {
+for await (const file of ipfs.addAll(globSource(process.argv[3].toString(), globSourceOptions), addOptions)) {
     results.push(file);
 }
 console.log(results[0]);
