@@ -12,13 +12,13 @@ contract IdentifierIssuerService is MessageControlable {
   uint64 private vendorCount = 0;
 
   // VendorContractAddress => VendorId
-  mapping(address => uint64) public vendors;
+  mapping(address => uint64) private vendors;
 
   // VendorId => VulnerabilityId
-  mapping(uint64 => uint64[]) public vulnerabilites;
+  mapping(uint64 => uint64[]) private vulnerabilites;
 
   // VendorId => AdvisoryId
-  mapping(uint64 => uint64[]) public advisories;
+  mapping(uint64 => uint64[]) private advisories;
 
   /// @notice Registers a vendor smart contract for this service. 
   /// @dev A smart contract can only be regisered once. 
