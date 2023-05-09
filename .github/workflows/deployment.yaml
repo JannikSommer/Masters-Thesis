@@ -27,13 +27,13 @@ jobs:
       
       - name: Publish to IPFS
         uses: aquiladev/ipfs-action@v1
-          with:
-            path: ./frontend/build
-            host: ${{ secrets.IPFS_HOST }} 
-            #port: 443
-            #protocol: https
-            timeout: 180000
-            verbose: true
+        with:
+          path: ./frontend/build
+          host: ${{ secrets.IPFS_HOST }} 
+          #port: 443
+          #protocol: https
+          timeout: 180000
+          verbose: true
 
       #- name: Rename build folder
       #  run: mkdir ./frontend/SENTINEL && mv ./frontend/build ./frontend/SENTINEL
