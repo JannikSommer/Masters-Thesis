@@ -26,10 +26,11 @@ jobs:
         run: npm run build --prefix ./frontend
       
       - name: Publish to IPFS
-        uses: aquiladev/ipfs-action@v1
+        uses: aquiladev/ipfs-action@master
         with:
           path: ./frontend/build
           host: ${{ secrets.IPFS_HOST }} 
+          key: k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
           #port: 443
           #protocol: https
           timeout: 180000
