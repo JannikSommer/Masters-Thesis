@@ -31,8 +31,8 @@ jobs:
           path: ./frontend/build
           host: ${{ secrets.IPFS_HOST }} 
           key: k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
-          #port: 443
-          #protocol: https
+          port: 443
+          protocol: https
           timeout: 180000
           verbose: true
 
