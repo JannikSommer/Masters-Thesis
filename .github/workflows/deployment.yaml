@@ -24,11 +24,22 @@ jobs:
 
       - name: Build frontend
         run: npm run build --prefix ./frontend
-
-      - name: Rename build folder
-        run: mkdir ./frontend/SENTINEL && mv ./frontend/build ./frontend/SENTINEL
-
+      
       - name: Publish to IPFS
-        run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ../SENTINEL
+        uses: aquiladev/ipfs-action@v1
+          id: ipfs
+          with:
+            path: ./frontend/build
+            host: ${{ secrets.IPFS_HOST }} 
+            #port: 443
+            #protocol: https
+            timeout: 180000
+            verbose: true
+
+      #- name: Rename build folder
+      #  run: mkdir ./frontend/SENTINEL && mv ./frontend/build ./frontend/SENTINEL
+
+      #- name: Publish to IPFS
+      #  run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ../SENTINEL
       
 # https://ipfs.io/ipns/k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
