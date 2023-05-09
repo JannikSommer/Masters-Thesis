@@ -25,10 +25,10 @@ jobs:
       - name: Build frontend
         run: npm run build --prefix ./frontend
 
-#      - name: Rename build folder
-#        run: mkdir ./frontend/SENTINEL && mv ./frontend/build ./frontend/SENTINEL
+      - name: Rename build folder
+        run: mkdir ./frontend/SENTINEL && mv ./frontend/build ./frontend/SENTINEL
 
       - name: Publish to IPFS
-        run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ../build
+        run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ../SENTINEL
       
 # https://ipfs.io/ipns/k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
