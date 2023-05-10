@@ -2,7 +2,6 @@
 name: Frontend IPFS deployment
 
 on:
-  pull_request:
   push:
     branches:
       - main
@@ -30,15 +29,3 @@ jobs:
         
       - name: Publish to IPFS
         run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ./frontend/build
-      
-# https://ipfs.io/ipns/k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
-# - name: Publish to IPFS
-#   uses: aquiladev/ipfs-action@master
-#   with:
-#     path: ./frontend/build
-#     host: ${{ secrets.IPFS_HOST }} 
-#     key: k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
-#     port: 443
-#     protocol: https
-#     timeout: 60000
-#     verbose: true
