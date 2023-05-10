@@ -24,26 +24,24 @@ jobs:
 
       - name: Build frontend
         run: npm run build --prefix ./frontend
-      
-      # - name: Publish to IPFS
-      #   uses: aquiladev/ipfs-action@master
-      #   with:
-      #     path: ./frontend/build
-      #     host: ${{ secrets.IPFS_HOST }} 
-      #     key: k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
-      #     port: 443
-      #     protocol: https
-      #     timeout: 60000
-      #     verbose: true
 
       - name: Rename build folder
-       run: mkdir ./frontend/SENTINEL && mv ./frontend/build ./frontend/SENTINEL
-
+        run: mkdir ./frontend/SENTINEL && mv ./frontend/build ./frontend/SENTINEL
 
       - name: Print dirs
         run: ls -la ./frontend
 
       - name: Publish to IPFS
-       run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ../SENTINEL
+        run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ../SENTINEL
       
 # https://ipfs.io/ipns/k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
+# - name: Publish to IPFS
+#   uses: aquiladev/ipfs-action@master
+#   with:
+#     path: ./frontend/build
+#     host: ${{ secrets.IPFS_HOST }} 
+#     key: k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
+#     port: 443
+#     protocol: https
+#     timeout: 60000
+#     verbose: true
