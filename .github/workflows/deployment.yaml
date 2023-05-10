@@ -29,7 +29,7 @@ jobs:
         run: ls -la ./frontend
         
       - name: Publish to IPFS
-        run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ../build
+        run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ./frontend/build
       
 # https://ipfs.io/ipns/k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
 # - name: Publish to IPFS
