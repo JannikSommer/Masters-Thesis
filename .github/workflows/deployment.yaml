@@ -39,6 +39,7 @@ jobs:
       - name: Rename build folder
        run: mkdir ./frontend/SENTINEL && mv ./frontend/build ./frontend/SENTINEL
 
+
       - name: Print dirs
         run: ls -la ./frontend
 
