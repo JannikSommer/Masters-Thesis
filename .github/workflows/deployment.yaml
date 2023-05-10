@@ -19,20 +19,17 @@ jobs:
         with:
           node-version: 16.x
       
-      - name: Change directory
-        run: cd ./frontend
-      
       - name: Install Dependencies
-        run: npm install && npm install -g ipfs-http-client
+        run: npm install --prefix ./frontend && npm install -g ipfs-http-client
 
       - name: Build frontend
-        run: npm run build
+        run: npm run build --prefix ./frontend
 
-      # - name: Rename build folder
-      #   run: mv build SENTINEL
+      - name: Print dirs
+        run: ls -la ./frontend
         
       - name: Publish to IPFS
-        run: node ./scripts/publish.js ${{ secrets.IPFS_HOST }} ../build
+        run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ../build
       
 # https://ipfs.io/ipns/k51qzi5uqu5dmjabueumy621fbdczkie0z0sa1vq57kjet242lcum9opm1qvbl
 # - name: Publish to IPFS
