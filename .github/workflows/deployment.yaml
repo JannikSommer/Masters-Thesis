@@ -2,6 +2,7 @@
 name: Frontend IPFS deployment
 
 on:
+  pull_request:
   push:
     branches:
       - main
@@ -23,9 +24,6 @@ jobs:
 
       - name: Build frontend
         run: npm run build --prefix ./frontend
-
-      - name: Print dirs
-        run: ls -la ./frontend
         
       - name: Publish to IPFS
-        run: node ./frontend/scripts/publish.js ${{ secrets.IPFS_HOST }} ./frontend/build
+        run: node ./.github//scripts/deployment/publish.js ${{ secrets.IPFS_HOST }} ./frontend/build
