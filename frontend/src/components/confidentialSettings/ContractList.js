@@ -16,7 +16,7 @@ function ContractList({contracts, remove}) {
                     <tr key={index}>
                         <td>{contract["vendorName"]}</td>
                         <td>{contract["address"]}</td>
-                        <td><Button size='sm' variant='danger' onClick={() => remove(contract["address"])}>Delete account</Button></td>
+                        <td><Button size='sm' variant='danger' onClick={() => remove(contract["address"])}>Delete contract</Button></td>
                     </tr>
                 )}
             </tbody>

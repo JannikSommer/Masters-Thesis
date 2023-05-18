@@ -34,7 +34,7 @@ function NewContractForm({ addContract}) {
                 </FloatingLabel>
             </FormGroup>
             <Button variant="primary" type="button" onClick={() => saveContract()}>
-                    Save account
+                    Save contracts
                 </Button>
         </Form>
     )

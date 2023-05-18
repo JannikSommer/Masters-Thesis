@@ -64,8 +64,8 @@ function ConfidentialSettings() {
                 You will be warned again when submitting the forms. 
               </Alert>
             : <></>}
-            <h1>Confidential Announcement</h1>
-            Here you can make new confidential announcements intended for specific asset owners. 
+            <h1>Confidential Settings</h1>
+            Here you can configure your settings regarding confidential announcements. 
             <br />
             <hr />
             <ContractManagement contracts={contracts} addContract={addContract} removeContract={removeContract}/>
