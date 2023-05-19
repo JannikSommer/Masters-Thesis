@@ -4,7 +4,6 @@ on:
   push:
     branches: 
       - main 
-  pull_request:
 
 jobs:
   build:
@@ -27,4 +26,4 @@ jobs:
         uses: CycloneDX/gh-node-module-generatebom@v1
         with: 
           path: './frontend'
-          output: './sbom/frontend.xml'
+          output: './sbom/frontend-bom.xml'
