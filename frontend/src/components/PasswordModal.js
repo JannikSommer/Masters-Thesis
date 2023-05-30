@@ -8,8 +8,10 @@ import Alert from 'react-bootstrap/Alert';
 import { useState, useEffect } from 'react';
 
 import Utilities from '../cryptography/Utilities';
-import {PasswordData  as PasswordDataLS } from '../localStorage/PasswordData';
-import PasswordEncryption from '../cryptography/PasswordEncryption';
+import { PasswordData as PasswordDataLS } from '../localStorage/PasswordData';
+import { PasswordEncryption } from '../cryptography/PasswordEncryption';
+import Contracts from '../localStorage/Contracts';
+import { Accounts } from '../localStorage/Accounts';
 
 
 function PasswordModal({state, dismiss, done, setPasswordContext}) {
@@ -57,10 +59,22 @@ function PasswordModal({state, dismiss, done, setPasswordContext}) {
         
         const salt = Utilities.base64ToArrayBuffer(passwordData["salt"])
         const aesKey = await PasswordEncryption.deriveAesKey(password, salt);
-        const keyHash = Utilities.arrayBufferToBase64(await PasswordEncryption.getKeyHash(aesKey));
 
-        if(passwordData.hash !== keyHash) {
-            showAlert("Incorrect Password!");
+        try {
+            // AES-GCM has verification built in. Should detect if the key is wrong.
+            let contracts = await Contracts.load(aesKey);
+            let accounts = await Accounts.load(aesKey);
+
+            if(contracts === null && accounts === null) {
+                // We have no data to verify if the password is correct...
+            }
+
+        } catch (error) {
+            if(error.toString() === "OperationError: The operation failed for an operation-specific reason") {
+                showAlert("Incorrect Password!");
+            } else {
+                showAlert("Unknown error. Please try again.");
+            }
             return;
         }
 
