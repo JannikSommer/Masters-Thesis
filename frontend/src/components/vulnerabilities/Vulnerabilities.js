@@ -32,7 +32,7 @@ function Vulnerabilities({ ipfs, web3Gateway }) {
     const modalShow = () => setShowModal(true);
 
     // Vulnerability data hook
-    var [vulnerabilities, setVulnerabilities] = useState([]);
+    const [vulnerabilities, setVulnerabilities] = useState([]);
 
     /**
      * Update the vulnerabilities hook that displays the vulnerabilities.
@@ -61,9 +61,14 @@ function Vulnerabilities({ ipfs, web3Gateway }) {
     */
     async function subscribe() {
         await web3Gateway.subscribeNewSecurityAdvisories(newCallback);
+        web3Gateway.isSubscribedToPublic = true;
+    }
+
+    async function subscribeToPrivate() {
         for await (const contract of privateWhitelist.current) {
             await web3Gateway.subscribeToPrivateSecurityAdvisories(privateCallback, contract.address);
         }
+        web3Gateway.isSubscribedToPrivate = true;
     }
 
     /**
@@ -76,7 +81,8 @@ function Vulnerabilities({ ipfs, web3Gateway }) {
         for await (const event of web3Gateway.newSecurityAdvisoryEvents) {
             let intermediate = [event];
             for await (const update of web3Gateway.updatedSecurityAdvisoryEvents) {
-                if (update.event.returnValues.advisoryIdentifier === event.event.returnValues.advisoryIdentifier) {
+                let hexedIdentifier = web3Gateway.web3.utils.soliditySha3(event.event.returnValues.advisoryIdentifier);
+                if (update.event.returnValues.advisoryIdentifier === hexedIdentifier) {
                     intermediate.push(update);
                 }
             }
@@ -185,6 +191,7 @@ function Vulnerabilities({ ipfs, web3Gateway }) {
         vulnerabilities.splice(0, vulnerabilities.length);
         web3Gateway.clearSubscriptions();
         await subscribe();
+        await subscribeToPrivate();
         modalClose();
         setLoading(false);
     }
@@ -194,14 +201,15 @@ function Vulnerabilities({ ipfs, web3Gateway }) {
      * whether to subscribe to events or to load already existing events.
      */
     async function checkPreloadStatus() {
-        if (dependencies.current.length > 0 && (whitelist.current.length > 0 || privateWhitelist.current.length > 0)) {
-            if (web3Gateway.subscriptions.length === 0) {
+        if (aesKey === null) 
+            return;
+        if (dependencies.current.length > 0 && whitelist.current.length > 0) {
+            if (web3Gateway.isSubscribedToPublic === false) {
                 subscribe();
             }
             else {
-                setUpVulnerabilities().then((result) => {
-                    setVulnerabilities(result.reverse());
-                });
+                var result = await setUpVulnerabilities();
+                setVulnerabilities([...result.reverse()]);
             }
             setLoading(false);
         }
@@ -210,9 +218,12 @@ function Vulnerabilities({ ipfs, web3Gateway }) {
     function loadPrivateContracts() {
         if (aesKey !== null) {
             Contracts.load(aesKey).then((con) => {
-                if(con !== null) {
+                if (con !== null) {
                     privateWhitelist.current = con;
-                    checkPreloadStatus();
+                    if (web3Gateway.isSubscribedToPrivate === false)
+                        subscribeToPrivate();
+                    else
+                        checkPreloadStatus();
                 }
             });
         }
@@ -232,13 +243,10 @@ function Vulnerabilities({ ipfs, web3Gateway }) {
         }
 
         const wl = JSON.parse(localStorage.getItem(LS_KEY_WL));
-        if(wl !== null) {
+        if (wl !== null) {
             whitelist.current = wl;
             checkPreloadStatus();
         }
-        
-        loadPrivateContracts()
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ipfs]);
 

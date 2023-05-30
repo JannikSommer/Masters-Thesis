@@ -9,6 +9,20 @@ export default class Web3Gateway {
      */
     web3;
 
+    /***
+     * Boolean to indicate if the user is subscribed to public contracts.
+     * @type {boolean}
+     * @default false
+     */
+    isSubscribedToPublic = false;
+
+    /***
+     * Boolean to indicate if the user is subscribed to private contracts.
+     * @type {boolean}
+     * @default false
+     */
+    isSubscribedToPrivate = false;
+
     /**
      * Contract object of the Announcement Service.
      * @type {Web3.eth.Contract}  
