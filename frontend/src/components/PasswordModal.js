@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 
 import Utilities from '../cryptography/Utilities';
 import { PasswordData as PasswordDataLS } from '../localStorage/PasswordData';
-import { PasswordEncryption } from '../cryptography/PasswordEncryption';
+import PasswordEncryption from '../cryptography/PasswordEncryption';
 import Contracts from '../localStorage/Contracts';
 import { Accounts } from '../localStorage/Accounts';
 
