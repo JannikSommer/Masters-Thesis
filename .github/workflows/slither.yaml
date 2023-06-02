@@ -1,0 +1,36 @@
+name: Slither Analysis
+
+on: pull_request
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup NodeJS 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+    
+      - name: Install Truffle
+        run: npm install truffle@5.7.6 -g # cannot use truffle@latest due to https://github.com/sc-forks/solidity-coverage/issues/696
+    
+      - name: Install Dependencies
+        run: npm install  
+
+      - name: Truffle Compile
+        run: truffle compile
+      
+      - name: Run Slither Analysis
+        uses: crytic/slither-action@v0.3.0
+        id: slither
+        with:
+          sarif: results.sarif
+          fail-on: none
+          slither-args: '--ignore-compile --filter-paths openzeppelin'
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ steps.slither.outputs.sarif }}

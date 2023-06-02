@@ -9,6 +9,20 @@ export default class Web3Gateway {
      */
     web3;
 
+    /***
+     * Boolean to indicate if the user is subscribed to public contracts.
+     * @type {boolean}
+     * @default false
+     */
+    isSubscribedToPublic = false;
+
+    /***
+     * Boolean to indicate if the user is subscribed to private contracts.
+     * @type {boolean}
+     * @default false
+     */
+    isSubscribedToPrivate = false;
+
     /**
      * Contract object of the Announcement Service.
      * @type {Web3.eth.Contract}  
@@ -43,7 +57,7 @@ export default class Web3Gateway {
         if (web3) 
             this.web3 = web3;
         else 
-            this.web3 = new Web3(Web3.givenProvider || 'ws://localhost:8546');
+            this.web3 = new Web3(Web3.givenProvider || 'ws://localhost:8546' || "ws://localhost:7545");
         
         this.announcementService = new this.web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
     }

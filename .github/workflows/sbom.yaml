@@ -1,0 +1,29 @@
+name: Generate CycloneDX SBOM
+
+on:
+  push:
+    branches: 
+      - main 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Install and build javascript
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      # Install and build frontend before generating SBOM
+      - name: Install frontend dependencies
+        run: npm install --prefix ./frontend
+      - name: Build frontend
+        run: npm run build --prefix ./frontend
+
+      - run: npm install
+      - name: Create SBOM with CycloneDX
+        uses: CycloneDX/gh-node-module-generatebom@v1
+        with: 
+          path: './frontend'
+          output: './frontend-bom.xml'

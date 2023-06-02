@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.19;
+pragma solidity 0.8.18;
 
 import "./AnnouncementService.sol";
 import "./IdentifierIssuerService.sol";
@@ -11,15 +11,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 ///         with the SENTINEL system and it's services. 
 contract Vendor is Ownable {
   string public vendorName;
-  IdentifierIssuerService private _IIS; 
-  AnnouncementService private _AS;
-  uint64 public vendorId; // Could be removed and replaced with a getter function on the _IIS.
+  IdentifierIssuerService private immutable _iis; 
+  AnnouncementService private immutable _as;
+  uint64 public immutable vendorId; // Could be removed and replaced with a getter function on the _iis.
 
   constructor(string memory name, address announcementServiceAddress, address identifierIssuerServiceAddress) {
     vendorName = name;
-    _AS = AnnouncementService(announcementServiceAddress);
-    _IIS = IdentifierIssuerService(identifierIssuerServiceAddress);
-    vendorId = _IIS.registerVendor();
+    _as = AnnouncementService(announcementServiceAddress);
+    _iis = IdentifierIssuerService(identifierIssuerServiceAddress);
+    vendorId = _iis.registerVendor();
   }
 
   /// @notice Retrieves a vulnerability identifier from the Identifier Issuer Service. 
@@ -27,12 +27,12 @@ contract Vendor is Ownable {
   /// @return String of the generated vulnerability identifier. 
   function getVulnerabilityIds(uint16 count) onlyOwner public returns (string memory) {
     require(vendorId != 0, "Function only available with a vendor id");
-    return _IIS.requestVulnerabilityIdentifiers(count);
+    return _iis.requestVulnerabilityIdentifiers(count);
   }
 
   function getAdvisoryId() onlyOwner public returns (string memory) {
     require(vendorId != 0, "Function only available with a vendor id");
-    return _IIS.requestAdvisoryIdentifier();
+    return _iis.requestAdvisoryIdentifier();
   }
   
   /// Calls function on the Announcement Service which emits an event. 
@@ -44,7 +44,7 @@ contract Vendor is Ownable {
     uint16 count, 
     string memory productIds, 
     string memory location) onlyOwner public {
-    _AS.announceNewAdvisory(getAdvisoryId(), getVulnerabilityIds(count), productIds, location);
+    _as.announceNewAdvisory(getAdvisoryId(), getVulnerabilityIds(count), productIds, location);
   }
 
   /// @notice Calls function on the Announcement Service which emits an event. 
@@ -56,6 +56,6 @@ contract Vendor is Ownable {
     string memory vulnerabilityIds, 
     string memory productId,
     string memory location) onlyOwner public {
-    _AS.announceUpdatedAdvisory(advisoryId, vulnerabilityIds, productId, location);
+    _as.announceUpdatedAdvisory(advisoryId, vulnerabilityIds, productId, location);
   }
 }

@@ -355,4 +355,9 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+# Analysis Results
+analysis/mythrilResults/
+analysis/slitherResults/
+
+# Secret files
 secret.*

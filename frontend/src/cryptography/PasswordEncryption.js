@@ -5,16 +5,14 @@ export default class PasswordEncryption {
     /**
      * Computes an AES-GCM key and associated data from a password string.
      * @param {String} password A password in string format.
-     * @returns {Promise<{aesKey: CryptoKey, keyData: {hash: String, salt: String}}>}
+     * @returns {Promise<{aesKey: CryptoKey, keyData: {salt: String}}>}
      */
         static async createNewPassword(password) {
             const salt = window.crypto.getRandomValues(new Uint8Array(16))
             const aesKey = await this.deriveAesKey(password, salt);
-            const keyHash = await this.getKeyHash(aesKey);
     
             const keyData = {
-                "hash": Utilities.arrayBufferToBase64(keyHash),
-                "salt": Utilities.arrayBufferToBase64(salt.buffer),
+                "salt": Utilities.arrayBufferToBase64(salt.buffer)
             };
             return { aesKey, keyData };
         }
@@ -61,15 +59,5 @@ export default class PasswordEncryption {
               false,
               ["deriveBits", "deriveKey"]
             );
-        }
-    
-        /**
-         * Computes the SHA-256 hash of the provided cryptokey.
-         * @param {CryptoKey} key A valid cryptokey.
-         * @returns {Promise<ArrayBuffer>} A SHA-256 hash.
-         */
-        static async getKeyHash(key) {
-            const rawKey = await window.crypto.subtle.exportKey("raw", key);
-            return window.crypto.subtle.digest("SHA-256", rawKey);
         }
 }

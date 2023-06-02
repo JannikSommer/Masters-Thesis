@@ -7,7 +7,7 @@ class Contracts {
     /**
      * Loads the contracts from local storage.
      * @param {CryptoKey} aesKey A valid AES cryptokey.
-     * @returns {[]} A list of contracts. Returns null if nothing is found.
+     * @returns {Promise<Array<{address: string, privateKey: string, vendorName?: string}>> | Promise<null>} A list of contracts. Returns null if nothing is found.
      */
     static async load(aesKey) {
         const aes = new AES(256);
@@ -24,7 +24,7 @@ class Contracts {
     
     /**
      * Saves the contracts to local storage.
-     * @param {[]} contracts An array of contracts.
+     * @param {Array<{address: string, privateKey: string, vendorName?: string}>} contracts An array of contracts.
      * @param {CryptoKey} aesKey A valid AES cryptokey.
      */
     static async save(contracts, aesKey) {
@@ -45,7 +45,7 @@ class Contracts {
     
     /**
      * Adds a new contract to the list.
-     * @param {[]} contracts An array of contracts.
+     * @param {Array<{address: string, privateKey: string, vendorName?: string}>} contracts An array of contracts.
      * @param {String} address A valid Ethereum address.
      * @param {String} vendorName A name or note to identify the address.
      */
@@ -61,7 +61,7 @@ class Contracts {
 
     /**
      * Removes a contract from the list.
-     * @param {[]} contracts A list of contracts.
+     * @param {Array<{address: string, privateKey: string, vendorName?: string}>} contracts A list of contracts.
      * @param {String} address A valid Ethereum address.
      */
     static removeContract(contracts, address) {
