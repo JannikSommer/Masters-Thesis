@@ -57,8 +57,8 @@ export default class Web3Gateway {
         if (web3) 
             this.web3 = web3;
         else 
-            this.web3 = new Web3(Web3.givenProvider || "ws://localhost:7545");
-
+            this.web3 = new Web3(Web3.givenProvider || 'ws://localhost:8546' || "ws://localhost:7545");
+        
         this.announcementService = new this.web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
     }
     

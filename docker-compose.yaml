@@ -1,0 +1,78 @@
+# This is a sample docker-compose file for running Sentinel on a single machine in a production environment.
+# This does not include the frontend which should be accessed through a local IPFS gateway.
+version: "3.9"
+
+volumes:
+  lighthouse:
+  geth_data:
+  ipfs_path:
+  ipfs_fuse:
+  ipns_fuse:
+    
+services: 
+  ipfs:
+    image: ipfs/kubo:latest
+    container_name: ipfs
+    restart: unless-stopped
+    volumes:
+      - ./ipfs-docker-config.sh:/container-init.d/ipfs-docker-config.sh
+      - ipfs_path:/data/ipfs
+      - ipfs_fuse:/ipfs
+      - ipns_fuse:/ipns
+    environment:
+      - IPFS_PATH=/data/ipfs
+    ports:
+      # Swarm listens on all interfaces, so is remotely reachable.
+      - 4001:4001/tcp
+      - 4001:4001/udp
+      
+      # The following ports only listen on the loopback interface, so are not remotely reachable by default.
+      # If you want to override these or add more ports, see https://docs.docker.com/compose/extends/ .
+      
+      # API port, which includes admin operations, so you probably don't want this remotely accessible.
+      - 127.0.0.1:5001:5001
+      
+      # HTTP Gateway
+      - 127.0.0.1:8080:8080
+    
+  geth:
+    image: ethereum/client-go:stable
+    container_name: geth
+    restart: unless-stopped
+    ports:
+      - "8545:8545"
+      - "8546:8546"
+      - "30303:30303/tcp"
+      - "30303:30303/udp"
+    volumes:
+      - geth_data:/root
+    command:
+      - --ws
+      - --ws.addr=0.0.0.0
+      - --http
+      - --http.addr=0.0.0.0
+      - --authrpc.addr=0.0.0.0
+      - --authrpc.port=8551
+      - --authrpc.vhosts=*
+
+  lighthouse:
+    image: sigp/lighthouse:latest-modern
+    container_name: lighthouse
+    restart: unless-stopped
+    ports:
+      - "9000:9000/tcp"
+      - "9000:9000/udp"
+      - "127.0.0.1:5052:5052"
+    volumes:
+      - lighthouse:/root/.lighthouse
+      - geth_data:/geth/:ro
+    command:
+      - lighthouse
+      - --network=mainnet
+      - beacon
+      - --http
+      - --http-address=0.0.0.0
+      - --execution-endpoint=http://geth:8551 #connect to geth
+      - --execution-jwt=/geth/.ethereum/geth/jwtsecret #load secret from geth
+      - --checkpoint-sync-url=https://beaconstate-mainnet.chainsafe.io #sync with node
+      - --disable-deposit-contract-sync #disable staking

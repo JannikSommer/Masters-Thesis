@@ -1,0 +1,69 @@
+# This docker-compose is only for developement purposes with a local blockchain.
+# It is not intended to be used in production.
+version: "3.9"
+
+volumes:
+  ganache_data:
+  ipfs_local_path:
+  ipfs_local_fuse:
+  ipns_local_fuse:
+    
+services:
+  frontend: 
+    image: sentinel-local:0.2
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - ipfs
+      - ganache
+  
+  ipfs:
+    image: ipfs/kubo:latest
+    container_name: ipfs
+    restart: unless-stopped
+    volumes:
+      - ./dev-ipfs-docker-config.sh:/container-init.d/ipfs-docker-config.sh
+      - ipfs_local_path:/data/ipfs
+      - ipfs_local_fuse:/ipfs
+      - ipns_local_fuse:/ipns
+    environment:
+      - IPFS_PATH=/data/ipfs
+    ports:
+      # Swarm listens on all interfaces, so is remotely reachable.
+      - 4001:4001/tcp
+      - 4001:4001/udp
+      
+      # The following ports only listen on the loopback interface, so are not remotely reachable by default.
+      # If you want to override these or add more ports, see https://docs.docker.com/compose/extends/ .
+      
+      # API port, which includes admin operations, so you probably don't want this remotely accessible.
+      - 127.0.0.1:5001:5001
+      
+      # HTTP Gateway
+      - 127.0.0.1:8080:8080
+    
+  ganache: 
+    image: trufflesuite/ganache-cli:latest
+    ports:
+      - "8546:8546"
+    volumes:
+      - ganache_data:/ganache_data
+    entrypoint:
+      - node
+      - /app/ganache-core.docker.cli.js
+      - --deterministic
+      - --db=/ganache_data
+      - --mnemonic
+      - 'minimum symptom minute gloom tragic situate silver mechanic salad amused elite beef'
+      - --networkId
+      - '5777'
+      - --hostname
+      - '0.0.0.0'
+      - --port
+      - '8546'
+      - --debug
